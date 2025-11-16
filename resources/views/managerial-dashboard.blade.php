@@ -693,20 +693,12 @@
   function loadFilterOptions() {
     console.log('Iniciando loadFilterOptions...');
     fetch('/api/reports/filter-options', {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+      credentials: 'same-origin'
     })
       .then(response => {
         console.log('Response status:', response.status);
         if (!response.ok) {
-          return response.text().then(text => {
-            console.error('Erro response:', text);
-            throw new Error(`HTTP ${response.status}: ${text}`);
-          });
+          throw new Error(`HTTP ${response.status}`);
         }
         return response.json();
       })
@@ -788,20 +780,12 @@
     console.log('Fetching from URL:', url);
 
     fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+      credentials: 'same-origin'
     })
       .then(response => {
         console.log('Filter response status:', response.status);
         if (!response.ok) {
-          return response.text().then(text => {
-            console.error('Error response body:', text);
-            throw new Error(`HTTP ${response.status}: ${text}`);
-          });
+          throw new Error(`HTTP ${response.status}`);
         }
         return response.json();
       })
