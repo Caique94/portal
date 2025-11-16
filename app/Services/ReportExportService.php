@@ -171,8 +171,11 @@ class ReportExportService
         $col = 'A';
         foreach ($headers as $header) {
             $sheet->setCellValue($col . $row, $header);
-            $sheet->getStyle($col . $row)->getFont()->setBold(true)->setColor('FFFFFF');
-            $sheet->getStyle($col . $row)->getFill()->setFillType('solid')->getStartColor()->setRGB('366092');
+            $style = $sheet->getStyle($col . $row);
+            $style->getFont()->setBold(true);
+            $style->getFont()->getColor()->setRGB('FFFFFF');
+            $style->getFill()->setFillType('solid');
+            $style->getFill()->getStartColor()->setRGB('366092');
             $col++;
         }
         $row++;
