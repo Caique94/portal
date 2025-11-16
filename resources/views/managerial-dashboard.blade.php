@@ -698,7 +698,16 @@
       .then(response => {
         console.log('Response status:', response.status);
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          console.error('HTTP Error:', response.status);
+          if (response.status === 401) {
+            throw new Error('Não autorizado. Faça login novamente.');
+          } else if (response.status === 403) {
+            throw new Error('Acesso negado. Apenas administradores podem acessar.');
+          } else if (response.status === 404) {
+            throw new Error('API não encontrada');
+          } else {
+            throw new Error(`Erro HTTP ${response.status}`);
+          }
         }
         return response.json();
       })
@@ -714,6 +723,7 @@
             option.textContent = cliente.nome;
             clienteSelect.appendChild(option);
           });
+          console.log(`Populado ${data.clientes.length} clientes`);
         }
 
         // Populate consultores
@@ -725,6 +735,7 @@
             option.textContent = consultor.name;
             consultorSelect.appendChild(option);
           });
+          console.log(`Populado ${data.consultores.length} consultores`);
         }
 
         // Populate status
@@ -736,14 +747,23 @@
             option.textContent = status.name;
             statusSelect.appendChild(option);
           });
+          console.log(`Populado ${data.status.length} status`);
         }
 
         console.log('Filter options populated successfully');
       })
       .catch(error => {
-        console.error('Erro ao carregar filtros:', error);
+        console.error('ERRO CRÍTICO ao carregar filtros:', error.message);
         console.error('Stack:', error.stack);
-        // Don't show alert to avoid blocking, just log
+        // Show error in the UI
+        const clienteSelect = document.getElementById('cliente_id');
+        if (clienteSelect && clienteSelect.parentElement) {
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'alert alert-danger mt-2 mb-0';
+          errorDiv.style.fontSize = '12px';
+          errorDiv.textContent = '⚠️ Erro ao carregar filtros: ' + error.message;
+          clienteSelect.parentElement.appendChild(errorDiv);
+        }
       });
   }
 
@@ -785,7 +805,18 @@
       .then(response => {
         console.log('Filter response status:', response.status);
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          console.error('HTTP Error:', response.status);
+          if (response.status === 401) {
+            throw new Error('Sessão expirada. Faça login novamente.');
+          } else if (response.status === 403) {
+            throw new Error('Acesso negado. Apenas administradores podem acessar.');
+          } else if (response.status === 404) {
+            throw new Error('API não encontrada');
+          } else if (response.status === 500) {
+            throw new Error('Erro no servidor. Verifique os logs.');
+          } else {
+            throw new Error(`Erro HTTP ${response.status}`);
+          }
         }
         return response.json();
       })
@@ -849,9 +880,13 @@
         console.log('Filter display completed successfully');
       })
       .catch(error => {
-        console.error('Erro ao filtrar:', error);
+        console.error('ERRO ao filtrar:', error.message);
         console.error('Stack:', error.stack);
-        document.getElementById('summaryContent').innerHTML = `<div class="text-danger"><strong>Erro:</strong> ${error.message}</div>`;
+        summary.classList.remove('alert-info');
+        summary.classList.add('alert-danger');
+        document.getElementById('summaryContent').innerHTML = `<div class="text-danger"><strong>⚠️ Erro ao carregar dados:</strong><br>${error.message}</div>`;
+        results.style.display = 'none';
+        exports.style.display = 'none';
       });
   }
 
