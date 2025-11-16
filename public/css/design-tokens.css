@@ -1,0 +1,255 @@
+/*
+  ============================================
+  Portal Personalitec - Design Tokens
+  ============================================
+
+  CSS Custom Properties (Variables) for consistent theming
+  Framework: Bootstrap 5
+
+  Structure:
+  - Colors
+  - Typography
+  - Spacing
+  - Shadows
+  - Borders
+  - Transitions
+  - Z-Index
+*/
+
+:root {
+    /* ==================== */
+    /* COLORS              */
+    /* ==================== */
+
+    /* Brand Colors */
+    --color-brand-primary: #50B5DF;
+    --color-brand-primary-dark: #252ED9;
+    --color-brand-secondary: #009EFB;
+    --color-brand-light: #F2F7F8;
+
+    /* Neutral Colors */
+    --color-white: #FFFFFF;
+    --color-black: #000000;
+    --color-gray-50: #F9FAFB;
+    --color-gray-100: #F3F4F6;
+    --color-gray-200: #E5E7EB;
+    --color-gray-300: #D1D5DB;
+    --color-gray-400: #9CA3AF;
+    --color-gray-500: #6B7280;
+    --color-gray-600: #4B5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1F2937;
+    --color-gray-900: #111827;
+
+    /* Text Colors */
+    --color-text-primary: #556777;
+    --color-text-secondary: #9CA3AF;
+    --color-text-muted: #6B7280;
+    --color-text-light: #FFFFFF;
+    --color-text-dark: #000000;
+
+    /* Status Colors */
+    --color-status-success: #81B043;
+    --color-status-warning: #FF771C;
+    --color-status-error: #F5352F;
+    --color-status-info: #1C8DD9;
+    --color-status-pending: #FAB700;
+    --color-status-review: #9572D6;
+
+    /* Background Colors */
+    --color-bg-primary: #FFFFFF;
+    --color-bg-secondary: #F2F7F8;
+    --color-bg-tertiary: #F9FAFB;
+    --color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+    /* ==================== */
+    /* TYPOGRAPHY          */
+    /* ==================== */
+
+    /* Font Family */
+    --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-family-mono: 'Courier New', Courier, monospace;
+
+    /* Font Sizes */
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-2xl: 1.5rem;    /* 24px */
+    --font-size-3xl: 1.875rem;  /* 30px */
+    --font-size-4xl: 2.25rem;   /* 36px */
+
+    /* Font Weight */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Line Height */
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+
+    /* ==================== */
+    /* SPACING             */
+    /* ==================== */
+
+    /* Base Unit: 4px */
+    --spacing-0: 0;
+    --spacing-1: 0.25rem;   /* 4px */
+    --spacing-2: 0.5rem;    /* 8px */
+    --spacing-3: 0.75rem;   /* 12px */
+    --spacing-4: 1rem;      /* 16px */
+    --spacing-5: 1.25rem;   /* 20px */
+    --spacing-6: 1.5rem;    /* 24px */
+    --spacing-8: 2rem;      /* 32px */
+    --spacing-10: 2.5rem;   /* 40px */
+    --spacing-12: 3rem;     /* 48px */
+    --spacing-16: 4rem;     /* 64px */
+
+    /* Padding (form elements, cards) */
+    --padding-xs: var(--spacing-2);
+    --padding-sm: var(--spacing-3);
+    --padding-base: var(--spacing-4);
+    --padding-lg: var(--spacing-6);
+    --padding-xl: var(--spacing-8);
+
+    /* Margin (space between elements) */
+    --margin-xs: var(--spacing-2);
+    --margin-sm: var(--spacing-3);
+    --margin-base: var(--spacing-4);
+    --margin-lg: var(--spacing-6);
+    --margin-xl: var(--spacing-8);
+
+    /* Gap (flex/grid gap) */
+    --gap-xs: var(--spacing-2);
+    --gap-sm: var(--spacing-3);
+    --gap-base: var(--spacing-4);
+    --gap-lg: var(--spacing-6);
+
+    /* ==================== */
+    /* SHADOWS             */
+    /* ==================== */
+
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-base: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+    /* Sidebar shadow (1px 0 20px) */
+    --shadow-sidebar: 1px 0 20px rgba(0, 0, 0, 0.08);
+
+    /* ==================== */
+    /* BORDERS             */
+    /* ==================== */
+
+    --border-width-thin: 1px;
+    --border-width-base: 2px;
+    --border-width-thick: 3px;
+
+    --border-radius-none: 0;
+    --border-radius-sm: 0.25rem;
+    --border-radius-base: 0.375rem;
+    --border-radius-md: 0.5rem;
+    --border-radius-lg: 0.75rem;
+    --border-radius-xl: 1rem;
+    --border-radius-2xl: 1.5rem;
+    --border-radius-full: 9999px;
+
+    --border-color-light: var(--color-gray-200);
+    --border-color-base: var(--color-gray-300);
+    --border-color-dark: var(--color-gray-400);
+
+    /* ==================== */
+    /* TRANSITIONS         */
+    /* ==================== */
+
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 200ms ease-in-out;
+    --transition-slow: 300ms ease-in-out;
+
+    /* ==================== */
+    /* Z-INDEX STACK       */
+    /* ==================== */
+
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+
+    /* Custom z-index */
+    --z-sidebar-overlay: 500;
+    --z-sidebar: 999;
+    --z-topbar: 98;
+    --z-page-wrapper: 1;
+
+    /* ==================== */
+    /* COMPONENT SIZES     */
+    /* ==================== */
+
+    /* Touch Target (mobile) */
+    --touch-target-min: 44px;
+
+    /* Sidebar */
+    --sidebar-width: 260px;
+    --sidebar-width-mobile: -260px;
+
+    /* Topbar */
+    --topbar-height-desktop: 70px;
+    --topbar-height-mobile: 70px;
+    --topbar-height-small: 60px;
+
+    /* Buttons */
+    --btn-padding-xs: var(--spacing-1) var(--spacing-2);
+    --btn-padding-sm: var(--spacing-2) var(--spacing-3);
+    --btn-padding-base: var(--spacing-2) var(--spacing-4);
+    --btn-padding-lg: var(--spacing-3) var(--spacing-6);
+    --btn-min-height: var(--touch-target-min);
+
+    /* Form Controls */
+    --form-control-height: 2.5rem;
+    --form-control-padding-y: 0.5rem;
+    --form-control-padding-x: 0.75rem;
+
+    /* Cards */
+    --card-padding: var(--padding-lg);
+    --card-bg: var(--color-bg-primary);
+    --card-border: var(--color-gray-200);
+
+    /* ==================== */
+    /* BREAKPOINTS         */
+    /* ==================== */
+
+    /* Bootstrap breakpoints */
+    --breakpoint-xs: 0;
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 992px;
+    --breakpoint-xl: 1200px;
+    --breakpoint-2xl: 1400px;
+
+    /* Custom breakpoints */
+    --breakpoint-sidebar: 1199px;
+    --breakpoint-tablet: 768px;
+    --breakpoint-mobile: 575px;
+}
+
+/* ==========================================
+   DARK MODE (Future Implementation)
+   ========================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-text-primary: #E5E7EB;
+        --color-text-secondary: #9CA3AF;
+        --color-bg-primary: #1F2937;
+        --color-bg-secondary: #111827;
+        --color-bg-tertiary: #374151;
+    }
+}

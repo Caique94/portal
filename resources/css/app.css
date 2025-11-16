@@ -1,0 +1,14 @@
+/*
+    Portal Personalitec - Main CSS File
+
+    Framework: Bootstrap 5
+    ⚠️ Tailwind CSS has been DISABLED (see package.json)
+
+    This file is now used for Bootstrap utilities and custom CSS.
+    All Tailwind directives have been removed.
+
+    For Bootstrap utilities, use the built-in Bootstrap classes.
+    For custom styling, add to /public/css/app.css
+*/
+
+/* Bootstrap is loaded from /public/plugins/bootstrap/bootstrap.min.css */

@@ -1,0 +1,27 @@
+/*
+    background: #50B5DF;
+    background: linear-gradient(to right, #50B5DF 0%, #252ED9 100%);
+*/
+body {
+    background: url("/img/fundo.jpeg") no-repeat;
+    background-size: cover;
+    display: flex;
+    height: 100vh;
+}
+
+.container {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.card-login {
+    width: 500px;
+}
+
+.custom-invalid-feedback {
+    color: var(--bs-form-invalid-color);
+    font-size: .875em;
+    margin-top: .25rem;
+    width: 100%;
+}
