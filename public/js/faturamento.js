@@ -1,6 +1,12 @@
 $(document).ready(function() {
 
     let userRole = 'admin'; // Default role
+    let papel = 'admin'; // Get user role
+
+    // Get user role from page data
+    if (typeof window.userRole !== 'undefined') {
+        papel = window.userRole;
+    }
 
     // Carregar condições de pagamento do banco de dados
     carregarCondicoesPagamento();
@@ -36,6 +42,7 @@ $(document).ready(function() {
                 // Capture user role from response
                 if (jqXHR.responseJSON && jqXHR.responseJSON.user_role) {
                     userRole = jqXHR.responseJSON.user_role;
+                    papel = userRole;
                 }
             }
         },

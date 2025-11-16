@@ -24,6 +24,9 @@ use App\Http\Controllers\PagamentoParcelaController;
 use App\Http\Controllers\CondicaoPagamentoController;
 use App\Http\Controllers\ProjetoController;
 use App\Http\Controllers\RPSController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ManagerialDashboardController;
+use App\Http\Controllers\ReportFilterController;
 
 // ========== AUTH ==========
 Route::get('/login', [LoginController::class, 'login'])->name('login');
@@ -46,6 +49,34 @@ Route::get('/', function () {
     }
     return view('home');
 })->middleware('auth')->name('home');
+
+// ========== DASHBOARD ANALÍTICO ==========
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/api/dashboard/data', [DashboardController::class, 'getData']);
+    Route::get('/api/dashboard/kpis', [DashboardController::class, 'getKPIs']);
+    Route::get('/api/dashboard/charts', [DashboardController::class, 'getCharts']);
+    Route::get('/api/dashboard/recent-orders', [DashboardController::class, 'getRecentOrders']);
+    Route::get('/api/dashboard/consultant-stats', [DashboardController::class, 'getConsultantStats']);
+});
+
+// ========== DASHBOARD GERENCIAL (Admin) ==========
+Route::middleware(['auth', RoleMiddleware::class.':admin'])->group(function () {
+    Route::get('/dashboard-gerencial', [ManagerialDashboardController::class, 'index'])->name('dashboard.gerencial');
+    Route::get('/api/dashboard-gerencial/data', [ManagerialDashboardController::class, 'getData']);
+    Route::get('/api/dashboard-gerencial/kpis', [ManagerialDashboardController::class, 'getKPIs']);
+    Route::get('/api/dashboard-gerencial/charts', [ManagerialDashboardController::class, 'getCharts']);
+    Route::get('/api/dashboard-gerencial/reports', [ManagerialDashboardController::class, 'getReports']);
+    Route::get('/api/dashboard-gerencial/relatorio-geral', [ManagerialDashboardController::class, 'getRelatorioGeral']);
+    Route::get('/api/dashboard-gerencial/relatorio-clientes', [ManagerialDashboardController::class, 'getRelatorioClientes']);
+    Route::get('/api/dashboard-gerencial/relatorio-consultores', [ManagerialDashboardController::class, 'getRelatorioConsultores']);
+
+    // Filtros e Exportação de Relatórios
+    Route::get('/api/reports/filter-options', [ReportFilterController::class, 'getFilterOptions']);
+    Route::get('/api/reports/filtered', [ReportFilterController::class, 'getFiltered']);
+    Route::post('/api/reports/export-excel', [ReportFilterController::class, 'exportExcel']);
+    Route::post('/api/reports/export-pdf', [ReportFilterController::class, 'exportPdf']);
+});
 
 // ========== RESET DE SENHA (guest — opcional por e-mail) ==========
 Route::middleware('guest')->group(function () {

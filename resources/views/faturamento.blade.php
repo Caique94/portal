@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Auth;
 <link href="{{ asset('plugins/datatables/datatables.min.css')}}" rel="stylesheet">
 @endpush
 
+<script>
+    // Pass user role to JavaScript
+    window.userRole = '{{ $user->papel ?? "admin" }}';
+</script>
+
 @section('content')
 
     <h4>FATURAMENTO</h4>

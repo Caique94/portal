@@ -1,0 +1,198 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                   PORTAL - QUICK START AMBIENTES                             ║
+║                                                                              ║
+║        SEPARAÇÃO: Desenvolvimento | Staging | Produção                      ║
+║        PORTAS:    8000             | 8080   | 8001                          ║
+║        BANCOS:    portal_dev       | portal_staging | portal_prod           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+📋 LISTA DE ARQUIVOS CRIADOS
+═════════════════════════════════════════════════════════════════════════════
+
+✅ ARQUIVOS DE CONFIGURAÇÃO (.env)
+   ├─ .env.development   → Porta 8000, banco portal_dev
+   ├─ .env.staging       → Porta 8080, banco portal_staging
+   └─ .env.production    → Porta 8001, banco portal_prod
+
+✅ SCRIPTS DE INICIALIZAÇÃO (.bat)
+   ├─ START_DEVELOPMENT.bat   → Execute para iniciar DEV
+   ├─ START_STAGING.bat       → Execute para iniciar STAGING
+   └─ START_PRODUCTION.bat    → Execute para iniciar PRODUÇÃO
+
+✅ SCRIPTS DE BANCO DE DADOS
+   └─ SETUP_DATABASES.sql     → Cria os 3 bancos PostgreSQL
+
+✅ DOCUMENTAÇÃO
+   ├─ SETUP_MULTIPLOS_AMBIENTES.md   → Documentação completa
+   ├─ CRIAR_BANCOS_PASSO_A_PASSO.md  → Guia para criar bancos
+   ├─ AMBIENTES_RESUMIDO.txt         → Resumo visual
+   └─ QUICK_START_AMBIENTES.txt      → Este arquivo
+
+
+🚀 INÍCIO RÁPIDO (3 PASSOS)
+═════════════════════════════════════════════════════════════════════════════
+
+PASSO 1: CRIAR OS BANCOS DE DADOS
+─────────────────────────────────
+
+Opção A (Recomendado):
+  1. Abra pgAdmin (http://localhost:5050)
+  2. Clique com botão direito em "Databases"
+  3. Execute o arquivo: SETUP_DATABASES.sql
+
+Opção B:
+  1. Abra pgAdmin
+  2. Clique em cada Databases e crie manualmente:
+     • portal_dev
+     • portal_staging
+     • portal_prod
+
+Veja detalhes em: CRIAR_BANCOS_PASSO_A_PASSO.md
+
+
+PASSO 2: ESCOLHER QUAL AMBIENTE USAR
+─────────────────────────────────────
+
+Para DESENVOLVIMENTO (LOCAL):
+  → Clique em: START_DEVELOPMENT.bat
+  → Acesse: http://localhost:8000
+  → Banco: portal_dev
+
+Para STAGING (TESTES COM USUÁRIOS):
+  → Clique em: START_STAGING.bat
+  → Acesse: http://192.168.0.166:8080
+  → Banco: portal_staging
+
+Para PRODUÇÃO (USUÁRIOS FINAIS):
+  → Clique em: START_PRODUCTION.bat
+  → Acesse: http://192.168.0.166:8001
+  → Banco: portal_prod
+
+
+PASSO 3: EXECUTAR MIGRAÇÕES
+────────────────────────────
+
+Se é a primeira vez:
+
+  # Para cada banco, execute no terminal:
+  php artisan migrate:seed
+
+  Isso vai:
+  ✓ Criar as tabelas
+  ✓ Popular com dados de teste
+
+
+✅ PRONTO! O SISTEMA ESTÁ RODANDO!
+═════════════════════════════════════════════════════════════════════════════
+
+
+📊 RESUMO DOS AMBIENTES
+═════════════════════════════════════════════════════════════════════════════
+
+┌─────────────┬──────────┬──────────────────────┬──────────────────────┐
+│ Ambiente    │ Porta    │ URL Local            │ URL Rede             │
+├─────────────┼──────────┼──────────────────────┼──────────────────────┤
+│ DEV         │ 8000     │ http://localhost:8000│ http://192.168.0.166:8000│
+│ STAGING     │ 8080     │ http://localhost:8080│ http://192.168.0.166:8080│
+│ PRODUCTION  │ 8001     │ http://localhost:8001│ http://192.168.0.166:8001│
+└─────────────┴──────────┴──────────────────────┴──────────────────────┘
+
+┌─────────────┬──────────┬─────────┬────────────┬──────────────────────┐
+│ Ambiente    │ Banco    │ Debug   │ Log Level  │ Uso                  │
+├─────────────┼──────────┼─────────┼────────────┼──────────────────────┤
+│ DEV         │ portal_d │ ON      │ debug      │ Seu desenvolvimento  │
+│ STAGING     │ portal_s │ ON      │ warning    │ Validação com usuár. │
+│ PRODUCTION  │ portal_p │ OFF     │ error      │ Usuários finais      │
+└─────────────┴──────────┴─────────┴────────────┴──────────────────────┘
+
+
+🔄 FLUXO DE TRABALHO
+═════════════════════════════════════════════════════════════════════════════
+
+Você desenvolve:
+  START_DEVELOPMENT.bat → Trabalha em http://localhost:8000
+
+Usuários testam:
+  START_STAGING.bat → Compartilha http://192.168.0.166:8080
+
+Sistema em produção:
+  START_PRODUCTION.bat → Usuários acessam http://192.168.0.166:8001
+
+
+⚡ DICAS IMPORTANTES
+═════════════════════════════════════════════════════════════════════════════
+
+1. NÃO edite .env diretamente
+   → Edite: .env.development, .env.staging ou .env.production
+
+2. Cada ambiente tem seu próprio banco de dados
+   → Mudanças em DEV não afetam STAGING ou PRODUCTION
+
+3. Feche todos os servidores antes de mudar de ambiente
+   → Pressione Ctrl+C em cada terminal
+
+4. Use o banco correto:
+   → DEV: portal_dev (dados de teste)
+   → STAGING: portal_staging (dados para validação)
+   → PRODUCTION: portal_prod (dados reais)
+
+5. Sempre rode migrações quando for novo ambiente:
+   → php artisan migrate:seed
+
+
+🆘 PROBLEMAS COMUNS
+═════════════════════════════════════════════════════════════════════════════
+
+❌ "Database portal_dev does not exist"
+✅ Execute SETUP_DATABASES.sql para criar os bancos
+
+❌ "Port 8000 is already in use"
+✅ Feche o processo anterior ou use outra porta
+
+❌ "Mudança de ambiente não funcionou"
+✅ Feche todos os 3 terminais e execute o novo .bat
+
+❌ "Vejo dados antigos"
+✅ Limpe cache: php artisan cache:clear
+
+
+📚 MAIS INFORMAÇÕES
+═════════════════════════════════════════════════════════════════════════════
+
+Leia os documentos para detalhes:
+
+  • SETUP_MULTIPLOS_AMBIENTES.md
+    → Guia completo com todas as configurações
+
+  • CRIAR_BANCOS_PASSO_A_PASSO.md
+    → Como criar os bancos de dados (com imagens)
+
+  • AMBIENTES_RESUMIDO.txt
+    → Resumo visual dos ambientes
+
+
+🎯 CHECKLIST
+═════════════════════════════════════════════════════════════════════════════
+
+Após seguir este guia, confirme:
+
+  ☐ Criou os 3 bancos de dados (portal_dev, portal_staging, portal_prod)
+  ☐ Confirmou que portal_dev está acessível
+  ☐ Confirmou que portal_staging está acessível
+  ☐ Confirmou que portal_prod está acessível
+  ☐ Executou START_DEVELOPMENT.bat com sucesso
+  ☐ Executou START_STAGING.bat com sucesso
+  ☐ Executou START_PRODUCTION.bat com sucesso
+  ☐ Conseguiu acessar cada ambiente nos URLs indicados
+  ☐ Executou migrações em cada banco (php artisan migrate:seed)
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+PRONTO! Você agora tem 3 ambientes completamente separados e prontos
+para desenvolvimento, testes e produção.
+
+Qualquer dúvida, consulte a documentação ou execute os scripts .bat!
+
+═════════════════════════════════════════════════════════════════════════════
