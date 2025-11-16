@@ -786,7 +786,17 @@
     const results = document.getElementById('filteredResults');
     const exports = document.getElementById('exportButtons');
 
-    summary.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Carregando...</span></div> Carregando dados...';
+    // Verificar se elementos existem (podem estar em outra aba)
+    if (!summary || !results || !exports) {
+      console.warn('⚠️ Elementos do filtro não encontrados. Certifique-se de que está na aba "Filtros & Relatórios"');
+      alert('Por favor, clique na aba "Filtros & Relatórios" antes de aplicar filtros');
+      return;
+    }
+
+    const summaryContent = document.getElementById('summaryContent');
+    if (summaryContent) {
+      summaryContent.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Carregando...</span></div> Carregando dados...';
+    }
     summary.style.display = 'block';
     results.style.display = 'none';
     exports.style.display = 'none';
@@ -827,66 +837,81 @@
         const summaryContent = document.getElementById('summaryContent');
         const summary_data = data.summary;
 
-        summaryContent.innerHTML = `
-          <div class="row g-3">
-            <div class="col-12 col-md-3">
-              <strong>Total de Ordens:</strong> ${summary_data.total_ordens || 0}
+        if (summaryContent) {
+          summaryContent.innerHTML = `
+            <div class="row g-3">
+              <div class="col-12 col-md-3">
+                <strong>Total de Ordens:</strong> ${summary_data.total_ordens || 0}
+              </div>
+              <div class="col-12 col-md-3">
+                <strong>Valor Total:</strong> R$ ${(summary_data.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div class="col-12 col-md-3">
+                <strong>Valor Faturado:</strong> R$ ${(summary_data.valor_faturado || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div class="col-12 col-md-3">
+                <strong>Valor Pendente:</strong> R$ ${(summary_data.valor_pendente || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
             </div>
-            <div class="col-12 col-md-3">
-              <strong>Valor Total:</strong> R$ ${(summary_data.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-            <div class="col-12 col-md-3">
-              <strong>Valor Faturado:</strong> R$ ${(summary_data.valor_faturado || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-            <div class="col-12 col-md-3">
-              <strong>Valor Pendente:</strong> R$ ${(summary_data.valor_pendente || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-          </div>
-        `;
+          `;
+        }
 
         // Display results table
         const tbody = document.querySelector('#filteredTable tbody');
-        tbody.innerHTML = '';
+        if (tbody) {
+          tbody.innerHTML = '';
 
-        if (data.data && data.data.length > 0) {
-          data.data.forEach((order, index) => {
+          if (data.data && data.data.length > 0) {
+            data.data.forEach((order, index) => {
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${order.cliente_nome || '-'}</td>
+                <td>${order.consultor_nome || '-'}</td>
+                <td>${new Date(order.created_at).toLocaleDateString('pt-BR')}</td>
+                <td>R$ ${parseFloat(order.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td>
+                  <span class="badge ${getStatusBadgeClass(order.status)}">
+                    ${getStatusName(order.status)}
+                  </span>
+                </td>
+              `;
+              tbody.appendChild(row);
+            });
+          } else {
             const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${index + 1}</td>
-              <td>${order.cliente_nome || '-'}</td>
-              <td>${order.consultor_nome || '-'}</td>
-              <td>${new Date(order.created_at).toLocaleDateString('pt-BR')}</td>
-              <td>R$ ${parseFloat(order.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-              <td>
-                <span class="badge ${getStatusBadgeClass(order.status)}">
-                  ${getStatusName(order.status)}
-                </span>
-              </td>
-            `;
+            row.innerHTML = '<td colspan="6" class="text-center text-muted">Nenhuma ordem encontrada com estes filtros</td>';
             tbody.appendChild(row);
-          });
-        } else {
-          const row = document.createElement('tr');
-          row.innerHTML = '<td colspan="6" class="text-center text-muted">Nenhuma ordem encontrada com estes filtros</td>';
-          tbody.appendChild(row);
+          }
         }
 
         // Show results and export buttons
-        results.style.display = 'block';
-        exports.style.display = 'block';
-        summary.classList.remove('alert-info');
-        summary.classList.add('alert-success');
+        if (results) results.style.display = 'block';
+        if (exports) exports.style.display = 'block';
+        if (summary) {
+          summary.classList.remove('alert-info');
+          summary.classList.add('alert-success');
+        }
 
         console.log('Filter display completed successfully');
       })
       .catch(error => {
         console.error('ERRO ao filtrar:', error.message);
         console.error('Stack:', error.stack);
-        summary.classList.remove('alert-info');
-        summary.classList.add('alert-danger');
-        document.getElementById('summaryContent').innerHTML = `<div class="text-danger"><strong>⚠️ Erro ao carregar dados:</strong><br>${error.message}</div>`;
-        results.style.display = 'none';
-        exports.style.display = 'none';
+
+        // Verificar se elementos existem antes de modificar
+        if (summary) {
+          summary.classList.remove('alert-info');
+          summary.classList.add('alert-danger');
+        }
+
+        const summaryContent = document.getElementById('summaryContent');
+        if (summaryContent) {
+          summaryContent.innerHTML = `<div class="text-danger"><strong>⚠️ Erro ao carregar dados:</strong><br>${error.message}</div>`;
+        }
+
+        if (results) results.style.display = 'none';
+        if (exports) exports.style.display = 'none';
       });
   }
 
