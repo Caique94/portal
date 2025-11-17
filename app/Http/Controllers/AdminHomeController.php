@@ -29,27 +29,12 @@ class AdminHomeController extends Controller
             ->sum('valor_total');
 
         // OS por status
-        // Note: Status 6 and 7 display as 5 (Faturada) for consultores
-        // So we count all of them together under "Faturada"
         $osStatus = [
-            'Aberta' => OrdemServico::where(function($q) {
-                $q->where('status', 1)->orWhere('status', 'em_aberto');
-            })->count(),
-            'Aguardando Aprovação' => OrdemServico::where(function($q) {
-                $q->where('status', 2)->orWhere('status', 'aguardando_aprovacao');
-            })->count(),
-            'Contestada' => OrdemServico::where(function($q) {
-                $q->where('status', 3)->orWhere('status', 'contestar');
-            })->count(),
-            'Aguardando Faturamento' => OrdemServico::where(function($q) {
-                $q->where('status', 4)->orWhere('status', 'aprovado');
-            })->count(),
-            // Faturada includes status 5, 6, 7 (6 and 7 display as 5 for consultores)
-            'Faturada' => OrdemServico::where(function($q) {
-                $q->where('status', 5)->orWhere('status', 'faturado')
-                  ->orWhere('status', 6)->orWhere('status', 'aguardando_rps')
-                  ->orWhere('status', 7)->orWhere('status', 'rps_emitida');
-            })->count(),
+            'Aberta' => OrdemServico::whereIn('status', [1, 'em_aberto'])->count(),
+            'Aguardando Aprovação' => OrdemServico::whereIn('status', [2, 'aguardando_aprovacao'])->count(),
+            'Contestada' => OrdemServico::whereIn('status', [3, 'contestar'])->count(),
+            'Aguardando Faturamento' => OrdemServico::whereIn('status', [4, 'aprovado'])->count(),
+            'Faturada' => OrdemServico::whereIn('status', [5, 'faturado', 6, 'aguardando_rps', 7, 'rps_emitida'])->count(),
         ];
 
         // Relatórios pendentes de aprovação
