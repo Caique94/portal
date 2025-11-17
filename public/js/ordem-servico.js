@@ -55,6 +55,9 @@ $(document).ready(function() {
             title: 'Cliente',
             data: 'cliente_nome'
         },{
+            title: 'Consultor',
+            data: 'consultor_nome'
+        },{
             title: 'Assunto',
             data: 'assunto'
         },{
