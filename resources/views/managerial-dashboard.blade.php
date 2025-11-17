@@ -63,6 +63,82 @@
     border-bottom: 1px solid #e0e0e0;
   }
 
+  .view-toggle {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .view-toggle-btn {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #dee2e6;
+    background-color: #fff;
+    color: #666;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .view-toggle-btn:hover {
+    border-color: #0d6efd;
+    color: #0d6efd;
+  }
+
+  .view-toggle-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+
+  .analytical-section {
+    display: none;
+  }
+
+  .analytical-section.active {
+    display: block;
+  }
+
+  .analyst-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .analyst-card h5 {
+    margin-bottom: 12px;
+    color: #333;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .metric-row:last-child {
+    border-bottom: none;
+  }
+
+  .metric-label {
+    font-weight: 500;
+    color: #666;
+  }
+
+  .metric-value-cell {
+    font-weight: 600;
+    color: #333;
+  }
+
   .tabs-content {
     margin-top: 25px;
   }
@@ -358,6 +434,16 @@
               </button>
             </div>
           </div>
+
+          <!-- View Toggle -->
+          <div class="view-toggle">
+            <button type="button" class="view-toggle-btn active" id="toggleSummary" onclick="switchView('summary')">
+              <i class="bi bi-diagram-2"></i> Visão Resumida
+            </button>
+            <button type="button" class="view-toggle-btn" id="toggleAnalytical" onclick="switchView('analytical')">
+              <i class="bi bi-graph-up"></i> Visão Analítica
+            </button>
+          </div>
         </form>
 
         <!-- Resumo dos Filtros -->
@@ -366,10 +452,56 @@
           <div id="summaryContent"></div>
         </div>
 
-        <!-- Tabela com Resultados -->
-        <div id="filteredResults" style="display: none;">
+        <!-- Tabela com Resultados (Visão Resumida) -->
+        <div id="filteredResults" style="display: none;" class="summary-section">
           <div class="table-responsive mb-4">
             <table class="table table-hover report-table" id="filteredTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Cliente</th>
+                  <th>Consultor</th>
+                  <th>Data</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Preenchido por JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Visão Analítica -->
+        <div id="analyticalResults" style="display: none;" class="analytical-section active">
+          <!-- Por Cliente -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-people"></i> Análise por Cliente</h5>
+            <div id="clientAnalysisContent"></div>
+          </div>
+
+          <!-- Por Consultor -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-person-badge"></i> Análise por Consultor</h5>
+            <div id="consultantAnalysisContent"></div>
+          </div>
+
+          <!-- Status Distribution -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-pie-chart"></i> Distribuição por Status</h5>
+            <div id="statusAnalysisContent"></div>
+          </div>
+
+          <!-- Métricas Adicionais -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-calculator"></i> Métricas Adicionais</h5>
+            <div id="additionalMetricsContent"></div>
+          </div>
+
+          <!-- Detailed Table para Analytical -->
+          <div class="table-responsive mb-4">
+            <table class="table table-hover report-table" id="analyticalTable">
               <thead>
                 <tr>
                   <th>#</th>
@@ -833,6 +965,9 @@
       .then(data => {
         console.log('Filtered data received:', data);
 
+        // Cache the data for analytical view
+        filteredDataCache = data;
+
         // Display summary
         const summaryContent = document.getElementById('summaryContent');
         const summary_data = data.summary;
@@ -885,8 +1020,25 @@
           }
         }
 
-        // Show results and export buttons
-        if (results) results.style.display = 'block';
+        // Show results and export buttons based on current view
+        const toggleAnalytical = document.getElementById('toggleAnalytical');
+        const isAnalyticalActive = toggleAnalytical && toggleAnalytical.classList.contains('active');
+
+        if (isAnalyticalActive) {
+          // Show analytical view
+          populateAnalyticalView(data);
+          if (document.getElementById('analyticalResults')) {
+            document.getElementById('analyticalResults').style.display = 'block';
+          }
+          if (results) results.style.display = 'none';
+        } else {
+          // Show summary view
+          if (results) results.style.display = 'block';
+          if (document.getElementById('analyticalResults')) {
+            document.getElementById('analyticalResults').style.display = 'none';
+          }
+        }
+
         if (exports) exports.style.display = 'block';
         if (summary) {
           summary.classList.remove('alert-info');
@@ -927,6 +1079,10 @@
       status: document.getElementById('status').value
     };
 
+    // Determine view type from toggle buttons
+    const toggleAnalytical = document.getElementById('toggleAnalytical');
+    const viewType = toggleAnalytical && toggleAnalytical.classList.contains('active') ? 'analytical' : 'summary';
+
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/api/reports/export-excel';
@@ -938,6 +1094,13 @@
     tokenInput.name = '_token';
     tokenInput.value = token;
     form.appendChild(tokenInput);
+
+    // Add view type
+    const viewTypeInput = document.createElement('input');
+    viewTypeInput.type = 'hidden';
+    viewTypeInput.name = 'view_type';
+    viewTypeInput.value = viewType;
+    form.appendChild(viewTypeInput);
 
     // Add filter values
     Object.entries(filters).forEach(([key, value]) => {
@@ -951,7 +1114,7 @@
     });
 
     document.body.appendChild(form);
-    console.log('Submitting Excel export form to:', form.action);
+    console.log('Submitting Excel export form to:', form.action, 'with view:', viewType);
     form.submit();
     document.body.removeChild(form);
   }
@@ -968,6 +1131,10 @@
       status: document.getElementById('status').value
     };
 
+    // Determine view type from toggle buttons
+    const toggleAnalytical = document.getElementById('toggleAnalytical');
+    const viewType = toggleAnalytical && toggleAnalytical.classList.contains('active') ? 'analytical' : 'summary';
+
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/api/reports/export-pdf';
@@ -979,6 +1146,13 @@
     tokenInput.name = '_token';
     tokenInput.value = token;
     form.appendChild(tokenInput);
+
+    // Add view type
+    const viewTypeInput = document.createElement('input');
+    viewTypeInput.type = 'hidden';
+    viewTypeInput.name = 'view_type';
+    viewTypeInput.value = viewType;
+    form.appendChild(viewTypeInput);
 
     // Add filter values
     Object.entries(filters).forEach(([key, value]) => {
@@ -992,7 +1166,7 @@
     });
 
     document.body.appendChild(form);
-    console.log('Submitting PDF export form to:', form.action);
+    console.log('Submitting PDF export form to:', form.action, 'with view:', viewType);
     form.submit();
     document.body.removeChild(form);
   }
@@ -1004,7 +1178,18 @@
     document.getElementById('filterForm').reset();
     document.getElementById('filterSummary').style.display = 'none';
     document.getElementById('filteredResults').style.display = 'none';
+    const analyticalResults = document.getElementById('analyticalResults');
+    if (analyticalResults) {
+      analyticalResults.style.display = 'none';
+    }
     document.getElementById('exportButtons').style.display = 'none';
+    filteredDataCache = null;
+
+    // Reset toggle to summary view
+    const toggleSummary = document.getElementById('toggleSummary');
+    const toggleAnalytical = document.getElementById('toggleAnalytical');
+    if (toggleSummary) toggleSummary.classList.add('active');
+    if (toggleAnalytical) toggleAnalytical.classList.remove('active');
   }
 
   /**
@@ -1039,6 +1224,214 @@
       '8': 'bg-info'
     };
     return classMap[status] || 'bg-secondary';
+  }
+
+  /**
+   * Store filtered data for analytical view
+   */
+  let filteredDataCache = null;
+
+  /**
+   * Switch between summary and analytical views
+   */
+  function switchView(view) {
+    const toggleSummary = document.getElementById('toggleSummary');
+    const toggleAnalytical = document.getElementById('toggleAnalytical');
+    const filteredResults = document.getElementById('filteredResults');
+    const analyticalResults = document.getElementById('analyticalResults');
+    const filterSummary = document.getElementById('filterSummary');
+
+    if (view === 'summary') {
+      if (toggleSummary) toggleSummary.classList.add('active');
+      if (toggleAnalytical) toggleAnalytical.classList.remove('active');
+      if (filteredResults) filteredResults.style.display = 'block';
+      if (analyticalResults) analyticalResults.style.display = 'none';
+    } else {
+      if (toggleSummary) toggleSummary.classList.remove('active');
+      if (toggleAnalytical) toggleAnalytical.classList.add('active');
+      if (filteredResults) filteredResults.style.display = 'none';
+      if (analyticalResults) analyticalResults.style.display = 'block';
+
+      // Populate analytical view if data exists
+      if (filteredDataCache) {
+        populateAnalyticalView(filteredDataCache);
+      }
+    }
+  }
+
+  /**
+   * Populate analytical view with detailed metrics
+   */
+  function populateAnalyticalView(data) {
+    if (!data.data || data.data.length === 0) return;
+
+    const orders = data.data;
+    const summary = data.summary;
+
+    // Analyze by Client
+    const byClient = {};
+    orders.forEach(order => {
+      const client = order.cliente_nome || 'Sem Cliente';
+      if (!byClient[client]) {
+        byClient[client] = {
+          orders: 0,
+          total_value: 0,
+          billed_value: 0,
+          pending_value: 0,
+          statuses: {}
+        };
+      }
+      byClient[client].orders++;
+      byClient[client].total_value += parseFloat(order.valor_total || 0);
+
+      // Status distribution
+      const status = order.status;
+      if (!byClient[client].statuses[status]) {
+        byClient[client].statuses[status] = 0;
+      }
+      byClient[client].statuses[status]++;
+    });
+
+    // Analyze by Consultant
+    const byConsultant = {};
+    orders.forEach(order => {
+      const consultant = order.consultor_nome || 'Sem Consultor';
+      if (!byConsultant[consultant]) {
+        byConsultant[consultant] = {
+          orders: 0,
+          total_value: 0,
+          billed_value: 0,
+          pending_value: 0
+        };
+      }
+      byConsultant[consultant].orders++;
+      byConsultant[consultant].total_value += parseFloat(order.valor_total || 0);
+    });
+
+    // Analyze by Status
+    const byStatus = {};
+    orders.forEach(order => {
+      const status = getStatusName(order.status);
+      if (!byStatus[status]) {
+        byStatus[status] = {
+          count: 0,
+          total_value: 0
+        };
+      }
+      byStatus[status].count++;
+      byStatus[status].total_value += parseFloat(order.valor_total || 0);
+    });
+
+    // Populate Client Analysis
+    let clientHtml = '';
+    Object.entries(byClient).forEach(([client, data]) => {
+      const avgValue = data.total_value / data.orders;
+      clientHtml += `
+        <div class="metric-row">
+          <span class="metric-label"><strong>${client}</strong></span>
+          <div>
+            <span style="margin-right: 15px;">
+              <i class="bi bi-basket"></i> ${data.orders} OS
+            </span>
+            <span style="margin-right: 15px;">
+              <i class="bi bi-currency-dollar"></i> R$ ${data.total_value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span>
+              Ticket Médio: R$ ${avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('clientAnalysisContent').innerHTML = clientHtml || '<p class="text-muted">Sem dados</p>';
+
+    // Populate Consultant Analysis
+    let consultantHtml = '';
+    Object.entries(byConsultant).forEach(([consultant, data]) => {
+      const avgValue = data.total_value / data.orders;
+      consultantHtml += `
+        <div class="metric-row">
+          <span class="metric-label"><strong>${consultant}</strong></span>
+          <div>
+            <span style="margin-right: 15px;">
+              <i class="bi bi-basket"></i> ${data.orders} OS
+            </span>
+            <span style="margin-right: 15px;">
+              <i class="bi bi-currency-dollar"></i> R$ ${data.total_value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span>
+              Ticket Médio: R$ ${avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('consultantAnalysisContent').innerHTML = consultantHtml || '<p class="text-muted">Sem dados</p>';
+
+    // Populate Status Distribution
+    let statusHtml = '';
+    Object.entries(byStatus).forEach(([status, data]) => {
+      const percentage = ((data.count / orders.length) * 100).toFixed(1);
+      statusHtml += `
+        <div class="metric-row">
+          <span class="metric-label"><strong>${status}</strong></span>
+          <div>
+            <span style="margin-right: 15px;">
+              ${data.count} OS (${percentage}%)
+            </span>
+            <span>
+              R$ ${data.total_value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('statusAnalysisContent').innerHTML = statusHtml || '<p class="text-muted">Sem dados</p>';
+
+    // Additional Metrics
+    const avgValue = summary.valor_total / summary.total_ordens;
+    const conversionRate = (summary.total_ordens_faturadas / summary.total_ordens * 100).toFixed(1);
+    let metricsHtml = `
+      <div class="metric-row">
+        <span class="metric-label">Ticket Médio</span>
+        <span class="metric-value-cell">R$ ${avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Taxa de Faturamento</span>
+        <span class="metric-value-cell">${conversionRate}%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Valor Médio Faturado</span>
+        <span class="metric-value-cell">R$ ${(summary.valor_faturado / summary.total_ordens).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Valor Médio Pendente</span>
+        <span class="metric-value-cell">R$ ${(summary.valor_pendente / summary.total_ordens).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      </div>
+    `;
+    document.getElementById('additionalMetricsContent').innerHTML = metricsHtml;
+
+    // Populate detailed table for analytical view
+    const analyticalTbody = document.querySelector('#analyticalTable tbody');
+    if (analyticalTbody) {
+      analyticalTbody.innerHTML = '';
+      orders.forEach((order, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${order.cliente_nome || '-'}</td>
+          <td>${order.consultor_nome || '-'}</td>
+          <td>${new Date(order.created_at).toLocaleDateString('pt-BR')}</td>
+          <td>R$ ${parseFloat(order.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          <td>
+            <span class="badge ${getStatusBadgeClass(order.status)}">
+              ${getStatusName(order.status)}
+            </span>
+          </td>
+        `;
+        analyticalTbody.appendChild(row);
+      });
+    }
   }
 </script>
 @endpush

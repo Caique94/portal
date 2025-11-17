@@ -67,10 +67,15 @@ class ReportFilterController extends Controller
     public function exportExcel(Request $request)
     {
         try {
-            $filters = $request->all();
-            $filepath = $this->exportService->exportToExcel($filters);
+            $filters = $request->except(['view_type']);
+            $viewType = $request->input('view_type', 'summary');
+            $filepath = $this->exportService->exportToExcel($filters, $viewType);
 
-            return response()->download($filepath, 'relatorio_' . now()->format('Y-m-d_His') . '.xlsx')->deleteFileAfterSend(true);
+            $filename = $viewType === 'analytical'
+                ? 'relatorio_analitico_' . now()->format('Y-m-d_His') . '.xlsx'
+                : 'relatorio_' . now()->format('Y-m-d_His') . '.xlsx';
+
+            return response()->download($filepath, $filename)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao gerar Excel: ' . $e->getMessage()], 500);
         }
@@ -82,10 +87,15 @@ class ReportFilterController extends Controller
     public function exportPdf(Request $request)
     {
         try {
-            $filters = $request->all();
-            $filepath = $this->exportService->exportToPdf($filters);
+            $filters = $request->except(['view_type']);
+            $viewType = $request->input('view_type', 'summary');
+            $filepath = $this->exportService->exportToPdf($filters, $viewType);
 
-            return response()->download($filepath, 'relatorio_' . now()->format('Y-m-d_His') . '.pdf')->deleteFileAfterSend(true);
+            $filename = $viewType === 'analytical'
+                ? 'relatorio_analitico_' . now()->format('Y-m-d_His') . '.pdf'
+                : 'relatorio_' . now()->format('Y-m-d_His') . '.pdf';
+
+            return response()->download($filepath, $filename)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }

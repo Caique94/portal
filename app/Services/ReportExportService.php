@@ -83,11 +83,24 @@ class ReportExportService
     /**
      * Export to Excel
      */
-    public function exportToExcel(array $filters = [], string $type = 'completo'): string
+    public function exportToExcel(array $filters = [], string $viewType = 'summary'): string
     {
         $this->spreadsheet = new Spreadsheet();
+
+        if ($viewType === 'analytical') {
+            return $this->exportToExcelAnalytical($filters);
+        } else {
+            return $this->exportToExcelSummary($filters);
+        }
+    }
+
+    /**
+     * Export summary view to Excel
+     */
+    private function exportToExcelSummary(array $filters = []): string
+    {
         $sheet = $this->spreadsheet->getActiveSheet();
-        $sheet->setTitle('Relatório');
+        $sheet->setTitle('Relatório Resumido');
 
         // Header
         $sheet->setCellValue('A1', 'PORTAL - RELATÓRIO DE ORDENS DE SERVIÇO');
@@ -216,9 +229,254 @@ class ReportExportService
     }
 
     /**
+     * Export analytical view to Excel
+     */
+    private function exportToExcelAnalytical(array $filters = []): string
+    {
+        $sheet = $this->spreadsheet->getActiveSheet();
+        $sheet->setTitle('Relatório Analítico');
+
+        // Header
+        $sheet->setCellValue('A1', 'PORTAL - RELATÓRIO ANALÍTICO');
+        $sheet->mergeCells('A1:H1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+
+        $sheet->setCellValue('A2', 'Data do Relatório: ' . now()->format('d/m/Y H:i:s'));
+        $sheet->mergeCells('A2:H2');
+
+        $row = 4;
+
+        // Filter summary
+        if (!empty($filters)) {
+            $sheet->setCellValue('A' . $row, 'FILTROS APLICADOS:');
+            $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+            $row++;
+
+            if (!empty($filters['data_inicio'])) {
+                $sheet->setCellValue('A' . $row, 'Data Início: ' . $filters['data_inicio']);
+                $row++;
+            }
+            if (!empty($filters['data_fim'])) {
+                $sheet->setCellValue('A' . $row, 'Data Fim: ' . $filters['data_fim']);
+                $row++;
+            }
+            if (!empty($filters['cliente_id'])) {
+                $cliente = Cliente::find($filters['cliente_id']);
+                $sheet->setCellValue('A' . $row, 'Cliente: ' . ($cliente->nome ?? 'N/A'));
+                $row++;
+            }
+            if (!empty($filters['consultor_id'])) {
+                $consultor = User::find($filters['consultor_id']);
+                $sheet->setCellValue('A' . $row, 'Consultor: ' . ($consultor->name ?? 'N/A'));
+                $row++;
+            }
+            if (!empty($filters['status'])) {
+                $statusNames = $this->getStatusNames();
+                $sheet->setCellValue('A' . $row, 'Status: ' . ($statusNames[$filters['status']] ?? 'N/A'));
+                $row++;
+            }
+            $row += 2;
+        }
+
+        // Overall metrics
+        $summary = $this->getSummaryReport($filters);
+        $sheet->setCellValue('A' . $row, 'MÉTRICAS GERAIS:');
+        $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+        $row++;
+
+        $sheet->setCellValue('A' . $row, 'Total de Ordens:');
+        $sheet->setCellValue('B' . $row, $summary['total_ordens']);
+        $row++;
+
+        $sheet->setCellValue('A' . $row, 'Valor Total:');
+        $sheet->setCellValue('B' . $row, 'R$ ' . number_format($summary['valor_total'], 2, ',', '.'));
+        $row++;
+
+        $avgTicket = $summary['total_ordens'] > 0 ? $summary['valor_total'] / $summary['total_ordens'] : 0;
+        $sheet->setCellValue('A' . $row, 'Ticket Médio:');
+        $sheet->setCellValue('B' . $row, 'R$ ' . number_format($avgTicket, 2, ',', '.'));
+        $row++;
+
+        $conversionRate = $summary['total_ordens'] > 0 ? ($summary['total_ordens_faturadas'] / $summary['total_ordens'] * 100) : 0;
+        $sheet->setCellValue('A' . $row, 'Taxa de Faturamento:');
+        $sheet->setCellValue('B' . $row, number_format($conversionRate, 1) . '%');
+        $row += 2;
+
+        // Analysis by Client
+        $sheet->setCellValue('A' . $row, 'ANÁLISE POR CLIENTE:');
+        $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+        $row++;
+
+        $headers = ['Cliente', 'Ordens', 'Valor Total', 'Ticket Médio'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . $row, $header);
+            $style = $sheet->getStyle($col . $row);
+            $style->getFont()->setBold(true);
+            $style->getFont()->getColor()->setRGB('FFFFFF');
+            $style->getFill()->setFillType('solid');
+            $style->getFill()->getStartColor()->setRGB('4472C4');
+            $col++;
+        }
+        $row++;
+
+        $clientData = $this->getAnalysisByClient($filters);
+        foreach ($clientData as $client) {
+            $sheet->setCellValue('A' . $row, $client['name']);
+            $sheet->setCellValue('B' . $row, $client['orders']);
+            $sheet->setCellValue('C' . $row, 'R$ ' . number_format($client['total'], 2, ',', '.'));
+            $sheet->setCellValue('D' . $row, 'R$ ' . number_format($client['avg'], 2, ',', '.'));
+            $row++;
+        }
+        $row++;
+
+        // Analysis by Consultant
+        $sheet->setCellValue('A' . $row, 'ANÁLISE POR CONSULTOR:');
+        $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+        $row++;
+
+        $headers = ['Consultor', 'Ordens', 'Valor Total', 'Ticket Médio'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . $row, $header);
+            $style = $sheet->getStyle($col . $row);
+            $style->getFont()->setBold(true);
+            $style->getFont()->getColor()->setRGB('FFFFFF');
+            $style->getFill()->setFillType('solid');
+            $style->getFill()->getStartColor()->setRGB('70AD47');
+            $col++;
+        }
+        $row++;
+
+        $consultantData = $this->getAnalysisByConsultant($filters);
+        foreach ($consultantData as $consultant) {
+            $sheet->setCellValue('A' . $row, $consultant['name']);
+            $sheet->setCellValue('B' . $row, $consultant['orders']);
+            $sheet->setCellValue('C' . $row, 'R$ ' . number_format($consultant['total'], 2, ',', '.'));
+            $sheet->setCellValue('D' . $row, 'R$ ' . number_format($consultant['avg'], 2, ',', '.'));
+            $row++;
+        }
+
+        // Auto fit columns
+        foreach (range('A', 'D') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Save
+        $filename = 'relatorio_analitico_' . now()->format('Y-m-d_His') . '.xlsx';
+        $filepath = storage_path('app/exports/' . $filename);
+
+        if (!is_dir(storage_path('app/exports'))) {
+            mkdir(storage_path('app/exports'), 0755, true);
+        }
+
+        $writer = new Xlsx($this->spreadsheet);
+        $writer->save($filepath);
+
+        return $filepath;
+    }
+
+    /**
+     * Get analysis data by client
+     */
+    private function getAnalysisByClient(array $filters = []): array
+    {
+        $query = OrdemServico::with('cliente');
+
+        // Apply filters
+        if (!empty($filters['data_inicio'])) {
+            $query->where('created_at', '>=', $filters['data_inicio']);
+        }
+        if (!empty($filters['data_fim'])) {
+            $query->where('created_at', '<=', $filters['data_fim'] . ' 23:59:59');
+        }
+        if (!empty($filters['cliente_id'])) {
+            $query->where('cliente_id', $filters['cliente_id']);
+        }
+        if (!empty($filters['consultor_id'])) {
+            $query->where('consultor_id', $filters['consultor_id']);
+        }
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        $results = $query->get()
+            ->groupBy('cliente_id')
+            ->map(function ($group) {
+                $cliente = $group->first()->cliente;
+                $total = $group->sum('valor_total');
+                return [
+                    'name' => $cliente->nome ?? 'Unknown',
+                    'orders' => $group->count(),
+                    'total' => (float) $total,
+                    'avg' => $group->count() > 0 ? $total / $group->count() : 0
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        return $results;
+    }
+
+    /**
+     * Get analysis data by consultant
+     */
+    private function getAnalysisByConsultant(array $filters = []): array
+    {
+        $query = OrdemServico::with('consultor');
+
+        // Apply filters
+        if (!empty($filters['data_inicio'])) {
+            $query->where('created_at', '>=', $filters['data_inicio']);
+        }
+        if (!empty($filters['data_fim'])) {
+            $query->where('created_at', '<=', $filters['data_fim'] . ' 23:59:59');
+        }
+        if (!empty($filters['cliente_id'])) {
+            $query->where('cliente_id', $filters['cliente_id']);
+        }
+        if (!empty($filters['consultor_id'])) {
+            $query->where('consultor_id', $filters['consultor_id']);
+        }
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        $results = $query->get()
+            ->groupBy('consultor_id')
+            ->map(function ($group) {
+                $consultor = $group->first()->consultor;
+                $total = $group->sum('valor_total');
+                return [
+                    'name' => $consultor->name ?? 'Unknown',
+                    'orders' => $group->count(),
+                    'total' => (float) $total,
+                    'avg' => $group->count() > 0 ? $total / $group->count() : 0
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        return $results;
+    }
+
+    /**
      * Export to PDF
      */
-    public function exportToPdf(array $filters = []): string
+    public function exportToPdf(array $filters = [], string $viewType = 'summary'): string
+    {
+        if ($viewType === 'analytical') {
+            return $this->exportToPdfAnalytical($filters);
+        } else {
+            return $this->exportToPdfSummary($filters);
+        }
+    }
+
+    /**
+     * Export summary view to PDF
+     */
+    private function exportToPdfSummary(array $filters = []): string
     {
         $summary = $this->getSummaryReport($filters);
         $orders = $this->getFilteredData($filters);
@@ -232,6 +490,36 @@ class ReportExportService
         $dompdf->render();
 
         $filename = 'relatorio_' . now()->format('Y-m-d_His') . '.pdf';
+        $filepath = storage_path('app/exports/' . $filename);
+
+        if (!is_dir(storage_path('app/exports'))) {
+            mkdir(storage_path('app/exports'), 0755, true);
+        }
+
+        file_put_contents($filepath, $dompdf->output());
+
+        return $filepath;
+    }
+
+    /**
+     * Export analytical view to PDF
+     */
+    private function exportToPdfAnalytical(array $filters = []): string
+    {
+        $summary = $this->getSummaryReport($filters);
+        $clientData = $this->getAnalysisByClient($filters);
+        $consultantData = $this->getAnalysisByConsultant($filters);
+        $orders = $this->getFilteredData($filters);
+        $statusNames = $this->getStatusNames();
+
+        $html = $this->generatePdfHtmlAnalytical($filters, $summary, $clientData, $consultantData, $orders, $statusNames);
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'relatorio_analitico_' . now()->format('Y-m-d_His') . '.pdf';
         $filepath = storage_path('app/exports/' . $filename);
 
         if (!is_dir(storage_path('app/exports'))) {
@@ -347,6 +635,162 @@ class ReportExportService
                 <td>R$ ' . number_format($order['total'], 2, ',', '.') . '</td>
                 <td>' . $order['status'] . '</td>
                 <td>' . ($isBilled ? 'Sim' : 'Não') . '</td>
+            </tr>';
+        }
+
+        $html .= '</tbody></table></body></html>';
+
+        return $html;
+    }
+
+    /**
+     * Generate analytical PDF HTML
+     */
+    private function generatePdfHtmlAnalytical(array $filters, array $summary, array $clientData, array $consultantData, array $orders, array $statusNames): string
+    {
+        $html = '<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; margin-bottom: 20px; }
+                .header h1 { margin: 5px 0; color: #333; }
+                .header p { margin: 2px 0; color: #666; }
+                .section-title { background: #4472C4; color: white; padding: 10px; margin-top: 20px; margin-bottom: 10px; font-weight: bold; }
+                .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+                .metric-box { background: #e8f4f8; padding: 12px; border-radius: 5px; text-align: center; }
+                .metric-box h4 { margin: 0 0 8px 0; font-size: 12px; color: #666; }
+                .metric-box p { margin: 0; font-size: 16px; font-weight: bold; color: #333; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                table th { background: #4472C4; color: white; padding: 10px; text-align: left; font-size: 12px; }
+                table td { padding: 8px; border-bottom: 1px solid #ddd; font-size: 12px; }
+                table tr:nth-child(even) { background: #f9f9f9; }
+                .filters { margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 5px; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>PORTAL - RELATÓRIO ANALÍTICO</h1>
+                <p>Data do Relatório: ' . now()->format('d/m/Y H:i:s') . '</p>
+            </div>';
+
+        if (!empty($filters)) {
+            $html .= '<div class="filters"><strong>Filtros Aplicados:</strong><br>';
+            if (!empty($filters['data_inicio'])) {
+                $html .= 'Data Início: ' . $filters['data_inicio'] . ' | ';
+            }
+            if (!empty($filters['data_fim'])) {
+                $html .= 'Data Fim: ' . $filters['data_fim'] . ' | ';
+            }
+            if (!empty($filters['cliente_id'])) {
+                $cliente = Cliente::find($filters['cliente_id']);
+                $html .= 'Cliente: ' . ($cliente->nome ?? 'N/A') . ' | ';
+            }
+            if (!empty($filters['consultor_id'])) {
+                $consultor = User::find($filters['consultor_id']);
+                $html .= 'Consultor: ' . ($consultor->name ?? 'N/A') . ' | ';
+            }
+            if (!empty($filters['status'])) {
+                $html .= 'Status: ' . ($statusNames[$filters['status']] ?? 'N/A');
+            }
+            $html .= '</div>';
+        }
+
+        // Overall metrics
+        $avgTicket = $summary['total_ordens'] > 0 ? $summary['valor_total'] / $summary['total_ordens'] : 0;
+        $conversionRate = $summary['total_ordens'] > 0 ? ($summary['total_ordens_faturadas'] / $summary['total_ordens'] * 100) : 0;
+
+        $html .= '<div class="metrics">
+            <div class="metric-box">
+                <h4>Total de Ordens</h4>
+                <p>' . $summary['total_ordens'] . '</p>
+            </div>
+            <div class="metric-box">
+                <h4>Valor Total</h4>
+                <p>R$ ' . number_format($summary['valor_total'], 2, ',', '.') . '</p>
+            </div>
+            <div class="metric-box">
+                <h4>Ticket Médio</h4>
+                <p>R$ ' . number_format($avgTicket, 2, ',', '.') . '</p>
+            </div>
+            <div class="metric-box">
+                <h4>Taxa Faturamento</h4>
+                <p>' . number_format($conversionRate, 1) . '%</p>
+            </div>
+        </div>';
+
+        // Client Analysis
+        $html .= '<div class="section-title">Análise por Cliente</div>';
+        $html .= '<table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Ordens</th>
+                    <th>Valor Total</th>
+                    <th>Ticket Médio</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+        foreach ($clientData as $client) {
+            $html .= '<tr>
+                <td>' . $client['name'] . '</td>
+                <td>' . $client['orders'] . '</td>
+                <td>R$ ' . number_format($client['total'], 2, ',', '.') . '</td>
+                <td>R$ ' . number_format($client['avg'], 2, ',', '.') . '</td>
+            </tr>';
+        }
+
+        $html .= '</tbody></table>';
+
+        // Consultant Analysis
+        $html .= '<div class="section-title">Análise por Consultor</div>';
+        $html .= '<table>
+            <thead>
+                <tr>
+                    <th>Consultor</th>
+                    <th>Ordens</th>
+                    <th>Valor Total</th>
+                    <th>Ticket Médio</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+        foreach ($consultantData as $consultant) {
+            $html .= '<tr>
+                <td>' . $consultant['name'] . '</td>
+                <td>' . $consultant['orders'] . '</td>
+                <td>R$ ' . number_format($consultant['total'], 2, ',', '.') . '</td>
+                <td>R$ ' . number_format($consultant['avg'], 2, ',', '.') . '</td>
+            </tr>';
+        }
+
+        $html .= '</tbody></table>';
+
+        // Orders Table
+        $html .= '<div class="section-title">Ordens Detalhadas</div>';
+        $html .= '<table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Consultor</th>
+                    <th>Data</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+        foreach ($orders as $order) {
+            $html .= '<tr>
+                <td>' . $order['id'] . '</td>
+                <td>' . $order['client'] . '</td>
+                <td>' . $order['consultant'] . '</td>
+                <td>' . $order['created_at'] . '</td>
+                <td>R$ ' . number_format($order['total'], 2, ',', '.') . '</td>
+                <td>' . $order['status'] . '</td>
             </tr>';
         }
 
