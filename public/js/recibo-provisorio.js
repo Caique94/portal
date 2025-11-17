@@ -426,9 +426,19 @@ $(document).ready(function() {
 
                 if (parcela) {
                     $('#txtEditarParcelaId').val(parcela.id);
-                    $('#txtEditarDataVencimento').val(parcela.data_vencimento);
-                    $('#txtEditarValor').val(parseFloat(parcela.valor).toFixed(2).replace('.', ','));
-                    $('#slcEditarStatus').val(parcela.status);
+                    $('#txtEditarDataVencimento').val(parcela.data_vencimento || '');
+
+                    // Validate and format valor
+                    var valorFormatado = '';
+                    if (parcela.valor) {
+                        var valor = (typeof parcela.valor === 'string')
+                            ? parcela.valor
+                            : parseFloat(parcela.valor).toFixed(2);
+                        valorFormatado = valor.replace('.', ',');
+                    }
+                    $('#txtEditarValor').val(valorFormatado);
+
+                    $('#slcEditarStatus').val(parcela.status || '');
                     $('#txtEditarDataPagamento').val(parcela.data_pagamento || '');
                     $('#txtEditarObservacao').val(parcela.observacao || '');
 
@@ -436,6 +446,11 @@ $(document).ready(function() {
                     atualizarValidacaoParcelas(response, parcelaId);
 
                     $('#modalEditarParcela').modal('show');
+                } else {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Parcela não encontrada'
+                    });
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -449,32 +464,30 @@ $(document).ready(function() {
 
     // Função para atualizar validação de parcelas
     function atualizarValidacaoParcelas(parcelas, parcelaIdEditando) {
-        var valorRps = parseFloat(reciboAtual.valor) || 0;
+        var valorRps = (reciboAtual && parseFloat(reciboAtual.valor)) || 0;
         var totalParcelas = 0;
 
         // Calcular total das parcelas
-        if (!parcelas || !Array.isArray(parcelas)) {
-            return;
-        }
+        if (parcelas && Array.isArray(parcelas)) {
+            parcelas.forEach(function(p) {
+                if (!p) return; // Skip null/undefined parcelas
 
-        parcelas.forEach(function(p) {
-            if (!p) return; // Skip null/undefined parcelas
-
-            if (p.id == parcelaIdEditando) {
-                // Usar o valor sendo editado
-                var valorStr = $('#txtEditarValor').val();
-                var valorEditado = 0;
-                if (valorStr && typeof valorStr === 'string') {
-                    valorEditado = parseFloat(valorStr.replace(/\./g, '').replace(/,/g, '.')) || 0;
+                if (p.id == parcelaIdEditando) {
+                    // Usar o valor sendo editado
+                    var valorStr = $('#txtEditarValor').val();
+                    var valorEditado = 0;
+                    if (valorStr && typeof valorStr === 'string') {
+                        valorEditado = parseFloat(valorStr.replace(/\./g, '').replace(/,/g, '.')) || 0;
+                    }
+                    totalParcelas += valorEditado;
+                } else {
+                    var parcelaValor = (typeof p.valor === 'string') ?
+                        parseFloat(p.valor.replace(/\./g, '').replace(/,/g, '.')) :
+                        parseFloat(p.valor) || 0;
+                    totalParcelas += parcelaValor;
                 }
-                totalParcelas += valorEditado;
-            } else {
-                var parcelaValor = (typeof p.valor === 'string') ?
-                    parseFloat(p.valor.replace(/\./g, '').replace(/,/g, '.')) :
-                    parseFloat(p.valor) || 0;
-                totalParcelas += parcelaValor;
-            }
-        });
+            });
+        }
 
         var diferenca = valorRps - totalParcelas;
         var diferencaFormatada = Math.abs(diferenca).toLocaleString('pt-BR', {
