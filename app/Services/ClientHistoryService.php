@@ -198,7 +198,8 @@ class ClientHistoryService
         $total = OrdemServico::where('cliente_id', $this->cliente->id)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '>=', 4) // Only approved/completed
-            ->sum('valor_total');
+            ->selectRaw('COALESCE(SUM(CAST(valor_total AS DECIMAL)), 0) as total')
+            ->first()?->total ?? 0;
 
         $count = OrdemServico::where('cliente_id', $this->cliente->id)
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -218,9 +219,10 @@ class ClientHistoryService
      */
     private function getAllTimeTotal(): float
     {
-        return (float) OrdemServico::where('cliente_id', $this->cliente->id)
+        return (float) (OrdemServico::where('cliente_id', $this->cliente->id)
             ->where('status', '>=', 4)
-            ->sum('valor_total');
+            ->selectRaw('COALESCE(SUM(CAST(valor_total AS DECIMAL)), 0) as total')
+            ->first()?->total ?? 0);
     }
 
     /**
