@@ -20,7 +20,7 @@ class ReportExportService
     public function getFilteredData(array $filters = []): array
     {
         $query = OrdemServico::query()
-            ->with(['cliente', 'consultor']);
+            ->with(['cliente', 'consultor', 'projeto']);
 
         // Apply filters
         if (!empty($filters['data_inicio'])) {
@@ -357,9 +357,96 @@ class ReportExportService
             $sheet->setCellValue('D' . $row, 'R$ ' . number_format($consultant['avg'], 2, ',', '.'));
             $row++;
         }
+        $row += 2;
+
+        // Analysis by Project
+        $sheet->setCellValue('A' . $row, 'ANÁLISE POR PROJETO:');
+        $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+        $row++;
+
+        $orders = $this->getFilteredData($filters);
+        $projects = [];
+        foreach ($orders as $order) {
+            $project = $order['projeto_nome'] ?? 'Sem Projeto';
+            if (!isset($projects[$project])) {
+                $projects[$project] = ['orders' => 0, 'total' => 0];
+            }
+            $projects[$project]['orders']++;
+            $projects[$project]['total'] += $order['valor_total'];
+        }
+
+        foreach ($projects as $project => $data) {
+            $sheet->setCellValue('A' . $row, $project);
+            $sheet->setCellValue('B' . $row, $data['orders'] . ' OS');
+            $sheet->setCellValue('C' . $row, 'R$ ' . number_format($data['total'], 2, ',', '.'));
+            $row++;
+        }
+        $row += 2;
+
+        // Duration Analysis
+        $sheet->setCellValue('A' . $row, 'ANÁLISE DE DURAÇÃO E DESLOCAMENTO:');
+        $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+        $row++;
+
+        $totalHours = 0;
+        $totalKm = 0;
+        foreach ($orders as $order) {
+            $totalHours += $order['horas'] ?? 0;
+            $totalKm += $order['km'] ?? 0;
+        }
+
+        $sheet->setCellValue('A' . $row, 'Total de Horas:');
+        $sheet->setCellValue('B' . $row, number_format($totalHours, 2, ',', '.') . 'h');
+        $row++;
+
+        $sheet->setCellValue('A' . $row, 'Média de Horas/OS:');
+        $sheet->setCellValue('B' . $row, number_format(count($orders) > 0 ? $totalHours / count($orders) : 0, 2, ',', '.') . 'h');
+        $row++;
+
+        $sheet->setCellValue('A' . $row, 'Total de KM:');
+        $sheet->setCellValue('B' . $row, number_format($totalKm, 2, ',', '.') . ' km');
+        $row++;
+
+        $sheet->setCellValue('A' . $row, 'Média de KM/OS:');
+        $sheet->setCellValue('B' . $row, number_format(count($orders) > 0 ? $totalKm / count($orders) : 0, 2, ',', '.') . ' km');
+        $row += 2;
+
+        // Detailed Activities
+        $sheet->setCellValue('A' . $row, 'DETALHES DE ATIVIDADES:');
+        $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+        $row++;
+
+        $headers = ['ID', 'Cliente', 'Consultor', 'Projeto', 'Assunto', 'Descrição', 'Horas', 'KM', 'Data', 'Valor', 'Status'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . $row, $header);
+            $style = $sheet->getStyle($col . $row);
+            $style->getFont()->setBold(true);
+            $style->getFont()->getColor()->setRGB('FFFFFF');
+            $style->getFill()->setFillType('solid');
+            $style->getFill()->getStartColor()->setRGB('70AD47');
+            $col++;
+        }
+        $row++;
+
+        $statusNames = $this->getStatusNames();
+        foreach ($orders as $order) {
+            $sheet->setCellValue('A' . $row, $order['id']);
+            $sheet->setCellValue('B' . $row, $order['cliente_nome']);
+            $sheet->setCellValue('C' . $row, $order['consultor_nome']);
+            $sheet->setCellValue('D' . $row, $order['projeto_nome']);
+            $sheet->setCellValue('E' . $row, $order['assunto']);
+            $sheet->setCellValue('F' . $row, substr($order['descricao'] ?: $order['detalhamento'], 0, 50));
+            $sheet->setCellValue('G' . $row, $order['horas'] > 0 ? $order['horas'] . 'h' : '-');
+            $sheet->setCellValue('H' . $row, $order['km'] > 0 ? $order['km'] . 'km' : '-');
+            $sheet->setCellValue('I' . $row, $order['created_at_formatted']);
+            $sheet->setCellValue('J' . $row, 'R$ ' . number_format($order['valor_total'], 2, ',', '.'));
+            $sheet->setCellValue('K' . $row, $order['status_name']);
+            $row++;
+        }
 
         // Auto fit columns
-        foreach (range('A', 'D') as $col) {
+        foreach (range('A', 'K') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -768,14 +855,87 @@ class ReportExportService
 
         $html .= '</tbody></table>';
 
-        // Orders Table
-        $html .= '<div class="section-title">Ordens Detalhadas</div>';
+        // Project Analysis
+        $html .= '<div class="section-title">Análise por Projeto</div>';
+        $html .= '<table>
+            <thead>
+                <tr>
+                    <th>Projeto</th>
+                    <th>Ordens</th>
+                    <th>Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+        $projects = [];
+        foreach ($orders as $order) {
+            $project = $order['projeto_nome'] ?? 'Sem Projeto';
+            if (!isset($projects[$project])) {
+                $projects[$project] = ['orders' => 0, 'total' => 0];
+            }
+            $projects[$project]['orders']++;
+            $projects[$project]['total'] += $order['valor_total'];
+        }
+
+        foreach ($projects as $project => $data) {
+            $html .= '<tr>
+                <td>' . $project . '</td>
+                <td>' . $data['orders'] . '</td>
+                <td>R$ ' . number_format($data['total'], 2, ',', '.') . '</td>
+            </tr>';
+        }
+
+        $html .= '</tbody></table>';
+
+        // Duration Analysis
+        $html .= '<div class="section-title">Duração e Deslocamento</div>';
+        $totalHours = 0;
+        $totalKm = 0;
+        foreach ($orders as $order) {
+            $totalHours += $order['horas'] ?? 0;
+            $totalKm += $order['km'] ?? 0;
+        }
+
+        $html .= '<table>
+            <thead>
+                <tr>
+                    <th>Métrica</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Total de Horas</strong></td>
+                    <td>' . number_format($totalHours, 2, ',', '.') . ' h</td>
+                </tr>
+                <tr>
+                    <td><strong>Média de Horas/OS</strong></td>
+                    <td>' . number_format(count($orders) > 0 ? $totalHours / count($orders) : 0, 2, ',', '.') . ' h</td>
+                </tr>
+                <tr>
+                    <td><strong>Total de KM</strong></td>
+                    <td>' . number_format($totalKm, 2, ',', '.') . ' km</td>
+                </tr>
+                <tr>
+                    <td><strong>Média de KM/OS</strong></td>
+                    <td>' . number_format(count($orders) > 0 ? $totalKm / count($orders) : 0, 2, ',', '.') . ' km</td>
+                </tr>
+            </tbody>
+        </table>';
+
+        // Detailed Activities Table
+        $html .= '<div class="section-title">Detalhes de Atividades</div>';
         $html .= '<table>
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Cliente</th>
                     <th>Consultor</th>
+                    <th>Projeto</th>
+                    <th>Assunto</th>
+                    <th>Descrição</th>
+                    <th>Horas</th>
+                    <th>KM</th>
                     <th>Data</th>
                     <th>Valor</th>
                     <th>Status</th>
@@ -786,11 +946,16 @@ class ReportExportService
         foreach ($orders as $order) {
             $html .= '<tr>
                 <td>' . $order['id'] . '</td>
-                <td>' . $order['client'] . '</td>
-                <td>' . $order['consultant'] . '</td>
-                <td>' . $order['created_at'] . '</td>
-                <td>R$ ' . number_format($order['total'], 2, ',', '.') . '</td>
-                <td>' . $order['status'] . '</td>
+                <td>' . $order['cliente_nome'] . '</td>
+                <td>' . $order['consultor_nome'] . '</td>
+                <td>' . ($order['projeto_nome'] ?? '-') . '</td>
+                <td>' . substr($order['assunto'] ?? '-', 0, 30) . '</td>
+                <td>' . substr($order['descricao'] ?: $order['detalhamento'] ?? '-', 0, 50) . '</td>
+                <td>' . ($order['horas'] > 0 ? $order['horas'] . 'h' : '-') . '</td>
+                <td>' . ($order['km'] > 0 ? $order['km'] . 'km' : '-') . '</td>
+                <td>' . $order['created_at_formatted'] . '</td>
+                <td>R$ ' . number_format($order['valor_total'], 2, ',', '.') . '</td>
+                <td>' . $order['status_name'] . '</td>
             </tr>';
         }
 
@@ -827,8 +992,43 @@ class ReportExportService
                 'status_name' => $statusNames[$order->status] ?? 'Unknown',
                 'created_at' => $order->created_at->toIso8601String(),
                 'created_at_formatted' => $order->created_at->format('d/m/Y'),
+                // New detailed fields
+                'projeto_nome' => $order->projeto->nome ?? 'Unknown',
+                'projeto_id' => $order->projeto_id,
+                'assunto' => $order->assunto ?? '',
+                'descricao' => $order->descricao ?? '',
+                'detalhamento' => $order->detalhamento ?? '',
+                'horas' => (float) ($order->hora_inicio && $order->hora_final
+                    ? $this->calculateHours($order->hora_inicio, $order->hora_final, $order->hora_desconto)
+                    : 0),
+                'km' => (float) ($order->km ?? 0),
+                'deslocamento' => $order->deslocamento ?? '',
+                'observacao' => $order->observacao ?? '',
             ];
         })->toArray();
+    }
+
+    /**
+     * Helper: Calculate hours from time range
+     */
+    private function calculateHours($inicio, $final, $desconto = 0): float
+    {
+        if (!$inicio || !$final) {
+            return 0;
+        }
+
+        $inicio_time = \Carbon\Carbon::parse($inicio);
+        $final_time = \Carbon\Carbon::parse($final);
+
+        $diff_minutes = $final_time->diffInMinutes($inicio_time);
+        $hours = $diff_minutes / 60;
+
+        // Subtract discount hours if provided
+        if ($desconto) {
+            $hours -= $desconto;
+        }
+
+        return max(0, $hours);
     }
 
     /**

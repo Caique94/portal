@@ -499,23 +499,49 @@
             <div id="additionalMetricsContent"></div>
           </div>
 
+          <!-- Projetos -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-diagram-3"></i> Análise por Projeto</h5>
+            <div id="projectAnalysisContent"></div>
+          </div>
+
+          <!-- Duração Total -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-hourglass-split"></i> Duração Total e Deslocamento</h5>
+            <div id="durationAnalysisContent"></div>
+          </div>
+
+          <!-- Atividades Detalhadas -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-list-check"></i> Atividades & Descrições</h5>
+            <div id="activitiesContent" style="max-height: 500px; overflow-y: auto;"></div>
+          </div>
+
           <!-- Detailed Table para Analytical -->
-          <div class="table-responsive mb-4">
-            <table class="table table-hover report-table" id="analyticalTable">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Cliente</th>
-                  <th>Consultor</th>
-                  <th>Data</th>
-                  <th>Valor</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Preenchido por JavaScript -->
-              </tbody>
-            </table>
+          <div class="analyst-card">
+            <h5><i class="bi bi-table"></i> Ordens Detalhadas Expandidas</h5>
+            <div class="table-responsive">
+              <table class="table table-hover report-table" id="analyticalTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Consultor</th>
+                    <th>Projeto</th>
+                    <th>Assunto</th>
+                    <th>Descrição</th>
+                    <th>Horas</th>
+                    <th>KM</th>
+                    <th>Data</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Preenchido por JavaScript -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -1411,16 +1437,130 @@
     `;
     document.getElementById('additionalMetricsContent').innerHTML = metricsHtml;
 
-    // Populate detailed table for analytical view
+    // Project Analysis
+    const byProject = {};
+    let projectlessCount = 0;
+    orders.forEach(order => {
+      if (order.projeto_nome && order.projeto_nome !== 'Unknown') {
+        const project = order.projeto_nome;
+        if (!byProject[project]) {
+          byProject[project] = {
+            orders: 0,
+            total_value: 0
+          };
+        }
+        byProject[project].orders++;
+        byProject[project].total_value += parseFloat(order.valor_total || 0);
+      } else {
+        projectlessCount++;
+      }
+    });
+
+    let projectHtml = '';
+    if (Object.keys(byProject).length > 0) {
+      Object.entries(byProject).forEach(([project, data]) => {
+        projectHtml += `
+          <div class="metric-row">
+            <span class="metric-label"><strong>${project}</strong></span>
+            <div>
+              <span style="margin-right: 15px;">
+                <i class="bi bi-basket"></i> ${data.orders} OS
+              </span>
+              <span>
+                <i class="bi bi-currency-dollar"></i> R$ ${data.total_value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        `;
+      });
+    }
+    if (projectlessCount > 0) {
+      projectHtml += `
+        <div class="metric-row" style="background-color: #fffacd; padding: 8px;">
+          <span class="metric-label"><strong>Sem Projeto (${projectlessCount} OS)</strong></span>
+          <span style="color: #999;">Ordens sem associação de projeto</span>
+        </div>
+      `;
+    }
+    document.getElementById('projectAnalysisContent').innerHTML = projectHtml || '<p class="text-muted">Sem dados de projetos</p>';
+
+    // Duration Analysis
+    let totalHours = 0;
+    let totalKm = 0;
+    orders.forEach(order => {
+      if (order.horas) totalHours += parseFloat(order.horas || 0);
+      if (order.km) totalKm += parseFloat(order.km || 0);
+    });
+
+    const avgHours = orders.length > 0 ? totalHours / orders.length : 0;
+    const avgKm = orders.length > 0 ? totalKm / orders.length : 0;
+
+    let durationHtml = `
+      <div class="metric-row">
+        <span class="metric-label">Total de Horas</span>
+        <span class="metric-value-cell">${totalHours.toFixed(2)} h</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Média de Horas por OS</span>
+        <span class="metric-value-cell">${avgHours.toFixed(2)} h</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Total de KM</span>
+        <span class="metric-value-cell">${totalKm.toFixed(2)} km</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Média de KM por OS</span>
+        <span class="metric-value-cell">${avgKm.toFixed(2)} km</span>
+      </div>
+    `;
+    document.getElementById('durationAnalysisContent').innerHTML = durationHtml;
+
+    // Activities Details
+    let activitiesHtml = '<div style="font-size: 0.9rem;">';
+    orders.forEach((order, index) => {
+      const description = order.descricao || order.detalhamento || 'Sem descrição';
+      const assunto = order.assunto || 'Sem assunto';
+      const horasDisplay = order.horas ? `${order.horas}h` : '-';
+      const kmDisplay = order.km ? `${order.km}km` : '-';
+
+      activitiesHtml += `
+        <div style="border-left: 3px solid #0d6efd; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
+          <strong>${index + 1}. ${order.cliente_nome} - ${order.consultor_nome}</strong><br>
+          <small style="color: #666;">
+            <i class="bi bi-calendar"></i> ${new Date(order.created_at).toLocaleDateString('pt-BR')} |
+            <i class="bi bi-hourglass-split"></i> ${horasDisplay} |
+            <i class="bi bi-geo-alt"></i> ${kmDisplay}
+          </small><br>
+          <strong style="color: #0d6efd;">Assunto:</strong> ${assunto}<br>
+          <strong style="color: #0d6efd;">Descrição:</strong> ${description}<br>
+          <small style="color: #28a745;">R$ ${parseFloat(order.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</small>
+        </div>
+      `;
+    });
+    activitiesHtml += '</div>';
+    document.getElementById('activitiesContent').innerHTML = activitiesHtml || '<p class="text-muted">Sem atividades</p>';
+
+    // Populate detailed table for analytical view with expanded columns
     const analyticalTbody = document.querySelector('#analyticalTable tbody');
     if (analyticalTbody) {
       analyticalTbody.innerHTML = '';
       orders.forEach((order, index) => {
         const row = document.createElement('tr');
+        const description = (order.descricao || order.detalhamento || '-').substring(0, 50);
+        const assunto = (order.assunto || '-').substring(0, 30);
+        const project = order.projeto_nome || '-';
+        const horas = order.horas ? `${order.horas}h` : '-';
+        const km = order.km ? `${order.km}km` : '-';
+
         row.innerHTML = `
           <td>${index + 1}</td>
           <td>${order.cliente_nome || '-'}</td>
           <td>${order.consultor_nome || '-'}</td>
+          <td><small>${project}</small></td>
+          <td><small>${assunto}</small></td>
+          <td><small title="${order.descricao || order.detalhamento || ''}">${description}</small></td>
+          <td><small>${horas}</small></td>
+          <td><small>${km}</small></td>
           <td>${new Date(order.created_at).toLocaleDateString('pt-BR')}</td>
           <td>R$ ${parseFloat(order.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           <td>
