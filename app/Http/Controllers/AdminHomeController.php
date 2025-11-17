@@ -30,11 +30,11 @@ class AdminHomeController extends Controller
 
         // OS por status
         $osStatus = [
-            'Aberta' => OrdemServico::where('status', 0)->count(),
-            'Enviada para Aprovação' => OrdemServico::where('status', 1)->count(),
-            'Finalizada' => OrdemServico::where('status', 2)->count(),
-            'Contestada' => OrdemServico::where('status', 3)->count(),
-            'Faturada' => OrdemServico::where('status', 4)->count(),
+            'Aberta' => OrdemServico::whereIn('status', [1, 'em_aberto'])->count(),
+            'Aguardando Aprovação' => OrdemServico::whereIn('status', [2, 'aguardando_aprovacao'])->count(),
+            'Contestada' => OrdemServico::whereIn('status', [3, 'contestar'])->count(),
+            'Aguardando Faturamento' => OrdemServico::whereIn('status', [4, 'aprovado'])->count(),
+            'Faturada' => OrdemServico::whereIn('status', [5, 'faturado', 6, 'aguardando_rps', 7, 'rps_emitida'])->count(),
         ];
 
         // Relatórios pendentes de aprovação
