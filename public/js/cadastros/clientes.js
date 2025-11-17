@@ -28,7 +28,7 @@ $(function () {
       { title:'Desl.',        data:'deslocamento' },
       {
         title:'A&ccedil;&otilde;es', data:null, orderable:false, className:'dt-center', width:'80px',
-        render: () => `
+        render: (data, type, row) => `
           <div class="dropdown">
             <button class="btn btn-sm btn-outline-primary border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown">
               <i class="bi bi-list"></i>
@@ -36,6 +36,7 @@ $(function () {
             <ul class="dropdown-menu dropdown-menu-end">
               <li><a class="dropdown-item exibir-modal-visualizacao" href="javascript:void(0)"><i class="bi bi-eye"></i> Visualizar</a></li>
               <li><a class="dropdown-item exibir-modal-edicao" href="javascript:void(0)"><i class="bi bi-pencil"></i> Editar</a></li>
+              <li><a class="dropdown-item ver-historico" href="/cliente/${row.id}/historico"><i class="bi bi-clock-history"></i> Histórico</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item adicionar-contato" href="javascript:void(0)"><i class="bi bi-person-plus"></i> Adicionar Contato</a></li>
               <li><a class="dropdown-item exibir-contatos" href="javascript:void(0)"><i class="bi bi-people"></i> Exibir Contatos</a></li>

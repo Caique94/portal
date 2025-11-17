@@ -28,6 +28,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ManagerialDashboardController;
 use App\Http\Controllers\ReportFilterController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ClientHistoryController;
 
 // ========== AUTH ==========
 Route::get('/login', [LoginController::class, 'login'])->name('login');
@@ -152,6 +153,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/listar-clientes', [ClienteController::class, 'list']);
     Route::post('/salvar-cliente', [ClienteController::class, 'store']);
     Route::delete('/excluir-cliente/{id}', [ClienteController::class, 'delete']);
+
+    // CLIENT HISTORY
+    Route::get('/cliente/{id}/historico', [ClientHistoryController::class, 'show'])->name('cliente.historico');
+    Route::get('/api/cliente/{id}/historico/timeline', [ClientHistoryController::class, 'timelineJson']);
+    Route::get('/api/cliente/{id}/historico/spent-by-period', [ClientHistoryController::class, 'spentByPeriodJson']);
+    Route::get('/api/cliente/{id}/historico/patterns', [ClientHistoryController::class, 'patternsJson']);
+    Route::get('/api/cliente/{id}/historico/suggestions', [ClientHistoryController::class, 'suggestionsJson']);
+    Route::get('/api/cliente/{id}/historico/overview', [ClientHistoryController::class, 'overviewJson']);
 
     // FORNECEDOR
     Route::get('/listar-fornecedores', [FornecedorController::class, 'list']);
