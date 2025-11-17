@@ -716,8 +716,8 @@ $(document).ready(function() {
       url: '/listar-ordens-servico',
       type: 'GET',
       dataType: 'json',
-      success: function(data) {
-        const os = data.find(o => o.id == osId);
+      success: function(response) {
+        const os = response.data.find(o => o.id == osId);
 
         if (os) {
           $('#osId').text('#' + os.id);
