@@ -187,6 +187,20 @@ class OrdemServicoController extends Controller
                 break;
         }
 
+        // Apply display status transformation for consultores
+        if ($papel === 'consultor' && $data) {
+            $data = $data->map(function ($item) {
+                // For consultores, if status is 6 or 7 (Aguardando RPS or RPS Emitida),
+                // display it as 5 (Faturada)
+                if (in_array($item->status, [6, 7])) {
+                    $item->display_status = 5; // Faturada
+                } else {
+                    $item->display_status = $item->status;
+                }
+                return $item;
+            });
+        }
+
         // Return in DataTables format with user role info
         return response()->json([
             'data' => $data ?? [],

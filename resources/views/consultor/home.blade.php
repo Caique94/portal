@@ -735,7 +735,9 @@ $(document).ready(function() {
             5: { text: 'Faturada', class: 'badge badge-primary' }
           };
 
-          const status = statusMap[os.status] || { text: 'Desconhecido', class: 'badge' };
+          // Use display_status if available (for consultores viewing OS they created)
+          const statusToDisplay = os.display_status !== undefined ? os.display_status : os.status;
+          const status = statusMap[statusToDisplay] || { text: 'Desconhecido', class: 'badge' };
           $('#osStatus').html('<span class="' + status.class + '">' + status.text + '</span>');
           $('#btnEditarOS').attr('href', "{{ route('ordem-servico') }}?id=" + osId);
 
