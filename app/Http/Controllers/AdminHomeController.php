@@ -44,8 +44,8 @@ class AdminHomeController extends Controller
             ->limit(5)
             ->get();
 
-        // Ordens de serviço abertas ou enviadas para aprovação (últimas 10)
-        $osAbertas = OrdemServico::whereIn('status', [0, 1])
+        // Ordens de serviço abertas ou aguardando aprovação (últimas 10)
+        $osAbertas = OrdemServico::whereIn('status', [1, 2])
             ->with(['consultor', 'cliente'])
             ->orderBy('created_at', 'desc')
             ->limit(10)

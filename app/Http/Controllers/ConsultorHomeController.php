@@ -9,15 +9,15 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ConsultorHomeController extends Controller
 {
-    // Mapeamento de status
+    // Mapeamento de status (DEPRECATED - use statusDisplayMap instead)
     private $statusMap = [
-        0 => 'Aberta',
-        1 => 'Enviada para Aprovação',
-        2 => 'Finalizada',
+        1 => 'Em Aberto',
+        2 => 'Aguardando Aprovação',
         3 => 'Contestada',
-        4 => 'Aguardando RPS',
+        4 => 'Aguardando Faturamento',
         5 => 'Faturada',
         6 => 'Aguardando RPS',
+        7 => 'RPS Emitida',
     ];
 
     // Status finais para consultores (vê até status 7, mas exibe 6,7 como 5)
@@ -25,9 +25,8 @@ class ConsultorHomeController extends Controller
 
     // Mapeamento de status para EXIBIÇÃO (Status 6 e 7 aparecem como Faturada para o consultor)
     private $statusDisplayMap = [
-        0 => 'Aberta',
-        1 => 'Enviada para Aprovação',
-        2 => 'Finalizada',
+        1 => 'Em Aberto',
+        2 => 'Aguardando Aprovação',
         3 => 'Contestada',
         4 => 'Aguardando Faturamento',
         5 => 'Faturada',
@@ -45,10 +44,10 @@ class ConsultorHomeController extends Controller
             ->where('status', '<=', $this->statusFinal)
             ->count();
 
-        // Contar as abertas/em andamento (status 0, 1)
+        // Contar as abertas/em andamento (status 1, 2 = Em Aberto, Aguardando Aprovação)
         $abertas_meu = DB::table('ordem_servico')
             ->where('consultor_id', $uid)
-            ->whereIn('status', [0, 1]) // Aberta, Enviada para Aprovação
+            ->whereIn('status', [1, 2]) // Em Aberto, Aguardando Aprovação
             ->count();
 
         // Período do mês

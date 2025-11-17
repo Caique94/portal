@@ -27,7 +27,7 @@ class RelatorioController extends Controller
                 'c.nome as cliente_nome',
                 DB::raw('COUNT(os.id) as total_ordens'),
                 DB::raw('SUM(CAST(os.valor_total AS NUMERIC)) as valor_total'),
-                DB::raw('SUM(CASE WHEN os.status = 5 THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
+                DB::raw('SUM(CASE WHEN os.status IN (5,6,7) THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
                 DB::raw('SUM(CASE WHEN os.status < 5 THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_pendente')
             )
             ->groupBy('c.id', 'c.codigo', 'c.nome');
@@ -60,7 +60,7 @@ class RelatorioController extends Controller
                 'u.name as consultor_nome',
                 DB::raw('COUNT(os.id) as total_ordens'),
                 DB::raw('SUM(CAST(os.valor_total AS NUMERIC)) as valor_total'),
-                DB::raw('SUM(CASE WHEN os.status = 5 THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
+                DB::raw('SUM(CASE WHEN os.status IN (5,6,7) THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
                 DB::raw('SUM(CASE WHEN os.status < 5 THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_pendente'),
                 DB::raw('AVG(CAST(os.valor_total AS NUMERIC)) as ticket_medio')
             )
@@ -91,8 +91,8 @@ class RelatorioController extends Controller
             ->select(
                 DB::raw('COUNT(os.id) as total_ordens'),
                 DB::raw('SUM(CAST(os.valor_total AS NUMERIC)) as valor_total'),
-                DB::raw('SUM(CASE WHEN os.status = 5 THEN 1 ELSE 0 END) as ordens_faturadas'),
-                DB::raw('SUM(CASE WHEN os.status = 5 THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
+                DB::raw('SUM(CASE WHEN os.status IN (5,6,7) THEN 1 ELSE 0 END) as ordens_faturadas'),
+                DB::raw('SUM(CASE WHEN os.status IN (5,6,7) THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
                 DB::raw('SUM(CASE WHEN os.status < 5 THEN 1 ELSE 0 END) as ordens_pendentes'),
                 DB::raw('SUM(CASE WHEN os.status < 5 THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_pendente'),
                 DB::raw('AVG(CAST(os.valor_total AS NUMERIC)) as ticket_medio')

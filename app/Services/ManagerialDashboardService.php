@@ -105,7 +105,7 @@ class ManagerialDashboardService
 
     public function getOrdersBilled(): int
     {
-        $query = OrdemServico::whereIn('status', [5, 6, 7, 8]);
+        $query = OrdemServico::whereIn('status', [5, 6, 7]);
         $query = $this->applyDateFilters($query);
         return $query->count();
     }
@@ -141,14 +141,13 @@ class ManagerialDashboardService
     public function getOrdersByStatus(): array
     {
         $statusNames = [
-            1 => 'Aberta',
+            1 => 'Em Aberto',
             2 => 'Aguardando Aprovação',
-            3 => 'Aprovado',
-            4 => 'Contestada',
-            5 => 'Aguardando Faturamento',
-            6 => 'Faturada',
-            7 => 'Aguardando RPS',
-            8 => 'RPS Emitida',
+            3 => 'Contestada',
+            4 => 'Aguardando Faturamento',
+            5 => 'Faturada',
+            6 => 'Aguardando RPS',
+            7 => 'RPS Emitida',
         ];
 
         $data = OrdemServico::select('status', DB::raw('COUNT(*) as count'))
@@ -220,14 +219,13 @@ class ManagerialDashboardService
             ->get();
 
         $statusNames = [
-            1 => 'Aberta',
+            1 => 'Em Aberto',
             2 => 'Aguardando Aprovação',
-            3 => 'Aprovado',
-            4 => 'Contestada',
-            5 => 'Aguardando Faturamento',
-            6 => 'Faturada',
-            7 => 'Aguardando RPS',
-            8 => 'RPS Emitida',
+            3 => 'Contestada',
+            4 => 'Aguardando Faturamento',
+            5 => 'Faturada',
+            6 => 'Aguardando RPS',
+            7 => 'RPS Emitida',
         ];
 
         return $data->map(function ($order) use ($statusNames) {
@@ -258,8 +256,8 @@ class ManagerialDashboardService
             ->select(
                 DB::raw('COUNT(os.id) as total_ordens'),
                 DB::raw('SUM(CAST(os.valor_total AS NUMERIC)) as valor_total'),
-                DB::raw('SUM(CASE WHEN os.status IN (5,6,7,8) THEN 1 ELSE 0 END) as ordens_faturadas'),
-                DB::raw('SUM(CASE WHEN os.status IN (5,6,7,8) THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
+                DB::raw('SUM(CASE WHEN os.status IN (5,6,7) THEN 1 ELSE 0 END) as ordens_faturadas'),
+                DB::raw('SUM(CASE WHEN os.status IN (5,6,7) THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
                 DB::raw('SUM(CASE WHEN os.status < 5 THEN 1 ELSE 0 END) as ordens_pendentes'),
                 DB::raw('SUM(CASE WHEN os.status < 5 THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_pendente'),
                 DB::raw('AVG(CAST(os.valor_total AS NUMERIC)) as ticket_medio')
@@ -287,7 +285,7 @@ class ManagerialDashboardService
                 'c.nome as cliente_nome',
                 DB::raw('COUNT(os.id) as total_ordens'),
                 DB::raw('SUM(CAST(os.valor_total AS NUMERIC)) as valor_total'),
-                DB::raw('SUM(CASE WHEN os.status IN (5,6,7,8) THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
+                DB::raw('SUM(CASE WHEN os.status IN (5,6,7) THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
                 DB::raw('SUM(CASE WHEN os.status < 5 THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_pendente')
             )
             ->groupBy('c.id', 'c.codigo', 'c.nome')
@@ -316,7 +314,7 @@ class ManagerialDashboardService
                 'u.name as consultor_nome',
                 DB::raw('COUNT(os.id) as total_ordens'),
                 DB::raw('SUM(CAST(os.valor_total AS NUMERIC)) as valor_total'),
-                DB::raw('SUM(CASE WHEN os.status IN (5,6,7,8) THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
+                DB::raw('SUM(CASE WHEN os.status IN (5,6,7) THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_faturado'),
                 DB::raw('SUM(CASE WHEN os.status < 5 THEN CAST(os.valor_total AS NUMERIC) ELSE 0 END) as valor_pendente'),
                 DB::raw('AVG(CAST(os.valor_total AS NUMERIC)) as ticket_medio')
             )
