@@ -27,6 +27,7 @@ use App\Http\Controllers\RPSController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ManagerialDashboardController;
 use App\Http\Controllers\ReportFilterController;
+use App\Http\Controllers\NotificationController;
 
 // ========== AUTH ==========
 Route::get('/login', [LoginController::class, 'login'])->name('login');
@@ -246,4 +247,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/relatorio-fechamento-consultor', [RelatorioController::class, 'fechamentoConsultor']);
     Route::get('/relatorio-fechamento-geral', [RelatorioController::class, 'fechamentoGeral']);
     Route::get('/relatorio-ordem-por-status', [RelatorioController::class, 'ordemPorStatus']);
+
+    // NOTIFICATIONS API
+    Route::get('/api/notifications/unread', [NotificationController::class, 'getUnread']);
+    Route::get('/api/notifications', [NotificationController::class, 'index']);
+    Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/api/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/api/notifications/{id}', [NotificationController::class, 'destroy']);
+    Route::get('/api/notifications/count', [NotificationController::class, 'getCount']);
+    Route::get('/api/notifications/type/{type}', [NotificationController::class, 'getByType']);
 });

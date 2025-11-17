@@ -11,6 +11,9 @@ use App\Services\OSValidation;
 use App\Services\AuditService;
 use App\Services\PermissionService;
 use App\Events\OSApproved;
+use App\Events\OSRejected;
+use App\Events\OSBilled;
+use App\Events\RPSEmitted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -314,6 +317,9 @@ class OrdemServicoController extends Controller
         $auditService = new AuditService($ordem);
         $auditService->recordContestacao($motivo);
 
+        // Dispatch OSRejected event to send notification
+        OSRejected::dispatch($ordem->refresh(), $motivo);
+
         return response()->json([
             'message' => 'Ordem de Serviço contestada com sucesso',
             'data' => $ordem->refresh()
@@ -379,6 +385,9 @@ class OrdemServicoController extends Controller
             ]);
 
             DB::commit();
+
+            // Dispatch OSBilled event to send notification
+            OSBilled::dispatch($ordem->refresh());
 
             return response()->json([
                 'message' => 'Ordem de Serviço faturada com sucesso',

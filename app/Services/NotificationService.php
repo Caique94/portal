@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\OrdemServico;
+use App\Mail\NotificationMail;
 use Illuminate\Support\Facades\Mail;
 
 class NotificationService
@@ -185,9 +186,25 @@ class NotificationService
         try {
             $user = $notification->user;
 
-            // Email templates can be created later in resources/views/emails/
-            // For now, we'll just mark as sent
+            // Skip if user has no email
+            if (!$user || !$user->email) {
+                \Log::warning('User has no email, skipping email notification', [
+                    'notification_id' => $notification->id,
+                    'user_id' => $notification->user_id,
+                ]);
+                return;
+            }
+
+            // Send email using Mailable
+            Mail::to($user->email)->send(new NotificationMail($notification));
+
+            // Mark as sent
             $notification->update(['email_sent' => true]);
+
+            \Log::info('Notificação enviada por email com sucesso', [
+                'notification_id' => $notification->id,
+                'user_email' => $user->email,
+            ]);
         } catch (\Exception $e) {
             \Log::error('Erro ao enviar notificação por email', [
                 'notification_id' => $notification->id,

@@ -3,7 +3,13 @@
 namespace App\Providers;
 
 use App\Events\OSApproved;
+use App\Events\OSRejected;
+use App\Events\OSBilled;
+use App\Events\RPSEmitted;
 use App\Listeners\HandleOSApproved;
+use App\Listeners\HandleOSRejected;
+use App\Listeners\HandleOSBilled;
+use App\Listeners\HandleRPSEmitted;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -16,6 +22,15 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         OSApproved::class => [
             HandleOSApproved::class,
+        ],
+        OSRejected::class => [
+            HandleOSRejected::class,
+        ],
+        OSBilled::class => [
+            HandleOSBilled::class,
+        ],
+        RPSEmitted::class => [
+            HandleRPSEmitted::class,
         ],
     ];
 
