@@ -260,8 +260,8 @@
         // Load notifications on page load
         loadNotifications();
 
-        // Refresh notifications every 30 seconds
-        notificationRefreshInterval = setInterval(loadNotifications, 30000);
+        // Refresh notifications every 30 minutes
+        notificationRefreshInterval = setInterval(loadNotifications, 1800000);
 
         // Mark all read button
         const markAllBtn = document.getElementById('markAllReadBtn');
