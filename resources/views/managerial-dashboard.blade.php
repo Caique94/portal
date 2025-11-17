@@ -162,6 +162,60 @@
     font-weight: 700;
     margin-top: 5px;
   }
+
+  .period-filter {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .period-filter .form-group {
+    flex: 1;
+    min-width: 150px;
+    margin-bottom: 0;
+  }
+
+  .period-filter label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+  }
+
+  .period-filter input,
+  .period-filter select {
+    width: 100%;
+  }
+
+  .period-filter-quick {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .period-filter-quick button {
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .period-filter-quick button:hover,
+  .period-filter-quick button.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
 </style>
 @endpush
 
@@ -178,6 +232,40 @@
   <div>
     <button class="btn btn-outline-secondary btn-sm" onclick="location.reload()">
       <i class="bi bi-arrow-clockwise"></i> Atualizar
+    </button>
+  </div>
+</div>
+
+{{-- Period Filter --}}
+<div class="period-filter">
+  <div style="display: flex; gap: 10px; align-items: flex-end; flex: 1; min-width: 300px;">
+    <div class="form-group">
+      <label for="kpi-data-inicio">Data Início</label>
+      <input type="date" id="kpi-data-inicio" class="form-control form-control-sm" />
+    </div>
+    <div class="form-group">
+      <label for="kpi-data-fim">Data Fim</label>
+      <input type="date" id="kpi-data-fim" class="form-control form-control-sm" />
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="applyKPIFilters()">
+      <i class="bi bi-funnel"></i> Aplicar
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="clearKPIFilters()">
+      <i class="bi bi-arrow-counterclockwise"></i> Limpar
+    </button>
+  </div>
+  <div class="period-filter-quick">
+    <button onclick="setKPIPeriod(7)" class="period-btn active" data-days="7">
+      <i class="bi bi-calendar-week"></i> Últimos 7 dias
+    </button>
+    <button onclick="setKPIPeriod(30)" class="period-btn" data-days="30">
+      <i class="bi bi-calendar-month"></i> Últimos 30 dias
+    </button>
+    <button onclick="setKPIPeriod(90)" class="period-btn" data-days="90">
+      <i class="bi bi-calendar3"></i> Últimos 90 dias
+    </button>
+    <button onclick="setKPIPeriod(0)" class="period-btn" data-days="0">
+      <i class="bi bi-calendar-check"></i> Todo período
     </button>
   </div>
 </div>
@@ -1574,5 +1662,115 @@
       });
     }
   }
+
+  // KPI Period Filter Functions
+  function setKPIPeriod(days) {
+    const today = new Date();
+    const startDate = new Date();
+
+    // Update button states
+    document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.closest('.period-btn').classList.add('active');
+
+    if (days === 0) {
+      // All period - clear dates
+      document.getElementById('kpi-data-inicio').value = '';
+      document.getElementById('kpi-data-fim').value = '';
+    } else {
+      // Set specific period
+      startDate.setDate(today.getDate() - days);
+      document.getElementById('kpi-data-inicio').value = formatDateForInput(startDate);
+      document.getElementById('kpi-data-fim').value = formatDateForInput(today);
+    }
+
+    applyKPIFilters();
+  }
+
+  function formatDateForInput(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function applyKPIFilters() {
+    const dataInicio = document.getElementById('kpi-data-inicio').value;
+    const dataFim = document.getElementById('kpi-data-fim').value;
+
+    // Validation
+    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) {
+      alert('Por favor, selecione ambas as datas ou deixe vazio para todo o período');
+      return;
+    }
+
+    if (dataInicio && dataFim && new Date(dataInicio) > new Date(dataFim)) {
+      alert('Data início não pode ser maior que data fim');
+      return;
+    }
+
+    // Build filters object
+    const filters = {};
+    if (dataInicio) filters.data_inicio = dataInicio;
+    if (dataFim) filters.data_fim = dataFim;
+
+    // Fetch filtered data
+    fetch('/api/reports/filtered', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Build query string with filters
+      let query = '?';
+      Object.keys(filters).forEach((key, index) => {
+        query += (index > 0 ? '&' : '') + key + '=' + encodeURIComponent(filters[key]);
+      });
+
+      // Reload page with filters or fetch new data
+      if (Object.keys(filters).length > 0) {
+        window.location.search = query.slice(1);
+      } else {
+        location.reload();
+      }
+    })
+    .catch(error => {
+      console.error('Erro ao aplicar filtros:', error);
+      alert('Erro ao aplicar filtros');
+    });
+  }
+
+  function clearKPIFilters() {
+    document.getElementById('kpi-data-inicio').value = '';
+    document.getElementById('kpi-data-fim').value = '';
+
+    // Reset to 7 days default
+    const btn7d = document.querySelector('.period-btn[data-days="7"]');
+    if (btn7d) {
+      btn7d.click();
+    } else {
+      location.reload();
+    }
+  }
+
+  // Initialize with default 30-day period on page load
+  window.addEventListener('load', function() {
+    // Set default dates to last 30 days
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 30);
+
+    document.getElementById('kpi-data-inicio').value = formatDateForInput(startDate);
+    document.getElementById('kpi-data-fim').value = formatDateForInput(today);
+
+    // Mark 30-day button as active
+    document.querySelectorAll('.period-btn').forEach(btn => {
+      if (btn.getAttribute('data-days') === '30') {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  });
 </script>
 @endpush
