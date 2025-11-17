@@ -2,6 +2,33 @@ $(document).ready(function() {
 
     let reciboAtual = null;
 
+    // Função helper para converter valor em formato brasileiro para número
+    function parseValorBrasileiro(valorStr) {
+        if (!valorStr) return 0;
+
+        // Remover "R$" e espaços
+        valorStr = valorStr.replace('R$', '').trim();
+
+        // Se contém vírgula, assume formato brasileiro (1.234,56)
+        if (valorStr.includes(',')) {
+            // Remove pontos (separador de milhares) e substitui vírgula por ponto
+            return parseFloat(valorStr.replace(/\./g, '').replace(',', '.'));
+        } else if (valorStr.includes('.')) {
+            // Se contém ponto, pode ser separador de milhares ou decimal
+            // Se há 2 dígitos após o ponto, é decimal; caso contrário, é separador
+            var parts = valorStr.split('.');
+            if (parts[parts.length - 1].length === 2) {
+                // Formato com milhar: 1.234.567.89 -> remove todos os pontos e adiciona ponto decimal
+                return parseFloat(valorStr.replace(/\./g, ''));
+            } else {
+                // Ponto é separador de milhares, remover
+                return parseFloat(valorStr.replace(/\./g, ''));
+            }
+        }
+
+        return parseFloat(valorStr);
+    }
+
     // Configuração comum para todas as DataTables
     const dataTableConfig = function(status = 'todos') {
         return {
@@ -564,14 +591,11 @@ $(document).ready(function() {
                 if (p.id == parcelaIdEditando) {
                     // Usar o valor sendo editado
                     var valorStr = $('#txtEditarValor').val();
-                    var valorEditado = 0;
-                    if (valorStr && typeof valorStr === 'string') {
-                        valorEditado = parseFloat(valorStr.replace(/\./g, '').replace(/,/g, '.')) || 0;
-                    }
+                    var valorEditado = parseValorBrasileiro(valorStr);
                     totalParcelas += valorEditado;
                 } else {
                     var parcelaValor = (typeof p.valor === 'string') ?
-                        parseFloat(p.valor.replace(/\./g, '').replace(/,/g, '.')) :
+                        parseValorBrasileiro(p.valor) :
                         parseFloat(p.valor) || 0;
                     totalParcelas += parcelaValor;
                 }
@@ -777,7 +801,7 @@ $(document).ready(function() {
     $('#btnSalvarParcela').on('click', function() {
         var parcelaId = $('#txtEditarParcelaId').val();
         var valorStr = $('#txtEditarValor').val();
-        var valor = parseFloat(valorStr.replace(/\./g, '').replace(/,/g, '.'));
+        var valor = parseValorBrasileiro(valorStr);
         var dataVencimento = $('#txtEditarDataVencimento').val();
         var dataPagamento = $('#txtEditarDataPagamento').val();
         var status = $('#slcEditarStatus').val();
