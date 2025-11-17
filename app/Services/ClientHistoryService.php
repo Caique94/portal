@@ -27,13 +27,14 @@ class ClientHistoryService
             ->limit($limit)
             ->get()
             ->map(function ($os) {
+                $statusEnum = $os->getStatus();
                 return [
                     'id' => $os->id,
                     'title' => "OS #{$os->id}",
                     'description' => $os->descricao ?? 'Sem descrição',
                     'value' => $os->valor_total,
                     'status' => $os->status,
-                    'status_name' => $os->statusLabel(),
+                    'status_name' => $statusEnum->label(),
                     'consultant' => $os->consultor->name ?? 'N/A',
                     'created_at' => $os->created_at,
                     'created_at_formatted' => $os->created_at->format('d/m/Y H:i'),
