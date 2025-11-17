@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Events\OSCreated;
 use App\Events\OSApproved;
 use App\Events\OSRejected;
 use App\Events\OSBilled;
 use App\Events\RPSEmitted;
+use App\Listeners\HandleOSCreated;
 use App\Listeners\HandleOSApproved;
 use App\Listeners\HandleOSRejected;
 use App\Listeners\HandleOSBilled;
@@ -20,6 +22,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
+        OSCreated::class => [
+            HandleOSCreated::class,
+        ],
         OSApproved::class => [
             HandleOSApproved::class,
         ],

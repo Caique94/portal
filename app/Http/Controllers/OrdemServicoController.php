@@ -10,6 +10,7 @@ use App\Services\StateMachine;
 use App\Services\OSValidation;
 use App\Services\AuditService;
 use App\Services\PermissionService;
+use App\Events\OSCreated;
 use App\Events\OSApproved;
 use App\Events\OSRejected;
 use App\Events\OSBilled;
@@ -134,6 +135,11 @@ class OrdemServicoController extends Controller
             // Record audit
             $auditService = new AuditService($ordem);
             $auditService->recordCreation($mappedData);
+
+            // Dispatch OSCreated event to notify admins
+            Log::info("store(): Despachando evento OSCreated para OS #{$ordem->id}");
+            OSCreated::dispatch($ordem);
+            Log::info("store(): Evento OSCreated despachado com sucesso para OS #{$ordem->id}");
 
             return response()->json([
                 'message' => 'Ordem de Serviço criada com sucesso',
