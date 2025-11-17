@@ -3,30 +3,48 @@ $(document).ready(function() {
     let reciboAtual = null;
 
     // Função helper para converter valor em formato brasileiro para número
-    function parseValorBrasileiro(valorStr) {
-        if (!valorStr) return 0;
+    function parseValorBrasileiro(valor) {
+        // Se já é um número, retorna direto
+        if (typeof valor === 'number') {
+            return valor;
+        }
+
+        if (!valor) return 0;
+
+        // Converter para string
+        var valorStr = String(valor).trim();
 
         // Remover "R$" e espaços
         valorStr = valorStr.replace('R$', '').trim();
 
+        console.log('DEBUG parseValorBrasileiro - Input:', valor, 'After string conversion:', valorStr);
+
         // Se contém vírgula, assume formato brasileiro (1.234,56)
         if (valorStr.includes(',')) {
             // Remove pontos (separador de milhares) e substitui vírgula por ponto
-            return parseFloat(valorStr.replace(/\./g, '').replace(',', '.'));
+            var result = parseFloat(valorStr.replace(/\./g, '').replace(',', '.'));
+            console.log('  Contains comma - Result:', result);
+            return result;
         } else if (valorStr.includes('.')) {
             // Se contém ponto, pode ser separador de milhares ou decimal
             // Se há 2 dígitos após o ponto, é decimal; caso contrário, é separador
             var parts = valorStr.split('.');
             if (parts[parts.length - 1].length === 2) {
-                // Formato com milhar: 1.234.567.89 -> remove todos os pontos e adiciona ponto decimal
-                return parseFloat(valorStr.replace(/\./g, ''));
+                // Formato com milhar: 1.234,56 ou 1.234.56
+                var result = parseFloat(valorStr.replace(/\./g, '.'));
+                console.log('  Has dot - 2 decimals - Result:', result);
+                return result;
             } else {
                 // Ponto é separador de milhares, remover
-                return parseFloat(valorStr.replace(/\./g, ''));
+                var result = parseFloat(valorStr.replace(/\./g, ''));
+                console.log('  Has dot - thousands separator - Result:', result);
+                return result;
             }
         }
 
-        return parseFloat(valorStr);
+        var result = parseFloat(valorStr);
+        console.log('  Default parseFloat - Result:', result);
+        return result;
     }
 
     // Configuração comum para todas as DataTables
@@ -258,9 +276,8 @@ $(document).ready(function() {
             // Safe valor formatting
             var valor = '-';
             if (parcela.valor) {
-                var valorNum = (typeof parcela.valor === 'string')
-                    ? parseFloat(parcela.valor.replace(/\./g, '').replace(/,/g, '.'))
-                    : parseFloat(parcela.valor);
+                var valorNum = parseValorBrasileiro(parcela.valor);
+                console.log('DEBUG renderizarParcelas - ID:', parcela.id, 'Raw valor:', parcela.valor, 'Parsed:', valorNum);
                 if (!isNaN(valorNum)) {
                     valor = valorNum.toLocaleString('pt-BR', {
                         style: 'currency',
