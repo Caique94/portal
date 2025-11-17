@@ -53,7 +53,7 @@ class NotificationService
         return $this->create(
             userId: $consultorId,
             title: '✅ Ordem de Serviço Aprovada',
-            message: "Sua OS #${os->id} do cliente ${client} foi aprovada por ${approver->name}",
+            message: "Sua OS #{$os->id} do cliente {$client} foi aprovada por {$approver->name}",
             type: 'aprovada',
             ordemServicoId: $os->id,
             actionUrl: route('ordem-servico.show', $os->id),
@@ -77,7 +77,7 @@ class NotificationService
         return $this->create(
             userId: $consultorId,
             title: '❌ Ordem de Serviço Rejeitada',
-            message: "Sua OS #${os->id} do cliente ${client} foi rejeitada. Motivo: " . ($reason ?? 'Verifique os detalhes'),
+            message: "Sua OS #{$os->id} do cliente {$client} foi rejeitada. Motivo: " . ($reason ?? 'Verifique os detalhes'),
             type: 'rejeitada',
             ordemServicoId: $os->id,
             actionUrl: route('ordem-servico.show', $os->id),
@@ -101,7 +101,7 @@ class NotificationService
         return $this->create(
             userId: $consultorId,
             title: '💰 Ordem de Serviço Faturada',
-            message: "Sua OS #${os->id} do cliente ${client} foi faturada com sucesso. Valor: R$ " . number_format($os->valor_total, 2, ',', '.'),
+            message: "Sua OS #{$os->id} do cliente {$client} foi faturada com sucesso. Valor: R$ " . number_format($os->valor_total, 2, ',', '.'),
             type: 'faturada',
             ordemServicoId: $os->id,
             actionUrl: route('ordem-servico.show', $os->id),
@@ -126,7 +126,7 @@ class NotificationService
             $this->create(
                 userId: $admin->id,
                 title: '🆕 Nova Ordem de Serviço',
-                message: "Nova OS #${os->id} criada por ${consultant} para o cliente ${client}",
+                message: "Nova OS #{$os->id} criada por {$consultant} para o cliente {$client}",
                 type: 'nova_os',
                 ordemServicoId: $os->id,
                 actionUrl: route('ordem-servico.show', $os->id),
@@ -150,7 +150,7 @@ class NotificationService
         return $this->create(
             userId: $consultorId,
             title: '📄 RPS Emitido',
-            message: "RPS para a OS #${os->id} foi emitido com sucesso",
+            message: "RPS para a OS #{$os->id} foi emitido com sucesso",
             type: 'rps_emitida',
             ordemServicoId: $os->id,
             actionUrl: route('ordem-servico.show', $os->id),
@@ -166,7 +166,7 @@ class NotificationService
         return $this->create(
             userId: $mentionedUser->id,
             title: '💬 Você foi mencionado',
-            message: "${mentioner->name} mencionou você na OS #${os->id}",
+            message: "{$mentioner->name} mencionou você na OS #{$os->id}",
             type: 'comentario',
             ordemServicoId: $os->id,
             actionUrl: route('ordem-servico.show', $os->id),
