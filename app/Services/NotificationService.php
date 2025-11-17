@@ -23,6 +23,13 @@ class NotificationService
         ?array $data = null,
         bool $sendEmail = false
     ): Notification {
+        \Log::info("NotificationService::create called", [
+            'user_id' => $userId,
+            'title' => $title,
+            'type' => $type,
+            'send_email' => $sendEmail,
+        ]);
+
         $notification = Notification::create([
             'user_id' => $userId,
             'ordem_servico_id' => $ordemServicoId,
@@ -34,8 +41,14 @@ class NotificationService
             'email_sent' => false,
         ]);
 
+        \Log::info("Notification created successfully", [
+            'notification_id' => $notification->id,
+            'user_id' => $userId,
+        ]);
+
         // Send email if requested
         if ($sendEmail) {
+            \Log::info("Sending email notification for notification ID: {$notification->id}");
             $this->sendEmailNotification($notification);
         }
 
@@ -47,8 +60,20 @@ class NotificationService
      */
     public function notifyOsApproved(OrdemServico $os, User $approver): Notification
     {
+        \Log::info("notifyOsApproved called", [
+            'os_id' => $os->id,
+            'approver_id' => $approver->id,
+            'consultor_id' => $os->consultor_id,
+        ]);
+
         $consultorId = $os->consultor_id;
         $client = $os->cliente->nome ?? 'Cliente';
+
+        \Log::info("Creating approval notification", [
+            'consultor_id' => $consultorId,
+            'client_name' => $client,
+            'os_id' => $os->id,
+        ]);
 
         return $this->create(
             userId: $consultorId,

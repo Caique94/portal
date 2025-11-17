@@ -251,10 +251,12 @@ class OrdemServicoController extends Controller
         // Update status and approval fields
         $ordem->status = 4; // APROVADO
 
+        $shouldDispatchEvent = false;
         if ($ordem->approval_status !== 'approved') {
             $ordem->approval_status = 'approved';
             $ordem->approved_at = now();
             $ordem->approved_by = Auth::id();
+            $shouldDispatchEvent = true;
         }
 
         $ordem->save();
@@ -264,8 +266,8 @@ class OrdemServicoController extends Controller
         $auditService->recordApproval();
 
         // Dispatch OSApproved event to trigger PDF generation and email sending
-        // Only dispatch if approval_status was changed (wasChanged checks before save)
-        if ($ordem->wasChanged('approval_status')) {
+        // Dispatch if approval_status was changed
+        if ($shouldDispatchEvent) {
             OSApproved::dispatch($ordem);
         }
 
@@ -484,15 +486,17 @@ class OrdemServicoController extends Controller
         $ordem = OrdemServico::find($id);
         $ordem->status = $status;
 
+        $shouldDispatchEvent = false;
         if ($status == 4 && $ordem->approval_status !== 'approved') {
             $ordem->approval_status = 'approved';
             $ordem->approved_at = now();
             $ordem->approved_by = Auth::id();
+            $shouldDispatchEvent = true;
         }
 
         $ordem->save();
 
-        if ($status == 4 && $ordem->wasChanged('approval_status')) {
+        if ($status == 4 && $shouldDispatchEvent) {
             event(new \App\Events\OSApproved($ordem));
         }
 

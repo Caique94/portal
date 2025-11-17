@@ -19,9 +19,14 @@ class HandleOSApproved
         try {
             // Send notification to consultant
             $notificationService = new NotificationService();
+            Log::info("HandleOSApproved: approved_by value = " . $os->approved_by);
             $approver = \App\Models\User::find($os->approved_by);
             if ($approver) {
+                Log::info("HandleOSApproved: Approver found: {$approver->id} - {$approver->name} - {$approver->email}");
                 $notificationService->notifyOsApproved($os, $approver);
+                Log::info("HandleOSApproved: notifyOsApproved called successfully");
+            } else {
+                Log::warning("HandleOSApproved: Approver with ID {$os->approved_by} not found");
             }
 
             // Criar relatório para o consultor
