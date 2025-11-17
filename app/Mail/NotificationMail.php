@@ -28,14 +28,12 @@ class NotificationMail extends Mailable
         );
     }
 
-    public function content(): Content
+    public function build()
     {
-        return new Content(
-            view: 'emails.notification',
-            with: [
-                'notification' => $this->notification,
-            ]
-        );
+        return $this->view('emails.notification')
+                    ->with([
+                        'notification' => $this->notification,
+                    ]);
     }
 
     public function attachments(): array
