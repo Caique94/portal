@@ -81,7 +81,7 @@ class NotificationService
             message: "Sua OS #{$os->id} do cliente {$client} foi aprovada por {$approver->name}",
             type: 'aprovada',
             ordemServicoId: $os->id,
-            actionUrl: route('ordem-servico.show', $os->id),
+            actionUrl: route('ordem-servico') . '?id=' . $os->id,
             data: [
                 'cliente' => $client,
                 'valor' => $os->valor_total,
@@ -105,7 +105,7 @@ class NotificationService
             message: "Sua OS #{$os->id} do cliente {$client} foi rejeitada. Motivo: " . ($reason ?? 'Verifique os detalhes'),
             type: 'rejeitada',
             ordemServicoId: $os->id,
-            actionUrl: route('ordem-servico.show', $os->id),
+            actionUrl: route('ordem-servico') . '?id=' . $os->id,
             data: [
                 'cliente' => $client,
                 'motivo' => $reason,
@@ -141,7 +141,7 @@ class NotificationService
             message: "Sua OS #{$os->id} do cliente {$client} foi faturada com sucesso. Valor: R$ " . number_format($os->valor_total, 2, ',', '.'),
             type: 'faturada',
             ordemServicoId: $os->id,
-            actionUrl: route('ordem-servico.show', $os->id),
+            actionUrl: route('ordem-servico') . '?id=' . $os->id,
             data: [
                 'cliente' => $client,
                 'valor' => $os->valor_total,
@@ -166,7 +166,7 @@ class NotificationService
                 message: "Nova OS #{$os->id} criada por {$consultant} para o cliente {$client}",
                 type: 'nova_os',
                 ordemServicoId: $os->id,
-                actionUrl: route('ordem-servico.show', $os->id),
+                actionUrl: route('ordem-servico') . '?id=' . $os->id,
                 data: [
                     'cliente' => $client,
                     'consultor' => $consultant,
@@ -190,7 +190,7 @@ class NotificationService
             message: "RPS para a OS #{$os->id} foi emitido com sucesso",
             type: 'rps_emitida',
             ordemServicoId: $os->id,
-            actionUrl: route('ordem-servico.show', $os->id),
+            actionUrl: route('ordem-servico') . '?id=' . $os->id,
             sendEmail: true
         );
     }
@@ -206,7 +206,7 @@ class NotificationService
             message: "{$mentioner->name} mencionou você na OS #{$os->id}",
             type: 'comentario',
             ordemServicoId: $os->id,
-            actionUrl: route('ordem-servico.show', $os->id),
+            actionUrl: route('ordem-servico') . '?id=' . $os->id,
             data: [
                 'mentioner' => $mentioner->name,
                 'comment' => $comment,
