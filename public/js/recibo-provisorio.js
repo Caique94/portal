@@ -456,7 +456,11 @@ $(document).ready(function() {
         parcelas.forEach(function(p) {
             if (p.id == parcelaIdEditando) {
                 // Usar o valor sendo editado
-                var valorEditado = parseFloat($('#txtEditarValor').val().replace(/\./g, '').replace(/,/g, '.')) || 0;
+                var valorStr = $('#txtEditarValor').val();
+                var valorEditado = 0;
+                if (valorStr) {
+                    valorEditado = parseFloat(valorStr.replace(/\./g, '').replace(/,/g, '.')) || 0;
+                }
                 totalParcelas += valorEditado;
             } else {
                 totalParcelas += parseFloat(p.valor) || 0;
