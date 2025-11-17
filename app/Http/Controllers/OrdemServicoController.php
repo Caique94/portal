@@ -17,6 +17,7 @@ use App\Events\RPSEmitted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrdemServicoController extends Controller
 {
@@ -389,7 +390,9 @@ class OrdemServicoController extends Controller
             DB::commit();
 
             // Dispatch OSBilled event to send notification
+            Log::info("bill(): Despachando evento OSBilled para OS #{$ordem->id}");
             OSBilled::dispatch($ordem->refresh());
+            Log::info("bill(): Evento OSBilled despachado com sucesso para OS #{$ordem->id}");
 
             return response()->json([
                 'message' => 'Ordem de Serviço faturada com sucesso',

@@ -120,8 +120,20 @@ class NotificationService
      */
     public function notifyOsBilled(OrdemServico $os): Notification
     {
+        \Log::info("notifyOsBilled called", [
+            'os_id' => $os->id,
+            'consultor_id' => $os->consultor_id,
+        ]);
+
         $consultorId = $os->consultor_id;
         $client = $os->cliente->nome ?? 'Cliente';
+
+        \Log::info("Creating billing notification", [
+            'consultor_id' => $consultorId,
+            'client_name' => $client,
+            'os_id' => $os->id,
+            'valor_total' => $os->valor_total,
+        ]);
 
         return $this->create(
             userId: $consultorId,
