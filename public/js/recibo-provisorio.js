@@ -17,34 +17,24 @@ $(document).ready(function() {
         // Remover "R$" e espaços
         valorStr = valorStr.replace('R$', '').trim();
 
-        console.log('DEBUG parseValorBrasileiro - Input:', valor, 'After string conversion:', valorStr);
-
         // Se contém vírgula, assume formato brasileiro (1.234,56)
         if (valorStr.includes(',')) {
             // Remove pontos (separador de milhares) e substitui vírgula por ponto
-            var result = parseFloat(valorStr.replace(/\./g, '').replace(',', '.'));
-            console.log('  Contains comma - Result:', result);
-            return result;
+            return parseFloat(valorStr.replace(/\./g, '').replace(',', '.'));
         } else if (valorStr.includes('.')) {
             // Se contém ponto, pode ser separador de milhares ou decimal
             // Se há 2 dígitos após o ponto, é decimal; caso contrário, é separador
             var parts = valorStr.split('.');
             if (parts[parts.length - 1].length === 2) {
                 // Formato com milhar: 1.234,56 ou 1.234.56
-                var result = parseFloat(valorStr.replace(/\./g, '.'));
-                console.log('  Has dot - 2 decimals - Result:', result);
-                return result;
+                return parseFloat(valorStr.replace(/\./g, '.'));
             } else {
                 // Ponto é separador de milhares, remover
-                var result = parseFloat(valorStr.replace(/\./g, ''));
-                console.log('  Has dot - thousands separator - Result:', result);
-                return result;
+                return parseFloat(valorStr.replace(/\./g, ''));
             }
         }
 
-        var result = parseFloat(valorStr);
-        console.log('  Default parseFloat - Result:', result);
-        return result;
+        return parseFloat(valorStr);
     }
 
     // Configuração comum para todas as DataTables
@@ -277,7 +267,6 @@ $(document).ready(function() {
             var valor = '-';
             if (parcela.valor) {
                 var valorNum = parseValorBrasileiro(parcela.valor);
-                console.log('DEBUG renderizarParcelas - ID:', parcela.id, 'Raw valor:', parcela.valor, 'Parsed:', valorNum);
                 if (!isNaN(valorNum)) {
                     valor = valorNum.toLocaleString('pt-BR', {
                         style: 'currency',
@@ -851,10 +840,12 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: '/editar-parcela/' + parcelaId,
-            type: 'POST',
+            url: '/atualizar-parcela/' + parcelaId,
+            type: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
             data: {
-                _token: $('meta[name="csrf-token"]').attr('content'),
                 valor: valor,
                 data_vencimento: dataVencimento,
                 data_pagamento: dataPagamento,
