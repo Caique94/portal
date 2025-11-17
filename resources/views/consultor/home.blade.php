@@ -542,6 +542,7 @@
             'enviada para aprovação' => 'var(--warning)',
             'finalizada' => 'var(--success)',
             'contestada' => 'var(--danger)',
+            'aguardando faturamento' => '#FF6B35',
             'faturada' => 'var(--primary)',
             'aguardando rps' => 'var(--info)',
             default => 'var(--text-muted)'
