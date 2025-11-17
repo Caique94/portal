@@ -63,7 +63,7 @@ class ProjetoController extends Controller
      */
     public function show(string $id)
     {
-        $projeto = Projeto::with('cliente', 'ordemServicos')->findOrFail($id);
+        $projeto = Projeto::with('cliente', 'ordemServicos.consultor')->findOrFail($id);
         return view('cadastros.projetos.show', compact('projeto'));
     }
 
@@ -149,12 +149,14 @@ class ProjetoController extends Controller
 
     /**
      * Get projetos for a specific cliente (AJAX)
+     * Excludes canceled and completed projects
      */
     public function getClienteProjetos($clienteId)
     {
         $projetos = Projeto::where('cliente_id', $clienteId)
-            ->where('status', '!=', 'cancelado')
+            ->whereNotIn('status', ['cancelado', 'concluido'])
             ->select('id', 'nome', 'codigo')
+            ->orderBy('nome')
             ->get();
 
         return response()->json($projetos);
