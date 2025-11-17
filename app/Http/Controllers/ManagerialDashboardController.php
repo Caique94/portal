@@ -18,10 +18,15 @@ class ManagerialDashboardController extends Controller
     /**
      * Display the managerial dashboard
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $data = $this->service->getAllDashboardData();
+
+        // Check for period filters
+        $dataInicio = $request->query('data_inicio');
+        $dataFim = $request->query('data_fim');
+
+        $data = $this->service->getAllDashboardData($dataInicio, $dataFim);
 
         return view('managerial-dashboard', [
             'user' => $user,

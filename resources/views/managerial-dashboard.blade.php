@@ -9,6 +9,7 @@
     border-radius: 14px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #ffffff !important;
   }
 
   .kpi-card:hover {
@@ -63,6 +64,82 @@
     border-bottom: 1px solid #e0e0e0;
   }
 
+  .view-toggle {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .view-toggle-btn {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #dee2e6;
+    background-color: #fff;
+    color: #666;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .view-toggle-btn:hover {
+    border-color: #0d6efd;
+    color: #0d6efd;
+  }
+
+  .view-toggle-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+
+  .analytical-section {
+    display: none;
+  }
+
+  .analytical-section.active {
+    display: block;
+  }
+
+  .analyst-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .analyst-card h5 {
+    margin-bottom: 12px;
+    color: #333;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .metric-row:last-child {
+    border-bottom: none;
+  }
+
+  .metric-label {
+    font-weight: 500;
+    color: #666;
+  }
+
+  .metric-value-cell {
+    font-weight: 600;
+    color: #333;
+  }
+
   .tabs-content {
     margin-top: 25px;
   }
@@ -85,6 +162,60 @@
     font-weight: 700;
     margin-top: 5px;
   }
+
+  .period-filter {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .period-filter .form-group {
+    flex: 1;
+    min-width: 150px;
+    margin-bottom: 0;
+  }
+
+  .period-filter label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+  }
+
+  .period-filter input,
+  .period-filter select {
+    width: 100%;
+  }
+
+  .period-filter-quick {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .period-filter-quick button {
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .period-filter-quick button:hover,
+  .period-filter-quick button.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
 </style>
 @endpush
 
@@ -101,6 +232,40 @@
   <div>
     <button class="btn btn-outline-secondary btn-sm" onclick="location.reload()">
       <i class="bi bi-arrow-clockwise"></i> Atualizar
+    </button>
+  </div>
+</div>
+
+{{-- Period Filter --}}
+<div class="period-filter">
+  <div style="display: flex; gap: 10px; align-items: flex-end; flex: 1; min-width: 300px;">
+    <div class="form-group">
+      <label for="kpi-data-inicio">Data Início</label>
+      <input type="date" id="kpi-data-inicio" class="form-control form-control-sm" />
+    </div>
+    <div class="form-group">
+      <label for="kpi-data-fim">Data Fim</label>
+      <input type="date" id="kpi-data-fim" class="form-control form-control-sm" />
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="applyKPIFilters()">
+      <i class="bi bi-funnel"></i> Aplicar
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="clearKPIFilters()">
+      <i class="bi bi-arrow-counterclockwise"></i> Limpar
+    </button>
+  </div>
+  <div class="period-filter-quick">
+    <button onclick="setKPIPeriod(7)" class="period-btn active" data-days="7">
+      <i class="bi bi-calendar-week"></i> Últimos 7 dias
+    </button>
+    <button onclick="setKPIPeriod(30)" class="period-btn" data-days="30">
+      <i class="bi bi-calendar-month"></i> Últimos 30 dias
+    </button>
+    <button onclick="setKPIPeriod(90)" class="period-btn" data-days="90">
+      <i class="bi bi-calendar3"></i> Últimos 90 dias
+    </button>
+    <button onclick="setKPIPeriod(0)" class="period-btn" data-days="0">
+      <i class="bi bi-calendar-check"></i> Todo período
     </button>
   </div>
 </div>
@@ -358,6 +523,16 @@
               </button>
             </div>
           </div>
+
+          <!-- View Toggle -->
+          <div class="view-toggle">
+            <button type="button" class="view-toggle-btn active" id="toggleSummary" onclick="switchView('summary')">
+              <i class="bi bi-diagram-2"></i> Visão Resumida
+            </button>
+            <button type="button" class="view-toggle-btn" id="toggleAnalytical" onclick="switchView('analytical')">
+              <i class="bi bi-graph-up"></i> Visão Analítica
+            </button>
+          </div>
         </form>
 
         <!-- Resumo dos Filtros -->
@@ -366,8 +541,8 @@
           <div id="summaryContent"></div>
         </div>
 
-        <!-- Tabela com Resultados -->
-        <div id="filteredResults" style="display: none;">
+        <!-- Tabela com Resultados (Visão Resumida) -->
+        <div id="filteredResults" style="display: none;" class="summary-section">
           <div class="table-responsive mb-4">
             <table class="table table-hover report-table" id="filteredTable">
               <thead>
@@ -384,6 +559,78 @@
                 <!-- Preenchido por JavaScript -->
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Visão Analítica -->
+        <div id="analyticalResults" style="display: none;" class="analytical-section active">
+          <!-- Por Cliente -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-people"></i> Análise por Cliente</h5>
+            <div id="clientAnalysisContent"></div>
+          </div>
+
+          <!-- Por Consultor -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-person-badge"></i> Análise por Consultor</h5>
+            <div id="consultantAnalysisContent"></div>
+          </div>
+
+          <!-- Status Distribution -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-pie-chart"></i> Distribuição por Status</h5>
+            <div id="statusAnalysisContent"></div>
+          </div>
+
+          <!-- Métricas Adicionais -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-calculator"></i> Métricas Adicionais</h5>
+            <div id="additionalMetricsContent"></div>
+          </div>
+
+          <!-- Projetos -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-diagram-3"></i> Análise por Projeto</h5>
+            <div id="projectAnalysisContent"></div>
+          </div>
+
+          <!-- Duração Total -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-hourglass-split"></i> Duração Total e Deslocamento</h5>
+            <div id="durationAnalysisContent"></div>
+          </div>
+
+          <!-- Atividades Detalhadas -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-list-check"></i> Atividades & Descrições</h5>
+            <div id="activitiesContent" style="max-height: 500px; overflow-y: auto;"></div>
+          </div>
+
+          <!-- Detailed Table para Analytical -->
+          <div class="analyst-card">
+            <h5><i class="bi bi-table"></i> Ordens Detalhadas Expandidas</h5>
+            <div class="table-responsive">
+              <table class="table table-hover report-table" id="analyticalTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Consultor</th>
+                    <th>Projeto</th>
+                    <th>Assunto</th>
+                    <th>Descrição</th>
+                    <th>Horas</th>
+                    <th>KM</th>
+                    <th>Data</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Preenchido por JavaScript -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -833,6 +1080,9 @@
       .then(data => {
         console.log('Filtered data received:', data);
 
+        // Cache the data for analytical view
+        filteredDataCache = data;
+
         // Display summary
         const summaryContent = document.getElementById('summaryContent');
         const summary_data = data.summary;
@@ -885,8 +1135,25 @@
           }
         }
 
-        // Show results and export buttons
-        if (results) results.style.display = 'block';
+        // Show results and export buttons based on current view
+        const toggleAnalytical = document.getElementById('toggleAnalytical');
+        const isAnalyticalActive = toggleAnalytical && toggleAnalytical.classList.contains('active');
+
+        if (isAnalyticalActive) {
+          // Show analytical view
+          populateAnalyticalView(data);
+          if (document.getElementById('analyticalResults')) {
+            document.getElementById('analyticalResults').style.display = 'block';
+          }
+          if (results) results.style.display = 'none';
+        } else {
+          // Show summary view
+          if (results) results.style.display = 'block';
+          if (document.getElementById('analyticalResults')) {
+            document.getElementById('analyticalResults').style.display = 'none';
+          }
+        }
+
         if (exports) exports.style.display = 'block';
         if (summary) {
           summary.classList.remove('alert-info');
@@ -927,6 +1194,10 @@
       status: document.getElementById('status').value
     };
 
+    // Determine view type from toggle buttons
+    const toggleAnalytical = document.getElementById('toggleAnalytical');
+    const viewType = toggleAnalytical && toggleAnalytical.classList.contains('active') ? 'analytical' : 'summary';
+
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/api/reports/export-excel';
@@ -938,6 +1209,13 @@
     tokenInput.name = '_token';
     tokenInput.value = token;
     form.appendChild(tokenInput);
+
+    // Add view type
+    const viewTypeInput = document.createElement('input');
+    viewTypeInput.type = 'hidden';
+    viewTypeInput.name = 'view_type';
+    viewTypeInput.value = viewType;
+    form.appendChild(viewTypeInput);
 
     // Add filter values
     Object.entries(filters).forEach(([key, value]) => {
@@ -951,7 +1229,7 @@
     });
 
     document.body.appendChild(form);
-    console.log('Submitting Excel export form to:', form.action);
+    console.log('Submitting Excel export form to:', form.action, 'with view:', viewType);
     form.submit();
     document.body.removeChild(form);
   }
@@ -968,6 +1246,10 @@
       status: document.getElementById('status').value
     };
 
+    // Determine view type from toggle buttons
+    const toggleAnalytical = document.getElementById('toggleAnalytical');
+    const viewType = toggleAnalytical && toggleAnalytical.classList.contains('active') ? 'analytical' : 'summary';
+
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/api/reports/export-pdf';
@@ -979,6 +1261,13 @@
     tokenInput.name = '_token';
     tokenInput.value = token;
     form.appendChild(tokenInput);
+
+    // Add view type
+    const viewTypeInput = document.createElement('input');
+    viewTypeInput.type = 'hidden';
+    viewTypeInput.name = 'view_type';
+    viewTypeInput.value = viewType;
+    form.appendChild(viewTypeInput);
 
     // Add filter values
     Object.entries(filters).forEach(([key, value]) => {
@@ -992,7 +1281,7 @@
     });
 
     document.body.appendChild(form);
-    console.log('Submitting PDF export form to:', form.action);
+    console.log('Submitting PDF export form to:', form.action, 'with view:', viewType);
     form.submit();
     document.body.removeChild(form);
   }
@@ -1004,7 +1293,18 @@
     document.getElementById('filterForm').reset();
     document.getElementById('filterSummary').style.display = 'none';
     document.getElementById('filteredResults').style.display = 'none';
+    const analyticalResults = document.getElementById('analyticalResults');
+    if (analyticalResults) {
+      analyticalResults.style.display = 'none';
+    }
     document.getElementById('exportButtons').style.display = 'none';
+    filteredDataCache = null;
+
+    // Reset toggle to summary view
+    const toggleSummary = document.getElementById('toggleSummary');
+    const toggleAnalytical = document.getElementById('toggleAnalytical');
+    if (toggleSummary) toggleSummary.classList.add('active');
+    if (toggleAnalytical) toggleAnalytical.classList.remove('active');
   }
 
   /**
@@ -1040,5 +1340,437 @@
     };
     return classMap[status] || 'bg-secondary';
   }
+
+  /**
+   * Store filtered data for analytical view
+   */
+  let filteredDataCache = null;
+
+  /**
+   * Switch between summary and analytical views
+   */
+  function switchView(view) {
+    const toggleSummary = document.getElementById('toggleSummary');
+    const toggleAnalytical = document.getElementById('toggleAnalytical');
+    const filteredResults = document.getElementById('filteredResults');
+    const analyticalResults = document.getElementById('analyticalResults');
+    const filterSummary = document.getElementById('filterSummary');
+
+    if (view === 'summary') {
+      if (toggleSummary) toggleSummary.classList.add('active');
+      if (toggleAnalytical) toggleAnalytical.classList.remove('active');
+      if (filteredResults) filteredResults.style.display = 'block';
+      if (analyticalResults) analyticalResults.style.display = 'none';
+    } else {
+      if (toggleSummary) toggleSummary.classList.remove('active');
+      if (toggleAnalytical) toggleAnalytical.classList.add('active');
+      if (filteredResults) filteredResults.style.display = 'none';
+      if (analyticalResults) analyticalResults.style.display = 'block';
+
+      // Populate analytical view if data exists
+      if (filteredDataCache) {
+        populateAnalyticalView(filteredDataCache);
+      }
+    }
+  }
+
+  /**
+   * Populate analytical view with detailed metrics
+   */
+  function populateAnalyticalView(data) {
+    if (!data.data || data.data.length === 0) return;
+
+    const orders = data.data;
+    const summary = data.summary;
+
+    // Analyze by Client
+    const byClient = {};
+    orders.forEach(order => {
+      const client = order.cliente_nome || 'Sem Cliente';
+      if (!byClient[client]) {
+        byClient[client] = {
+          orders: 0,
+          total_value: 0,
+          billed_value: 0,
+          pending_value: 0,
+          statuses: {}
+        };
+      }
+      byClient[client].orders++;
+      byClient[client].total_value += parseFloat(order.valor_total || 0);
+
+      // Status distribution
+      const status = order.status;
+      if (!byClient[client].statuses[status]) {
+        byClient[client].statuses[status] = 0;
+      }
+      byClient[client].statuses[status]++;
+    });
+
+    // Analyze by Consultant
+    const byConsultant = {};
+    orders.forEach(order => {
+      const consultant = order.consultor_nome || 'Sem Consultor';
+      if (!byConsultant[consultant]) {
+        byConsultant[consultant] = {
+          orders: 0,
+          total_value: 0,
+          billed_value: 0,
+          pending_value: 0
+        };
+      }
+      byConsultant[consultant].orders++;
+      byConsultant[consultant].total_value += parseFloat(order.valor_total || 0);
+    });
+
+    // Analyze by Status
+    const byStatus = {};
+    orders.forEach(order => {
+      const status = getStatusName(order.status);
+      if (!byStatus[status]) {
+        byStatus[status] = {
+          count: 0,
+          total_value: 0
+        };
+      }
+      byStatus[status].count++;
+      byStatus[status].total_value += parseFloat(order.valor_total || 0);
+    });
+
+    // Populate Client Analysis
+    let clientHtml = '';
+    Object.entries(byClient).forEach(([client, data]) => {
+      const avgValue = data.total_value / data.orders;
+      clientHtml += `
+        <div class="metric-row">
+          <span class="metric-label"><strong>${client}</strong></span>
+          <div>
+            <span style="margin-right: 15px;">
+              <i class="bi bi-basket"></i> ${data.orders} OS
+            </span>
+            <span style="margin-right: 15px;">
+              <i class="bi bi-currency-dollar"></i> R$ ${data.total_value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span>
+              Ticket Médio: R$ ${avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('clientAnalysisContent').innerHTML = clientHtml || '<p class="text-muted">Sem dados</p>';
+
+    // Populate Consultant Analysis
+    let consultantHtml = '';
+    Object.entries(byConsultant).forEach(([consultant, data]) => {
+      const avgValue = data.total_value / data.orders;
+      consultantHtml += `
+        <div class="metric-row">
+          <span class="metric-label"><strong>${consultant}</strong></span>
+          <div>
+            <span style="margin-right: 15px;">
+              <i class="bi bi-basket"></i> ${data.orders} OS
+            </span>
+            <span style="margin-right: 15px;">
+              <i class="bi bi-currency-dollar"></i> R$ ${data.total_value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span>
+              Ticket Médio: R$ ${avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('consultantAnalysisContent').innerHTML = consultantHtml || '<p class="text-muted">Sem dados</p>';
+
+    // Populate Status Distribution
+    let statusHtml = '';
+    Object.entries(byStatus).forEach(([status, data]) => {
+      const percentage = ((data.count / orders.length) * 100).toFixed(1);
+      statusHtml += `
+        <div class="metric-row">
+          <span class="metric-label"><strong>${status}</strong></span>
+          <div>
+            <span style="margin-right: 15px;">
+              ${data.count} OS (${percentage}%)
+            </span>
+            <span>
+              R$ ${data.total_value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('statusAnalysisContent').innerHTML = statusHtml || '<p class="text-muted">Sem dados</p>';
+
+    // Additional Metrics
+    const avgValue = summary.valor_total / summary.total_ordens;
+    const conversionRate = (summary.total_ordens_faturadas / summary.total_ordens * 100).toFixed(1);
+    let metricsHtml = `
+      <div class="metric-row">
+        <span class="metric-label">Ticket Médio</span>
+        <span class="metric-value-cell">R$ ${avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Taxa de Faturamento</span>
+        <span class="metric-value-cell">${conversionRate}%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Valor Médio Faturado</span>
+        <span class="metric-value-cell">R$ ${(summary.valor_faturado / summary.total_ordens).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Valor Médio Pendente</span>
+        <span class="metric-value-cell">R$ ${(summary.valor_pendente / summary.total_ordens).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      </div>
+    `;
+    document.getElementById('additionalMetricsContent').innerHTML = metricsHtml;
+
+    // Project Analysis
+    const byProject = {};
+    let projectlessCount = 0;
+    orders.forEach(order => {
+      if (order.projeto_nome && order.projeto_nome !== 'Unknown') {
+        const project = order.projeto_nome;
+        if (!byProject[project]) {
+          byProject[project] = {
+            orders: 0,
+            total_value: 0
+          };
+        }
+        byProject[project].orders++;
+        byProject[project].total_value += parseFloat(order.valor_total || 0);
+      } else {
+        projectlessCount++;
+      }
+    });
+
+    let projectHtml = '';
+    if (Object.keys(byProject).length > 0) {
+      Object.entries(byProject).forEach(([project, data]) => {
+        projectHtml += `
+          <div class="metric-row">
+            <span class="metric-label"><strong>${project}</strong></span>
+            <div>
+              <span style="margin-right: 15px;">
+                <i class="bi bi-basket"></i> ${data.orders} OS
+              </span>
+              <span>
+                <i class="bi bi-currency-dollar"></i> R$ ${data.total_value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        `;
+      });
+    }
+    if (projectlessCount > 0) {
+      projectHtml += `
+        <div class="metric-row" style="background-color: #fffacd; padding: 8px;">
+          <span class="metric-label"><strong>Sem Projeto (${projectlessCount} OS)</strong></span>
+          <span style="color: #999;">Ordens sem associação de projeto</span>
+        </div>
+      `;
+    }
+    document.getElementById('projectAnalysisContent').innerHTML = projectHtml || '<p class="text-muted">Sem dados de projetos</p>';
+
+    // Duration Analysis
+    let totalHours = 0;
+    let totalKm = 0;
+    orders.forEach(order => {
+      if (order.horas) totalHours += parseFloat(order.horas || 0);
+      if (order.km) totalKm += parseFloat(order.km || 0);
+    });
+
+    const avgHours = orders.length > 0 ? totalHours / orders.length : 0;
+    const avgKm = orders.length > 0 ? totalKm / orders.length : 0;
+
+    let durationHtml = `
+      <div class="metric-row">
+        <span class="metric-label">Total de Horas</span>
+        <span class="metric-value-cell">${totalHours.toFixed(2)} h</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Média de Horas por OS</span>
+        <span class="metric-value-cell">${avgHours.toFixed(2)} h</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Total de KM</span>
+        <span class="metric-value-cell">${totalKm.toFixed(2)} km</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Média de KM por OS</span>
+        <span class="metric-value-cell">${avgKm.toFixed(2)} km</span>
+      </div>
+    `;
+    document.getElementById('durationAnalysisContent').innerHTML = durationHtml;
+
+    // Activities Details
+    let activitiesHtml = '<div style="font-size: 0.9rem;">';
+    orders.forEach((order, index) => {
+      const description = order.descricao || order.detalhamento || 'Sem descrição';
+      const assunto = order.assunto || 'Sem assunto';
+      const horasDisplay = order.horas ? `${order.horas}h` : '-';
+      const kmDisplay = order.km ? `${order.km}km` : '-';
+
+      activitiesHtml += `
+        <div style="border-left: 3px solid #0d6efd; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
+          <strong>${index + 1}. ${order.cliente_nome} - ${order.consultor_nome}</strong><br>
+          <small style="color: #666;">
+            <i class="bi bi-calendar"></i> ${new Date(order.created_at).toLocaleDateString('pt-BR')} |
+            <i class="bi bi-hourglass-split"></i> ${horasDisplay} |
+            <i class="bi bi-geo-alt"></i> ${kmDisplay}
+          </small><br>
+          <strong style="color: #0d6efd;">Assunto:</strong> ${assunto}<br>
+          <strong style="color: #0d6efd;">Descrição:</strong> ${description}<br>
+          <small style="color: #28a745;">R$ ${parseFloat(order.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</small>
+        </div>
+      `;
+    });
+    activitiesHtml += '</div>';
+    document.getElementById('activitiesContent').innerHTML = activitiesHtml || '<p class="text-muted">Sem atividades</p>';
+
+    // Populate detailed table for analytical view with expanded columns
+    const analyticalTbody = document.querySelector('#analyticalTable tbody');
+    if (analyticalTbody) {
+      analyticalTbody.innerHTML = '';
+      orders.forEach((order, index) => {
+        const row = document.createElement('tr');
+        const description = (order.descricao || order.detalhamento || '-').substring(0, 50);
+        const assunto = (order.assunto || '-').substring(0, 30);
+        const project = order.projeto_nome || '-';
+        const horas = order.horas ? `${order.horas}h` : '-';
+        const km = order.km ? `${order.km}km` : '-';
+
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${order.cliente_nome || '-'}</td>
+          <td>${order.consultor_nome || '-'}</td>
+          <td><small>${project}</small></td>
+          <td><small>${assunto}</small></td>
+          <td><small title="${order.descricao || order.detalhamento || ''}">${description}</small></td>
+          <td><small>${horas}</small></td>
+          <td><small>${km}</small></td>
+          <td>${new Date(order.created_at).toLocaleDateString('pt-BR')}</td>
+          <td>R$ ${parseFloat(order.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          <td>
+            <span class="badge ${getStatusBadgeClass(order.status)}">
+              ${getStatusName(order.status)}
+            </span>
+          </td>
+        `;
+        analyticalTbody.appendChild(row);
+      });
+    }
+  }
+
+  // KPI Period Filter Functions
+  function setKPIPeriod(days) {
+    const today = new Date();
+    const startDate = new Date();
+
+    // Update button states
+    document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.closest('.period-btn').classList.add('active');
+
+    if (days === 0) {
+      // All period - clear dates
+      document.getElementById('kpi-data-inicio').value = '';
+      document.getElementById('kpi-data-fim').value = '';
+    } else {
+      // Set specific period
+      startDate.setDate(today.getDate() - days);
+      document.getElementById('kpi-data-inicio').value = formatDateForInput(startDate);
+      document.getElementById('kpi-data-fim').value = formatDateForInput(today);
+    }
+
+    applyKPIFilters();
+  }
+
+  function formatDateForInput(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function applyKPIFilters() {
+    const dataInicio = document.getElementById('kpi-data-inicio').value;
+    const dataFim = document.getElementById('kpi-data-fim').value;
+
+    // Validation
+    if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) {
+      alert('Por favor, selecione ambas as datas ou deixe vazio para todo o período');
+      return;
+    }
+
+    if (dataInicio && dataFim && new Date(dataInicio) > new Date(dataFim)) {
+      alert('Data início não pode ser maior que data fim');
+      return;
+    }
+
+    // Build filters object
+    const filters = {};
+    if (dataInicio) filters.data_inicio = dataInicio;
+    if (dataFim) filters.data_fim = dataFim;
+
+    // Fetch filtered data
+    fetch('/api/reports/filtered', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Build query string with filters
+      let query = '?';
+      Object.keys(filters).forEach((key, index) => {
+        query += (index > 0 ? '&' : '') + key + '=' + encodeURIComponent(filters[key]);
+      });
+
+      // Reload page with filters or fetch new data
+      if (Object.keys(filters).length > 0) {
+        window.location.search = query.slice(1);
+      } else {
+        location.reload();
+      }
+    })
+    .catch(error => {
+      console.error('Erro ao aplicar filtros:', error);
+      alert('Erro ao aplicar filtros');
+    });
+  }
+
+  function clearKPIFilters() {
+    document.getElementById('kpi-data-inicio').value = '';
+    document.getElementById('kpi-data-fim').value = '';
+
+    // Reset to 7 days default
+    const btn7d = document.querySelector('.period-btn[data-days="7"]');
+    if (btn7d) {
+      btn7d.click();
+    } else {
+      location.reload();
+    }
+  }
+
+  // Initialize with default 30-day period on page load
+  window.addEventListener('load', function() {
+    // Set default dates to last 30 days
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 30);
+
+    document.getElementById('kpi-data-inicio').value = formatDateForInput(startDate);
+    document.getElementById('kpi-data-fim').value = formatDateForInput(today);
+
+    // Mark 30-day button as active
+    document.querySelectorAll('.period-btn').forEach(btn => {
+      if (btn.getAttribute('data-days') === '30') {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  });
 </script>
 @endpush

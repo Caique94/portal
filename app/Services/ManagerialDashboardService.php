@@ -9,17 +9,38 @@ use Illuminate\Support\Facades\DB;
 
 class ManagerialDashboardService
 {
+    protected $dataInicio = null;
+    protected $dataFim = null;
+
     /**
      * Get all dashboard data (KPIs, charts, relatórios)
      */
-    public function getAllDashboardData(): array
+    public function getAllDashboardData(?string $dataInicio = null, ?string $dataFim = null): array
     {
+        // Set period filters
+        $this->dataInicio = $dataInicio;
+        $this->dataFim = $dataFim;
+
         return [
             'kpis' => $this->getKPIs(),
             'charts' => $this->getCharts(),
             'recent_orders' => $this->getRecentOrders(),
             'reports' => $this->getReports(),
         ];
+    }
+
+    /**
+     * Build a query with date filters applied
+     */
+    protected function applyDateFilters($query)
+    {
+        if ($this->dataInicio) {
+            $query->where('created_at', '>=', $this->dataInicio);
+        }
+        if ($this->dataFim) {
+            $query->where('created_at', '<=', $this->dataFim . ' 23:59:59');
+        }
+        return $query;
     }
 
     // ========== KPIs ==========
@@ -38,12 +59,23 @@ class ManagerialDashboardService
 
     public function getTotalOrdersThisMonth(): int
     {
-        return OrdemServico::where('created_at', '>=', now()->subDays(30))->count();
+        $query = OrdemServico::query();
+
+        // If no date filter, default to 30 days
+        if (!$this->dataInicio && !$this->dataFim) {
+            $query->where('created_at', '>=', now()->subDays(30));
+        } else {
+            $query = $this->applyDateFilters($query);
+        }
+
+        return $query->count();
     }
 
     public function getTotalRevenue(): float
     {
-        $orders = OrdemServico::whereIn('status', [5, 6, 7])->pluck('valor_total');
+        $query = OrdemServico::whereIn('status', [5, 6, 7]);
+        $query = $this->applyDateFilters($query);
+        $orders = $query->pluck('valor_total');
         return (float) $orders->sum(fn($value) => (float) $value);
     }
 
@@ -66,12 +98,16 @@ class ManagerialDashboardService
 
     public function getOrdersPending(): int
     {
-        return OrdemServico::whereIn('status', [1, 2, 3, 4])->count();
+        $query = OrdemServico::whereIn('status', [1, 2, 3, 4]);
+        $query = $this->applyDateFilters($query);
+        return $query->count();
     }
 
     public function getOrdersBilled(): int
     {
-        return OrdemServico::whereIn('status', [5, 6, 7, 8])->count();
+        $query = OrdemServico::whereIn('status', [5, 6, 7, 8]);
+        $query = $this->applyDateFilters($query);
+        return $query->count();
     }
 
     // ========== CHARTS ==========
