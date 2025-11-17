@@ -60,7 +60,7 @@
 
                 @if ($u && $u->papel === 'admin')
                 <li class="sidebar-item {{ (Request::is('dashboard-gerencial') ? 'active' : '') }}">
-                    <a class="sidebar-link" href="{{ url('/dashboard-gerencial') }}"><i class="bi bi-graph-up me-2"></i>Dashboard Gerencial</a>
+                    <a class="sidebar-link" href="{{ url('/dashboard-gerencial') }}">Dashboard Gerencial</a>
                 </li>
                 <li class="sidebar-item {{ (Request::is('projetos*') ? 'active' : '') }}">
                     <a class="sidebar-link" href="{{ url('/projetos') }}">Projetos</a>
