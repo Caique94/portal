@@ -64,12 +64,13 @@ class StateMachine
         // Store old values for audit
         $oldValues = $this->model->getAttributes();
 
-        // Map enum to legacy numeric status for database compatibility
+        // Map enum to numeric status for database compatibility
         $statusMap = [
             OrdemServicoStatus::EM_ABERTO->value => 1,
             OrdemServicoStatus::AGUARDANDO_APROVACAO->value => 2,
             OrdemServicoStatus::CONTESTAR->value => 3,
             OrdemServicoStatus::APROVADO->value => 4,
+            OrdemServicoStatus::AGUARDANDO_FATURAMENTO->value => 4,
             OrdemServicoStatus::FATURADO->value => 5,
             OrdemServicoStatus::AGUARDANDO_RPS->value => 6,
             OrdemServicoStatus::RPS_EMITIDA->value => 7,
