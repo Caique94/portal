@@ -21,13 +21,16 @@ O sistema de relatórios agora oferece **duas visões complementares**:
 - Ideal para visão rápida
 
 ### 2. **Visão Analítica** (Nova)
-- 4 análises detalhadas:
+- 7 seções de análise detalhada:
   - **Análise por Cliente**: Ordens, Valor Total, Ticket Médio
   - **Análise por Consultor**: Ordens, Valor Total, Ticket Médio
   - **Distribuição por Status**: Contagem, Percentual, Valor Total
   - **Métricas Adicionais**: Ticket Médio, Taxa Faturamento, Valor Médio
-- Tabela completa de ordens
-- Ideal para análise estratégica
+  - **Análise por Projeto**: Ordens e receita por projeto (identifica qual projeto possui mais OS)
+  - **Duração & Deslocamento**: Total de horas, média de horas/OS, total de KM, média de KM/OS
+  - **Atividades & Descrições**: Lista detalhada com assunto, descrição, horas e km de cada OS
+- Tabela expandida com 11 colunas: ID, Cliente, Consultor, Projeto, Assunto, Descrição, Horas, KM, Data, Valor, Status
+- Ideal para análise estratégica e detalhada de projetos e atividades
 
 ---
 
@@ -75,11 +78,21 @@ O sistema de relatórios agora oferece **duas visões complementares**:
 **`populateAnalyticalView(data)`**
 - Processa dados filtrados no cliente
 - Agrupa por cliente (ordens, total, ticket médio)
-- Agrupa por consultor
-- Análisa distribuição por status
-- Calcula métricas adicionais (taxa faturamento, etc)
-- Popula 4 cards analíticos
-- Popula tabela detalhada
+- Agrupa por consultor (ordens, total, ticket médio)
+- Análisa distribuição por status (contagem, percentual)
+- **Análisa por projeto**: Agrupa ordens por projeto, calcula totalizações
+  - Destaca "Sem Projeto" em amarelo para OS não associadas
+- **Calcula duração**: Total de horas, média de horas/OS, total de KM, média de KM/OS
+  - Extrai de `order.horas` (calculado no backend)
+  - Extrai de `order.km` (campo direto da OS)
+- **Processa atividades**: Cria lista formatada com:
+  - Número sequencial, cliente, consultor
+  - Data, duração, deslocamento
+  - Assunto (título), Descrição (corpo)
+  - Valor da OS, status
+  - Cada atividade em um card visual com border azul
+- Popula 7 cards analíticos (Cliente, Consultor, Status, Métricas, Projeto, Duração, Atividades)
+- Popula tabela expandida com 11 colunas
 
 **Atualizações em funções existentes:**
 - `applyFilters()` - Cache de dados, suporte a ambas visões
