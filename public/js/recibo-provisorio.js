@@ -453,17 +453,26 @@ $(document).ready(function() {
         var totalParcelas = 0;
 
         // Calcular total das parcelas
+        if (!parcelas || !Array.isArray(parcelas)) {
+            return;
+        }
+
         parcelas.forEach(function(p) {
+            if (!p) return; // Skip null/undefined parcelas
+
             if (p.id == parcelaIdEditando) {
                 // Usar o valor sendo editado
                 var valorStr = $('#txtEditarValor').val();
                 var valorEditado = 0;
-                if (valorStr) {
+                if (valorStr && typeof valorStr === 'string') {
                     valorEditado = parseFloat(valorStr.replace(/\./g, '').replace(/,/g, '.')) || 0;
                 }
                 totalParcelas += valorEditado;
             } else {
-                totalParcelas += parseFloat(p.valor) || 0;
+                var parcelaValor = (typeof p.valor === 'string') ?
+                    parseFloat(p.valor.replace(/\./g, '').replace(/,/g, '.')) :
+                    parseFloat(p.valor) || 0;
+                totalParcelas += parcelaValor;
             }
         });
 
