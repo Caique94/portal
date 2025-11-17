@@ -1017,18 +1017,23 @@ class ReportExportService
             return 0;
         }
 
-        $inicio_time = \Carbon\Carbon::parse($inicio);
-        $final_time = \Carbon\Carbon::parse($final);
+        try {
+            $inicio_time = \Carbon\Carbon::parse($inicio);
+            $final_time = \Carbon\Carbon::parse($final);
 
-        $diff_minutes = $final_time->diffInMinutes($inicio_time);
-        $hours = $diff_minutes / 60;
+            $diff_minutes = $final_time->diffInMinutes($inicio_time);
+            $hours = $diff_minutes / 60;
 
-        // Subtract discount hours if provided
-        if ($desconto) {
-            $hours -= $desconto;
+            // Subtract discount hours if provided
+            if ($desconto) {
+                $desconto_numeric = (float) $desconto;
+                $hours -= $desconto_numeric;
+            }
+
+            return max(0, $hours);
+        } catch (\Exception $e) {
+            return 0;
         }
-
-        return max(0, $hours);
     }
 
     /**
