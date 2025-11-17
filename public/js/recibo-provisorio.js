@@ -757,4 +757,85 @@ $(document).ready(function() {
         });
     });
 
+    // Monitorar mudança de valor no modal de editar
+    $('#txtEditarValor').on('input change', function() {
+        var parcelaIdEditando = $('#txtEditarParcelaId').val();
+        if (parcelaIdEditando && reciboAtual) {
+            // Carregar parcelas para recalcular totais
+            $.ajax({
+                url: '/listar-parcelas',
+                type: 'GET',
+                data: { recibo_provisorio_id: $('#txtParcelaReciboId').val() },
+                success: function(response) {
+                    atualizarValidacaoParcelas(response, parcelaIdEditando);
+                }
+            });
+        }
+    });
+
+    // Salvar parcela editada
+    $('#btnSalvarParcela').on('click', function() {
+        var parcelaId = $('#txtEditarParcelaId').val();
+        var valorStr = $('#txtEditarValor').val();
+        var valor = parseFloat(valorStr.replace(/\./g, '').replace(/,/g, '.'));
+        var dataVencimento = $('#txtEditarDataVencimento').val();
+        var dataPagamento = $('#txtEditarDataPagamento').val();
+        var status = $('#slcEditarStatus').val();
+        var observacao = $('#txtEditarObservacao').val();
+
+        if (!valor || isNaN(valor)) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Valor inválido'
+            });
+            return;
+        }
+
+        if (!dataVencimento) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Data de vencimento obrigatória'
+            });
+            return;
+        }
+
+        // Validar se total das parcelas não excede valor da RPS
+        var alertaAvisoValidacao = $('#alertAvisoValidacao');
+        if (alertaAvisoValidacao.hasClass('alert-danger')) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Total das parcelas não pode exceder o valor da RPS'
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '/editar-parcela/' + parcelaId,
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                valor: valor,
+                data_vencimento: dataVencimento,
+                data_pagamento: dataPagamento,
+                status: status,
+                observacao: observacao
+            },
+            success: function(response) {
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Parcela atualizada com sucesso'
+                });
+
+                $('#modalEditarParcela').modal('hide');
+                carregarParcelas(reciboAtual.id);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Erro ao salvar parcela: ' + errorThrown
+                });
+            }
+        });
+    });
+
 });
