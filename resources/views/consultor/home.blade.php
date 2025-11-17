@@ -492,9 +492,10 @@
                   'enviada para aprovação' => 'badge-warning',
                   'finalizada' => 'badge-success',
                   'contestada' => 'badge-danger',
+                  'aguardando faturamento' => 'badge-warning',
                   'faturada' => 'badge-primary',
                   'aguardando rps' => 'badge-info',
-                  default => 'badge-secondary'
+                  default => 'badge-info'
                 };
               @endphp
               <tr>
