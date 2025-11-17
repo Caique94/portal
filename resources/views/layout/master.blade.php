@@ -298,6 +298,14 @@
 </script>
 
 <style>
+    #notificationBadge {
+        width: 20px !important;
+        height: 20px !important;
+        font-size: 0.65rem !important;
+        padding: 0.15rem 0.35rem !important;
+        line-height: 1 !important;
+    }
+
     .notification-dropdown {
         min-width: 350px;
         max-width: 450px;
