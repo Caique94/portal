@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\PessoaJuridicaUsuario;
+use App\Models\PagamentoUsuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -28,7 +30,30 @@ class UserController extends Controller
             'txtUsuarioValorHora'   => 'nullable|string',
             'txtUsuarioValorDesloc' => 'nullable|string',
             'txtUsuarioValorKM'     => 'nullable|string',
-            'txtUsuarioSalarioBase' => 'nullable|string'
+            'txtUsuarioSalarioBase' => 'nullable|string',
+            // Pessoa Jurídica
+            'txtPJCNPJ'             => 'nullable|string|max:18|unique:pessoa_juridica_usuario,cnpj' . ($isUpdate ? ',' . $userId . ',user_id' : ''),
+            'txtPJRazaoSocial'      => 'nullable|string|max:255',
+            'txtPJNomeFantasia'     => 'nullable|string|max:255',
+            'txtPJEndereco'         => 'nullable|string|max:255',
+            'txtPJNumero'           => 'nullable|string|max:10',
+            'txtPJComplemento'      => 'nullable|string|max:255',
+            'txtPJBairro'           => 'nullable|string|max:100',
+            'txtPJCidade'           => 'nullable|string|max:100',
+            'slcPJEstado'           => 'nullable|string|max:2',
+            'txtPJCEP'              => 'nullable|string|max:10',
+            'txtPJTelefone'         => 'nullable|string|max:20',
+            'txtPJEmail'            => 'nullable|email|max:255',
+            'txtPJSite'             => 'nullable|string|max:255',
+            'txtPJRamoAtividade'    => 'nullable|string|max:255',
+            'txtPJDataConstituicao' => 'nullable|date',
+            // Pagamento
+            'txtPagTitularConta'    => 'nullable|string|max:255',
+            'txtPagBanco'           => 'nullable|string|max:100',
+            'txtPagAgencia'         => 'nullable|string|max:20',
+            'txtPagConta'           => 'nullable|string|max:20',
+            'slcPagTipoConta'       => 'nullable|in:corrente,poupanca',
+            'txtPagPixKey'          => 'nullable|string|max:255',
         ];
 
         $v = $request->validate($rules);
@@ -53,6 +78,44 @@ class UserController extends Controller
 
             $user->update($p);
 
+            // Atualizar Pessoa Jurídica
+            if (!empty($v['txtPJCNPJ'])) {
+                $pessoaJuridica = [
+                    'cnpj'                  => $v['txtPJCNPJ'],
+                    'razao_social'          => $v['txtPJRazaoSocial'],
+                    'nome_fantasia'         => $v['txtPJNomeFantasia'],
+                    'inscricao_estadual'    => $v['txtPJInscricaoEstadual'] ?? null,
+                    'inscricao_municipal'   => $v['txtPJInscricaoMunicipal'] ?? null,
+                    'endereco'              => $v['txtPJEndereco'],
+                    'numero'                => $v['txtPJNumero'],
+                    'complemento'           => $v['txtPJComplemento'] ?? null,
+                    'bairro'                => $v['txtPJBairro'],
+                    'cidade'                => $v['txtPJCidade'],
+                    'estado'                => $v['slcPJEstado'],
+                    'cep'                   => $v['txtPJCEP'],
+                    'telefone'              => $v['txtPJTelefone'],
+                    'email'                 => $v['txtPJEmail'],
+                    'site'                  => $v['txtPJSite'] ?? null,
+                    'ramo_atividade'        => $v['txtPJRamoAtividade'] ?? null,
+                    'data_constituicao'     => $v['txtPJDataConstituicao'] ?? null,
+                ];
+                $user->pessoaJuridica()->updateOrCreate(['user_id' => $user->id], $pessoaJuridica);
+            }
+
+            // Atualizar Pagamento
+            if (!empty($v['txtPagBanco'])) {
+                $pagamento = [
+                    'titular_conta'         => $v['txtPagTitularConta'],
+                    'cpf_cnpj_titular'      => $v['txtPagCpfCnpjTitular'] ?? null,
+                    'banco'                 => $v['txtPagBanco'],
+                    'agencia'               => $v['txtPagAgencia'],
+                    'conta'                 => $v['txtPagConta'],
+                    'tipo_conta'            => $v['slcPagTipoConta'] ?? 'corrente',
+                    'pix_key'               => $v['txtPagPixKey'] ?? null,
+                ];
+                $user->pagamento()->updateOrCreate(['user_id' => $user->id], $pagamento);
+            }
+
             return response()->json(['ok' => true, 'message' => 'Usuário atualizado com sucesso', 'data' => $user], 200);
         } else {
             // Criar novo usuário
@@ -76,6 +139,42 @@ class UserController extends Controller
             if (Schema::hasColumn('users','ativo'))         $p['ativo']        = true;
 
             $user = User::create($p);
+
+            // Criar Pessoa Jurídica
+            if (!empty($v['txtPJCNPJ'])) {
+                $user->pessoaJuridica()->create([
+                    'cnpj'                  => $v['txtPJCNPJ'],
+                    'razao_social'          => $v['txtPJRazaoSocial'],
+                    'nome_fantasia'         => $v['txtPJNomeFantasia'],
+                    'inscricao_estadual'    => $v['txtPJInscricaoEstadual'] ?? null,
+                    'inscricao_municipal'   => $v['txtPJInscricaoMunicipal'] ?? null,
+                    'endereco'              => $v['txtPJEndereco'],
+                    'numero'                => $v['txtPJNumero'],
+                    'complemento'           => $v['txtPJComplemento'] ?? null,
+                    'bairro'                => $v['txtPJBairro'],
+                    'cidade'                => $v['txtPJCidade'],
+                    'estado'                => $v['slcPJEstado'],
+                    'cep'                   => $v['txtPJCEP'],
+                    'telefone'              => $v['txtPJTelefone'],
+                    'email'                 => $v['txtPJEmail'],
+                    'site'                  => $v['txtPJSite'] ?? null,
+                    'ramo_atividade'        => $v['txtPJRamoAtividade'] ?? null,
+                    'data_constituicao'     => $v['txtPJDataConstituicao'] ?? null,
+                ]);
+            }
+
+            // Criar Pagamento
+            if (!empty($v['txtPagBanco'])) {
+                $user->pagamento()->create([
+                    'titular_conta'         => $v['txtPagTitularConta'],
+                    'cpf_cnpj_titular'      => $v['txtPagCpfCnpjTitular'] ?? null,
+                    'banco'                 => $v['txtPagBanco'],
+                    'agencia'               => $v['txtPagAgencia'],
+                    'conta'                 => $v['txtPagConta'],
+                    'tipo_conta'            => $v['slcPagTipoConta'] ?? 'corrente',
+                    'pix_key'               => $v['txtPagPixKey'] ?? null,
+                ]);
+            }
 
             return response()->json(['ok' => true, 'message' => 'Usuário criado com sucesso', 'data' => $user], 201);
         }
