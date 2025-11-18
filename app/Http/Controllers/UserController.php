@@ -35,6 +35,8 @@ class UserController extends Controller
             'txtPJCNPJ'             => 'nullable|string|max:18|unique:pessoa_juridica_usuario,cnpj' . ($isUpdate ? ',' . $userId . ',user_id' : ''),
             'txtPJRazaoSocial'      => 'nullable|string|max:255',
             'txtPJNomeFantasia'     => 'nullable|string|max:255',
+            'txtPJInscricaoEstadual' => 'nullable|string|max:255',
+            'txtPJInscricaoMunicipal' => 'nullable|string|max:255',
             'txtPJEndereco'         => 'nullable|string|max:255',
             'txtPJNumero'           => 'nullable|string|max:10',
             'txtPJComplemento'      => 'nullable|string|max:255',
@@ -49,6 +51,7 @@ class UserController extends Controller
             'txtPJDataConstituicao' => 'nullable|date',
             // Pagamento
             'txtPagTitularConta'    => 'nullable|string|max:255',
+            'txtPagCpfCnpjTitular'  => 'nullable|string|max:255',
             'txtPagBanco'           => 'nullable|string|max:100',
             'txtPagAgencia'         => 'nullable|string|max:20',
             'txtPagConta'           => 'nullable|string|max:20',
