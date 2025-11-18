@@ -74,9 +74,9 @@
                 <li class="sidebar-item {{ (Request::is('cadastros/clientes') ? 'active' : '') }}">
                     <a class="sidebar-link" href="{{ url('/cadastros/clientes') }}">Clientes</a>
                 </li>
-                <li class="sidebar-item {{ (Request::is('cadastros/fornecedores') ? 'active' : '') }}">
+                {{-- <li class="sidebar-item {{ (Request::is('cadastros/fornecedores') ? 'active' : '') }}">
                     <a class="sidebar-link" href="{{ url('/cadastros/fornecedores') }}">Fornecedores</a>
-                </li>
+                </li> --}}
                 <li class="sidebar-item {{ (Request::is('cadastros/produtos') ? 'active' : '') }}">
                     <a class="sidebar-link" href="{{ url('/cadastros/produtos') }}">Produtos</a>
                 </li>
