@@ -34,6 +34,7 @@ class ProjetoController extends Controller
         $request->validate([
             'cliente_id' => 'required|exists:cliente,id',
             'nome' => 'required|string|max:255',
+            'numero_atendimento' => 'nullable|string|max:255',
             'descricao' => 'nullable|string',
             'status' => 'required|in:ativo,pausado,concluido,cancelado',
             'data_inicio' => 'nullable|date',
@@ -111,6 +112,7 @@ class ProjetoController extends Controller
         $request->validate([
             'cliente_id' => 'required|exists:cliente,id',
             'nome' => 'required|string|max:255',
+            'numero_atendimento' => 'nullable|string|max:255',
             'descricao' => 'nullable|string',
             'status' => 'required|in:ativo,pausado,concluido,cancelado',
             'data_inicio' => 'nullable|date',

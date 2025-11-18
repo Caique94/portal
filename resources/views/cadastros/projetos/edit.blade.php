@@ -66,6 +66,21 @@
                         </div>
 
                         <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="numero_atendimento" class="form-label">Número do Atendimento</label>
+                                    <input type="text" class="form-control @error('numero_atendimento') is-invalid @enderror"
+                                        id="numero_atendimento" name="numero_atendimento" placeholder="Ex: ATD-001-2024 ou 001/002/003"
+                                        value="{{ $projeto->numero_atendimento }}">
+                                    <small class="text-muted d-block mt-2">Você pode informar um ou vários números de atendimento separados por vírgula ou barra</small>
+                                    @error('numero_atendimento')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="descricao" class="form-label">Descrição</label>

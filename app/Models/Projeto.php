@@ -10,6 +10,7 @@ class Projeto extends Model
 
     protected $fillable = [
         'codigo',
+        'numero_atendimento',
         'cliente_id',
         'nome',
         'descricao',
