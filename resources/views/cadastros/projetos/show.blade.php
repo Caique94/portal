@@ -149,7 +149,7 @@
                                     @foreach ($projeto->ordemServicos as $os)
                                         <tr>
                                             <td>#{{ $os->id }}</td>
-                                            <td>{{ $os->consultor->name ?? '-' }}</td>
+                                            <td>{{ $os->consultor?->name ?? '-' }}</td>
                                             <td>
                                                 @php
                                                     $osStatusClass = match($os->status) {
