@@ -40,25 +40,27 @@ return new class extends Migration
         });
 
         // Add index to pagamento_parcelas for common queries
-        Schema::table('pagamento_parcelas', function (Blueprint $table) {
-            try {
-                $table->index('recibo_provisorio_id');
-            } catch (\Exception $e) {
-                // Index might already exist
-            }
+        if (Schema::hasTable('pagamento_parcelas')) {
+            Schema::table('pagamento_parcelas', function (Blueprint $table) {
+                try {
+                    $table->index('recibo_provisorio_id');
+                } catch (\Exception $e) {
+                    // Index might already exist
+                }
 
-            try {
-                $table->index('status');
-            } catch (\Exception $e) {
-                // Index might already exist
-            }
+                try {
+                    $table->index('status');
+                } catch (\Exception $e) {
+                    // Index might already exist
+                }
 
-            try {
-                $table->index('data_vencimento');
-            } catch (\Exception $e) {
-                // Index might already exist
-            }
-        });
+                try {
+                    $table->index('data_vencimento');
+                } catch (\Exception $e) {
+                    // Index might already exist
+                }
+            });
+        }
 
         // Add index to recibo_provisorio for client queries
         Schema::table('recibo_provisorio', function (Blueprint $table) {
@@ -137,20 +139,22 @@ return new class extends Migration
             }
         });
 
-        Schema::table('pagamento_parcelas', function (Blueprint $table) {
-            try {
-                $table->dropIndex(['recibo_provisorio_id']);
-            } catch (\Exception $e) {
-            }
-            try {
-                $table->dropIndex(['status']);
-            } catch (\Exception $e) {
-            }
-            try {
-                $table->dropIndex(['data_vencimento']);
-            } catch (\Exception $e) {
-            }
-        });
+        if (Schema::hasTable('pagamento_parcelas')) {
+            Schema::table('pagamento_parcelas', function (Blueprint $table) {
+                try {
+                    $table->dropIndex(['recibo_provisorio_id']);
+                } catch (\Exception $e) {
+                }
+                try {
+                    $table->dropIndex(['status']);
+                } catch (\Exception $e) {
+                }
+                try {
+                    $table->dropIndex(['data_vencimento']);
+                } catch (\Exception $e) {
+                }
+            });
+        }
 
         Schema::table('contato', function (Blueprint $table) {
             try {
