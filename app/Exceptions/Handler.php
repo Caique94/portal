@@ -40,6 +40,13 @@ class Handler extends ExceptionHandler
             return $this->handleJsonException($request, $exception);
         }
 
+        // Se é uma requisição para uma rota de API interna (começa com /api ou /listar-)
+        // Também retorna JSON para evitar erro de parsing no DataTables
+        if ($request->is('api/*') || $request->is('listar-*') || $request->is('salvar-*') ||
+            $request->is('toggle-*') || $request->is('excluir-*') || $request->is('remover-*')) {
+            return $this->handleJsonException($request, $exception);
+        }
+
         // Caso contrário, usa o comportamento padrão
         return parent::render($request, $exception);
     }

@@ -6,7 +6,38 @@ $(function () {
     ajax: {
       url: '/listar-usuarios',
       type: 'GET',
-      dataSrc: 'data' // { data: [...] }
+      dataSrc: 'data', // { data: [...] }
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      // Tratamento detalhado de erros
+      error: function(xhr, status, error) {
+        console.error('DataTables AJAX Error:', {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          responseText: xhr.responseText.substring(0, 200),
+          error: error
+        });
+
+        let errorMsg = 'Erro ao carregar dados';
+
+        if (xhr.status === 401) {
+          errorMsg = 'Sessão expirada. Faça login novamente.';
+          console.error('401 Unauthorized - Precisa fazer login novamente');
+        } else if (xhr.status === 403) {
+          errorMsg = 'Você não tem permissão para acessar este recurso';
+        } else if (xhr.status === 404) {
+          errorMsg = 'Rota não encontrada';
+        } else if (xhr.status === 500) {
+          errorMsg = 'Erro no servidor';
+        }
+
+        Toast.fire({
+          icon: 'error',
+          title: errorMsg
+        });
+      }
     },
     columns: [
       { title: 'Nome',      data: 'name',    defaultContent: '' },
