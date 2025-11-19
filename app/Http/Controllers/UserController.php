@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Mail\PasswordResetMail;
 
@@ -16,171 +17,219 @@ class UserController extends Controller
 {
     public function store(Request $request)
     {
-        $userId = $request->input('id');
-        $isUpdate = !empty($userId);
+        try {
+            // ===== 1. Preparar dados =====
+            $userId = $request->input('id');
+            $isUpdate = !empty($userId);
 
-        // Regras de validação base
+            // Log da requisição
+            \Log::info('UserController::store iniciado', [
+                'isUpdate' => $isUpdate,
+                'userId' => $userId,
+                'method' => $request->method(),
+                'contentType' => $request->header('Content-Type'),
+            ]);
+
+            // ===== 2. Validar entrada =====
+            $validated = $this->validateUserInput($request, $isUpdate);
+
+            // ===== 3. Verificar email único (para novo) =====
+            if (!empty($validated['txtUsuarioEmail'])) {
+                $emailExists = User::where('email', $validated['txtUsuarioEmail'])
+                    ->when(!$isUpdate, fn($q) => $q)  // Se for criar novo
+                    ->when($isUpdate, fn($q) => $q->where('id', '!=', $userId))  // Se for update, ignore o próprio
+                    ->exists();
+
+                if ($emailExists) {
+                    \Log::warning('Email duplicado tentou ser criado', ['email' => $validated['txtUsuarioEmail']]);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Email já está cadastrado no sistema',
+                        'errors' => ['txtUsuarioEmail' => ['Este email já está em uso']]
+                    ], 422);
+                }
+            }
+
+            // ===== 4. Iniciar transação =====
+            DB::beginTransaction();
+
+            try {
+                if ($isUpdate) {
+                    $user = $this->updateUser($userId, $validated);
+                    $message = 'Usuário atualizado com sucesso';
+                    $statusCode = 200;
+                } else {
+                    $user = $this->createUser($validated);
+                    $message = 'Usuário criado com sucesso';
+                    $statusCode = 201;
+                }
+
+                // ===== 5. Commit da transação =====
+                DB::commit();
+
+                \Log::info('Usuário salvo com sucesso', ['userId' => $user->id, 'email' => $user->email]);
+
+                // ===== 6. Retornar resposta =====
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'data' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'papel' => $user->papel,
+                        'ativo' => $user->ativo ?? true,
+                    ]
+                ], $statusCode);
+
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Erro de validação (422)
+            \Log::warning('Validação falhou', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro de validação dos dados',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Erro de banco de dados (500)
+            \Log::error('Erro de banco de dados', [
+                'error' => $e->getMessage(),
+                'sql' => $e->getSql() ?? 'N/A'
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao salvar no banco de dados: ' . $e->getMessage(),
+                'debug' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+
+        } catch (\Exception $e) {
+            // Erro genérico (500)
+            \Log::error('Erro ao salvar usuário', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao salvar usuário: ' . $e->getMessage(),
+                'debug' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
+     * Validar entrada do usuário
+     */
+    private function validateUserInput($request, $isUpdate = false): array
+    {
         $rules = [
-            'txtUsuarioNome'        => 'required|string|max:255',
-            'txtUsuarioDataNasc'    => 'nullable|date',
-            'txtUsuarioEmail'       => 'required|email|max:255|' . ($isUpdate ? 'unique:users,email,' . $userId : 'unique:users,email'),
-            'slcUsuarioPapel'       => 'required|string|max:100',
-            'txtUsuarioCGC'         => 'nullable|string|max:255',
-            'txtUsuarioCelular'     => 'nullable|string|max:255',
-            'txtUsuarioValorHora'   => 'nullable|string',
-            'txtUsuarioValorDesloc' => 'nullable|string',
-            'txtUsuarioValorKM'     => 'nullable|string',
-            'txtUsuarioSalarioBase' => 'nullable|string',
-            // Pessoa Jurídica
-            'txtPJCNPJ'             => 'nullable|string|max:18|unique:pessoa_juridica_usuario,cnpj' . ($isUpdate ? ',' . $userId . ',user_id' : ''),
-            'txtPJRazaoSocial'      => 'nullable|string|max:255',
-            'txtPJNomeFantasia'     => 'nullable|string|max:255',
-            'txtPJInscricaoEstadual' => 'nullable|string|max:255',
-            'txtPJInscricaoMunicipal' => 'nullable|string|max:255',
-            'txtPJEndereco'         => 'nullable|string|max:255',
-            'txtPJNumero'           => 'nullable|string|max:10',
-            'txtPJComplemento'      => 'nullable|string|max:255',
-            'txtPJBairro'           => 'nullable|string|max:100',
-            'txtPJCidade'           => 'nullable|string|max:100',
-            'slcPJEstado'           => 'nullable|string|max:2',
-            'txtPJCEP'              => 'nullable|string|max:10',
-            'txtPJTelefone'         => 'nullable|string|max:20',
-            'txtPJEmail'            => 'nullable|email|max:255',
-            'txtPJSite'             => 'nullable|string|max:255',
-            'txtPJRamoAtividade'    => 'nullable|string|max:255',
-            'txtPJDataConstituicao' => 'nullable|date',
-            // Pagamento
-            'txtPagTitularConta'    => 'nullable|string|max:255',
-            'txtPagCpfCnpjTitular'  => 'nullable|string|max:255',
-            'txtPagBanco'           => 'nullable|string|max:100',
-            'txtPagAgencia'         => 'nullable|string|max:20',
-            'txtPagConta'           => 'nullable|string|max:20',
-            'slcPagTipoConta'       => 'nullable|in:corrente,poupanca',
-            'txtPagPixKey'          => 'nullable|string|max:255',
+            'id'                    => 'nullable|integer',
+            'txtUsuarioNome'        => 'required|string|min:3|max:255',
+            'txtUsuarioEmail'       => [
+                'required',
+                'email',
+                'max:255',
+                $isUpdate ? \Illuminate\Validation\Rule::unique('users', 'email')->ignore($request->input('id'))
+                          : \Illuminate\Validation\Rule::unique('users', 'email')
+            ],
+            'slcUsuarioPapel'       => 'required|in:admin,consultor,financeiro',
+            'txtUsuarioDataNasc'    => 'nullable|date_format:Y-m-d',
+            'txtUsuarioCelular'     => 'nullable|string|max:20',
+            'txtUsuarioCGC'         => 'nullable|string|max:20',
+            'txtUsuarioValorHora'   => 'nullable|numeric|min:0',
+            'txtUsuarioValorDesloc' => 'nullable|numeric|min:0',
+            'txtUsuarioValorKM'     => 'nullable|numeric|min:0',
+            'txtUsuarioSalarioBase' => 'nullable|numeric|min:0',
         ];
 
-        $v = $request->validate($rules);
+        return $request->validate($rules, $this->validationMessages());
+    }
 
-        if ($isUpdate) {
-            // Atualizar usuário existente
-            $user = User::findOrFail($userId);
+    /**
+     * Mensagens de validação customizadas
+     */
+    private function validationMessages(): array
+    {
+        return [
+            'txtUsuarioNome.required'  => 'O nome é obrigatório',
+            'txtUsuarioNome.min'       => 'O nome deve ter no mínimo 3 caracteres',
+            'txtUsuarioEmail.required' => 'O email é obrigatório',
+            'txtUsuarioEmail.email'    => 'O email deve ser válido',
+            'txtUsuarioEmail.unique'   => 'Este email já está cadastrado',
+            'slcUsuarioPapel.required' => 'O papel é obrigatório',
+            'slcUsuarioPapel.in'       => 'O papel deve ser admin, consultor ou financeiro',
+            'txtUsuarioDataNasc.date_format' => 'A data deve estar no formato YYYY-MM-DD',
+        ];
+    }
 
-            $p = [
-                'name'   => $v['txtUsuarioNome'],
-                'email'  => $v['txtUsuarioEmail'],
-                'papel'  => $v['slcUsuarioPapel'],
-            ];
-
-            if (Schema::hasColumn('users','data_nasc'))     $p['data_nasc']    = $v['txtUsuarioDataNasc'] ?? null;
-            if (Schema::hasColumn('users','cgc'))           $p['cgc']          = $v['txtUsuarioCGC'] ?? null;
-            if (Schema::hasColumn('users','celular'))       $p['celular']      = $v['txtUsuarioCelular'] ?? null;
-            if (Schema::hasColumn('users','valor_hora'))    $p['valor_hora']   = $v['txtUsuarioValorHora'] ?? null;
-            if (Schema::hasColumn('users','valor_desloc'))  $p['valor_desloc'] = $v['txtUsuarioValorDesloc'] ?? null;
-            if (Schema::hasColumn('users','valor_km'))      $p['valor_km']     = $v['txtUsuarioValorKM'] ?? null;
-            if (Schema::hasColumn('users','salario_base'))  $p['salario_base'] = $v['txtUsuarioSalarioBase'] ?? null;
-
-            $user->update($p);
-
-            // Atualizar Pessoa Jurídica
-            if (!empty($v['txtPJCNPJ'])) {
-                $pessoaJuridica = [
-                    'cnpj'                  => $v['txtPJCNPJ'],
-                    'razao_social'          => $v['txtPJRazaoSocial'],
-                    'nome_fantasia'         => $v['txtPJNomeFantasia'],
-                    'inscricao_estadual'    => $v['txtPJInscricaoEstadual'] ?? null,
-                    'inscricao_municipal'   => $v['txtPJInscricaoMunicipal'] ?? null,
-                    'endereco'              => $v['txtPJEndereco'],
-                    'numero'                => $v['txtPJNumero'],
-                    'complemento'           => $v['txtPJComplemento'] ?? null,
-                    'bairro'                => $v['txtPJBairro'],
-                    'cidade'                => $v['txtPJCidade'],
-                    'estado'                => $v['slcPJEstado'],
-                    'cep'                   => $v['txtPJCEP'],
-                    'telefone'              => $v['txtPJTelefone'],
-                    'email'                 => $v['txtPJEmail'],
-                    'site'                  => $v['txtPJSite'] ?? null,
-                    'ramo_atividade'        => $v['txtPJRamoAtividade'] ?? null,
-                    'data_constituicao'     => $v['txtPJDataConstituicao'] ?? null,
-                ];
-                $user->pessoaJuridica()->updateOrCreate(['user_id' => $user->id], $pessoaJuridica);
-            }
-
-            // Atualizar Pagamento
-            if (!empty($v['txtPagBanco'])) {
-                $pagamento = [
-                    'titular_conta'         => $v['txtPagTitularConta'],
-                    'cpf_cnpj_titular'      => $v['txtPagCpfCnpjTitular'] ?? null,
-                    'banco'                 => $v['txtPagBanco'],
-                    'agencia'               => $v['txtPagAgencia'],
-                    'conta'                 => $v['txtPagConta'],
-                    'tipo_conta'            => $v['slcPagTipoConta'] ?? 'corrente',
-                    'pix_key'               => $v['txtPagPixKey'] ?? null,
-                ];
-                $user->pagamento()->updateOrCreate(['user_id' => $user->id], $pagamento);
-            }
-
-            return response()->json(['ok' => true, 'message' => 'Usuário atualizado com sucesso', 'data' => $user], 200);
+    /**
+     * Criar novo usuário
+     */
+    private function createUser(array $data): User
+    {
+        // Gerar senha baseada na data de nascimento
+        if (!empty($data['txtUsuarioDataNasc'])) {
+            $senha = str_replace('-', '', $data['txtUsuarioDataNasc']);
         } else {
-            // Criar novo usuário
-            $senhaPlano = isset($v['txtUsuarioDataNasc'])
-                ? preg_replace('/\D+/', '', $v['txtUsuarioDataNasc'])
-                : substr(uniqid(), 0, 8);
-
-            $p = [
-                'name'     => $v['txtUsuarioNome'],
-                'email'    => $v['txtUsuarioEmail'],
-                'password' => Hash::make($senhaPlano),
-                'papel'    => $v['slcUsuarioPapel'],
-            ];
-            if (Schema::hasColumn('users','data_nasc'))     $p['data_nasc']    = $v['txtUsuarioDataNasc'] ?? null;
-            if (Schema::hasColumn('users','cgc'))           $p['cgc']          = $v['txtUsuarioCGC'] ?? null;
-            if (Schema::hasColumn('users','celular'))       $p['celular']      = $v['txtUsuarioCelular'] ?? null;
-            if (Schema::hasColumn('users','valor_hora'))    $p['valor_hora']   = $v['txtUsuarioValorHora'] ?? null;
-            if (Schema::hasColumn('users','valor_desloc'))  $p['valor_desloc'] = $v['txtUsuarioValorDesloc'] ?? null;
-            if (Schema::hasColumn('users','valor_km'))      $p['valor_km']     = $v['txtUsuarioValorKM'] ?? null;
-            if (Schema::hasColumn('users','salario_base'))  $p['salario_base'] = $v['txtUsuarioSalarioBase'] ?? null;
-            if (Schema::hasColumn('users','ativo'))         $p['ativo']        = true;
-
-            $user = User::create($p);
-
-            // Criar Pessoa Jurídica
-            if (!empty($v['txtPJCNPJ'])) {
-                $user->pessoaJuridica()->create([
-                    'cnpj'                  => $v['txtPJCNPJ'],
-                    'razao_social'          => $v['txtPJRazaoSocial'],
-                    'nome_fantasia'         => $v['txtPJNomeFantasia'],
-                    'inscricao_estadual'    => $v['txtPJInscricaoEstadual'] ?? null,
-                    'inscricao_municipal'   => $v['txtPJInscricaoMunicipal'] ?? null,
-                    'endereco'              => $v['txtPJEndereco'],
-                    'numero'                => $v['txtPJNumero'],
-                    'complemento'           => $v['txtPJComplemento'] ?? null,
-                    'bairro'                => $v['txtPJBairro'],
-                    'cidade'                => $v['txtPJCidade'],
-                    'estado'                => $v['slcPJEstado'],
-                    'cep'                   => $v['txtPJCEP'],
-                    'telefone'              => $v['txtPJTelefone'],
-                    'email'                 => $v['txtPJEmail'],
-                    'site'                  => $v['txtPJSite'] ?? null,
-                    'ramo_atividade'        => $v['txtPJRamoAtividade'] ?? null,
-                    'data_constituicao'     => $v['txtPJDataConstituicao'] ?? null,
-                ]);
-            }
-
-            // Criar Pagamento
-            if (!empty($v['txtPagBanco'])) {
-                $user->pagamento()->create([
-                    'titular_conta'         => $v['txtPagTitularConta'],
-                    'cpf_cnpj_titular'      => $v['txtPagCpfCnpjTitular'] ?? null,
-                    'banco'                 => $v['txtPagBanco'],
-                    'agencia'               => $v['txtPagAgencia'],
-                    'conta'                 => $v['txtPagConta'],
-                    'tipo_conta'            => $v['slcPagTipoConta'] ?? 'corrente',
-                    'pix_key'               => $v['txtPagPixKey'] ?? null,
-                ]);
-            }
-
-            return response()->json(['ok' => true, 'message' => 'Usuário criado com sucesso', 'data' => $user], 201);
+            $senha = substr(uniqid(), 0, 8);
         }
+
+        $user = User::create([
+            'name'     => $data['txtUsuarioNome'],
+            'email'    => $data['txtUsuarioEmail'],
+            'password' => Hash::make($senha),
+            'papel'    => $data['slcUsuarioPapel'],
+            'ativo'    => true,
+            'data_nasc' => $data['txtUsuarioDataNasc'] ?? null,
+            'cgc'      => $data['txtUsuarioCGC'] ?? null,
+            'celular'  => $data['txtUsuarioCelular'] ?? null,
+            'valor_hora' => $data['txtUsuarioValorHora'] ?? '0.00',
+            'valor_desloc' => $data['txtUsuarioValorDesloc'] ?? '0.00',
+            'valor_km' => $data['txtUsuarioValorKM'] ?? '0.00',
+            'salario_base' => $data['txtUsuarioSalarioBase'] ?? '0.00',
+        ]);
+
+        \Log::info('Novo usuário criado', [
+            'userId' => $user->id,
+            'email' => $user->email,
+            'senha_provisoria' => $senha
+        ]);
+
+        return $user;
+    }
+
+    /**
+     * Atualizar usuário existente
+     */
+    private function updateUser($userId, array $data): User
+    {
+        $user = User::findOrFail($userId);
+
+        $user->update([
+            'name'     => $data['txtUsuarioNome'],
+            'email'    => $data['txtUsuarioEmail'],
+            'papel'    => $data['slcUsuarioPapel'],
+            'data_nasc' => $data['txtUsuarioDataNasc'] ?? $user->data_nasc,
+            'cgc'      => $data['txtUsuarioCGC'] ?? $user->cgc,
+            'celular'  => $data['txtUsuarioCelular'] ?? $user->celular,
+            'valor_hora' => $data['txtUsuarioValorHora'] ?? $user->valor_hora,
+            'valor_desloc' => $data['txtUsuarioValorDesloc'] ?? $user->valor_desloc,
+            'valor_km' => $data['txtUsuarioValorKM'] ?? $user->valor_km,
+            'salario_base' => $data['txtUsuarioSalarioBase'] ?? $user->salario_base,
+        ]);
+
+        \Log::info('Usuário atualizado', [
+            'userId' => $user->id,
+            'email' => $user->email
+        ]);
+
+        return $user;
     }
 
     // === ALTERAR SENHA ===
