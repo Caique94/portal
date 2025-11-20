@@ -159,6 +159,10 @@
 <script src="{{ asset('plugins/datatables/datatables.min.js') }}"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Global AJAX Setup (DEVE SER PRIMEIRO) -->
+<script src="{{ asset('js/global-ajax.js') }}"></script>
+
 <script src="{{ asset('js/app.js') }}"></script>
 
 @stack('scripts')

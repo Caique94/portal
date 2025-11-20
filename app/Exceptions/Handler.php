@@ -6,6 +6,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Session\TokenMismatchException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -56,6 +57,15 @@ class Handler extends ExceptionHandler
      */
     private function handleJsonException(Request $request, Throwable $exception): JsonResponse
     {
+        // CSRF Token mismatch / Sessão expirada
+        if ($exception instanceof TokenMismatchException) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sessão expirada ou CSRF token inválido',
+                'code' => 419,
+            ], 419);
+        }
+
         // Validação
         if ($exception instanceof ValidationException) {
             return response()->json([
