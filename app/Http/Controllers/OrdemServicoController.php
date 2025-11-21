@@ -659,11 +659,11 @@ class OrdemServicoController extends Controller
     {
         try {
             // Buscar todos os clientes que têm ordens com status = 6 (AGUARDANDO_RPS)
-            $clientes = \App\Models\Cliente::whereHas('ordensServico', function($query) {
+            $clientes = \App\Models\Cliente::whereHas('ordemServicos', function($query) {
                     $query->where('status', 6);  // Status 6 = AGUARDANDO_RPS
                 })
                 ->with([
-                    'ordensServico' => function($query) {
+                    'ordemServicos' => function($query) {
                         $query->where('status', 6)
                               ->select('id', 'cliente_id', 'status');
                     }
@@ -676,7 +676,7 @@ class OrdemServicoController extends Controller
                         'id'               => $cliente->id,
                         'codigo'           => $cliente->codigo,
                         'nome'             => $cliente->nome,
-                        'numero_ordens'    => $cliente->ordensServico->count()
+                        'numero_ordens'    => $cliente->ordemServicos->count()
                     ];
                 });
 
