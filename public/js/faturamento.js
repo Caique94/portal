@@ -481,26 +481,6 @@ $(document).ready(function() {
                 className: 'btn-primary',
                 visible: papel == 'financeiro' || papel == 'admin',
                 action: function(e, dt, node, config) {
-                    // Validação: deve ter pelo menos um item selecionado com status = 6
-                    var temOrdenValida = false;
-                    $('#tblFaturamento').find('.check-faturamento-row:checked').each(function() {
-                        var row = $(this).closest('tr');
-                        var rowData = tblFaturamento.row(row).data();
-                        if (rowData && rowData.status == 6) {
-                            temOrdenValida = true;
-                            return false;
-                        }
-                    });
-
-                    if (!temOrdenValida) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Nenhuma OS válida',
-                            text: 'Selecione pelo menos uma ordem com status "Aguardando RPS"'
-                        });
-                        return;
-                    }
-
                     // Abrir modal de seleção de clientes
                     carregarClientesParaRPS();
                     var modalSelecionarCliente = new bootstrap.Modal(
