@@ -121,4 +121,36 @@ use Illuminate\Support\Facades\Auth;
         </div>
     </div>
 
+    <!-- ===== NOVO MODAL: Seleção de Clientes ===== -->
+    <div class="modal fade" id="modalSelecionarCliente" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Selecionar Cliente para Emissão de RPS</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Campo de busca -->
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="inputBuscaCliente" class="form-control" placeholder="Buscar cliente por nome ou código...">
+                        </div>
+                    </div>
+
+                    <!-- Lista de clientes -->
+                    <div class="list-group" id="listaClientesRPS" style="max-height: 400px; overflow-y: auto;">
+                        <div class="list-group-item text-muted">
+                            <small>Carregando clientes...</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ===== FIM NOVO MODAL ===== -->
+
 @endsection

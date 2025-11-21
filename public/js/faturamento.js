@@ -34,6 +34,225 @@ $(document).ready(function() {
         });
     }
 
+    // ===== NOVO: Carregar clientes disponíveis para RPS =====
+    function carregarClientesParaRPS() {
+        $.ajax({
+            url: '/clientes-com-ordens-rps',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                var lista = $('#listaClientesRPS');
+                lista.empty();
+
+                if (response.data && response.data.length > 0) {
+                    $.each(response.data, function(i, cliente) {
+                        var html = `
+                            <button type="button" class="list-group-item list-group-item-action btn-selecionar-cliente-rps"
+                                    data-cliente-id="${cliente.id}"
+                                    data-cliente-nome="${cliente.nome}"
+                                    data-cliente-codigo="${cliente.codigo}">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">${cliente.nome}</h6>
+                                    <small class="text-muted">${cliente.codigo}</small>
+                                </div>
+                                <p class="mb-0 text-muted"><small>${cliente.numero_ordens} ordem(s) aguardando RPS</small></p>
+                            </button>
+                        `;
+                        lista.append(html);
+                    });
+                } else {
+                    lista.html('<div class="list-group-item text-muted text-center"><small>Nenhum cliente com ordens aguardando RPS</small></div>');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Erro ao carregar clientes:', errorThrown);
+                $('#listaClientesRPS').html('<div class="list-group-item text-danger"><small>Erro ao carregar clientes</small></div>');
+            }
+        });
+    }
+
+    // ===== NOVO: Filtrar lista de clientes durante busca =====
+    $('#inputBuscaCliente').on('keyup', function() {
+        var termo = $(this).val().toLowerCase();
+        $('#listaClientesRPS .btn-selecionar-cliente-rps').each(function() {
+            var nome = $(this).data('cliente-nome').toLowerCase();
+            var codigo = $(this).data('cliente-codigo').toLowerCase();
+
+            if (nome.includes(termo) || codigo.includes(termo)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    // ===== NOVO: Ao selecionar cliente, filtrar tabela e abrir modal de RPS =====
+    $(document).on('click', '.btn-selecionar-cliente-rps', function() {
+        var cliente_id = $(this).data('cliente-id');
+        var cliente_nome = $(this).data('cliente-nome');
+
+        console.log('Cliente selecionado:', cliente_id, cliente_nome);
+
+        // Fechar modal de seleção
+        var modalSelecionarCliente = bootstrap.Modal.getInstance(document.getElementById('modalSelecionarCliente'));
+        if (modalSelecionarCliente) {
+            modalSelecionarCliente.hide();
+        }
+
+        // Filtrar tabela para mostrar apenas ordens deste cliente com status = 6
+        filtrarTabelaPorClienteRPS(cliente_id, cliente_nome);
+    });
+
+    // ===== NOVO: Filtrar tabela por cliente e abrir seleção de RPS =====
+    function filtrarTabelaPorClienteRPS(cliente_id, cliente_nome) {
+        var ordem_arr = [];
+        var valor_total = 0;
+
+        // Limpar filtros anteriores
+        tblFaturamento.search('').draw();
+
+        // Buscar todas as ordens do cliente com status = 6 (AGUARDANDO_RPS)
+        $('#tblFaturamento tbody tr').each(function() {
+            var rowData = tblFaturamento.row($(this)).data();
+
+            if (rowData && rowData.status == 6 && rowData.cliente_id == cliente_id) {
+                ordem_arr.push({
+                    id: rowData.id,
+                    numero: ('00000000' + rowData.id).slice(-8),
+                    valor: parseFloat(rowData.valor_total || 0)
+                });
+                valor_total += parseFloat(rowData.valor_total || 0);
+            }
+        });
+
+        console.log('Ordens encontradas:', ordem_arr, 'Valor total:', valor_total);
+
+        if (ordem_arr.length > 0) {
+            // Mostrar checkbox para seleção múltipla
+            abrirModalSelecaoRPS(cliente_id, cliente_nome, ordem_arr, valor_total);
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sem ordens disponíveis',
+                text: `Nenhuma ordem aguardando RPS para o cliente ${cliente_nome}`
+            });
+        }
+    }
+
+    // ===== NOVO: Modal para seleção de múltiplas RPS =====
+    function abrirModalSelecaoRPS(cliente_id, cliente_nome, ordem_arr, valor_total) {
+        var checkboxesHTML = `
+            <div class="mb-3">
+                <p><strong>Selecione quais ordens deseja agrupar para este RPS:</strong></p>
+                <p class="text-muted"><small>Cliente: <strong>${cliente_nome}</strong></small></p>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto;">
+        `;
+
+        $.each(ordem_arr, function(i, ordem) {
+            checkboxesHTML += `
+                <div class="form-check" style="margin-bottom: 10px;">
+                    <input class="form-check-input rps-checkbox-novo" type="checkbox"
+                           id="rps_novo_${ordem.id}" value="${ordem.id}" checked>
+                    <label class="form-check-label" for="rps_novo_${ordem.id}">
+                        OS ${ordem.numero} - R$ ${parseFloat(ordem.valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}
+                    </label>
+                </div>
+            `;
+        });
+
+        checkboxesHTML += '</div>';
+
+        Swal.fire({
+            title: 'Selecionar Ordens para Agrupar',
+            html: checkboxesHTML,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar Seleção',
+            cancelButtonText: 'Voltar',
+            backdrop: true,
+            customClass: {
+                confirmButton: 'btn btn-success',
+                cancelButton: 'btn btn-secondary'
+            },
+            didOpen: (modal) => {
+                // Evento para atualizar total quando checkbox muda
+                modal.querySelectorAll('.rps-checkbox-novo').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        atualizarValorTotalModal(ordem_arr);
+                    });
+                });
+                // Mostrar valor inicial
+                atualizarValorTotalModal(ordem_arr);
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Coletar ordens selecionadas
+                var ordem_arr_final = [];
+                var valor_total_final = 0;
+
+                document.querySelectorAll('.rps-checkbox-novo:checked').forEach(checkbox => {
+                    var id = parseInt(checkbox.value);
+                    var ordem = ordem_arr.find(o => o.id == id);
+                    if (ordem) {
+                        ordem_arr_final.push(ordem.id);
+                        valor_total_final += ordem.valor;
+                    }
+                });
+
+                // Se nada foi selecionado, usar todas
+                if (ordem_arr_final.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Selecione pelo menos uma ordem'
+                    });
+                    return;
+                }
+
+                // Abrir modal de emissão (já existente)
+                abrirModalEmissaoRPS(cliente_id, cliente_nome, ordem_arr_final, valor_total_final);
+            }
+        });
+    }
+
+    // ===== NOVO: Atualizar total no modal de seleção =====
+    function atualizarValorTotalModal(ordem_arr) {
+        var valor_total = 0;
+        var checked = [];
+
+        document.querySelectorAll('.rps-checkbox-novo:checked').forEach(checkbox => {
+            var id = parseInt(checkbox.value);
+            var ordem = ordem_arr.find(o => o.id == id);
+            if (ordem) {
+                valor_total += ordem.valor;
+                checked.push(ordem.numero);
+            }
+        });
+
+        var totalFormatado = valor_total.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+
+        var swalContent = document.querySelector('.swal2-html-container');
+        if (swalContent) {
+            var msgAnterior = swalContent.querySelector('.total-selecionado-modal');
+            if (msgAnterior) {
+                msgAnterior.remove();
+            }
+
+            if (checked.length > 0) {
+                var msgExtra = `
+                    <div class="total-selecionado-modal mt-3 p-3 bg-light border rounded">
+                        <p class="mb-2"><strong>${checked.length} ordem(s) selecionada(s)</strong></p>
+                        <p class="mb-0"><strong>Total:</strong> <span class="text-success">${totalFormatado}</span></p>
+                    </div>
+                `;
+                swalContent.insertAdjacentHTML('beforeend', msgExtra);
+            }
+        }
+    }
+
     let tblFaturamento = $('#tblFaturamento').DataTable({
         ajax: {
             url: '/listar-ordens-faturamento',
@@ -262,144 +481,33 @@ $(document).ready(function() {
                 className: 'btn-primary',
                 visible: papel == 'financeiro' || papel == 'admin',
                 action: function(e, dt, node, config) {
-                    var ordem_arr = [];
-                    var cliente = '';
-                    var cliente_id = 0;
-                    var ordens = '';
-                    var valor_total = 0;
-
+                    // Validação: deve ter pelo menos um item selecionado com status = 6
+                    var temOrdenValida = false;
                     $('#tblFaturamento').find('.check-faturamento-row:checked').each(function() {
                         var row = $(this).closest('tr');
                         var rowData = tblFaturamento.row(row).data();
-
-                        if (rowData.status == 6) {
-                            cliente_id = rowData.cliente_id;
-                            cliente = rowData.cliente_nome;
-                            ordens += ordens != '' ? (', ' + ('00000000' + rowData.id).slice(-8)) : ('00000000' + rowData.id).slice(-8);
-                            ordem_arr.push(rowData.id);
-                            valor_total += (rowData.valor_total !== null && $.isNumeric(rowData.valor_total) ? parseFloat(rowData.valor_total) : 0);
+                        if (rowData && rowData.status == 6) {
+                            temOrdenValida = true;
+                            return false;
                         }
                     });
 
-                    if (ordem_arr.length > 0) {
-                        // Verificar se há outras RPS do mesmo cliente aguardando emissão
-                        var outrasRPS = [];
-                        $('#tblFaturamento tbody tr').each(function() {
-                            var rowData = tblFaturamento.row($(this)).data();
-                            if (rowData && rowData.status == 6 && rowData.cliente_id == cliente_id) {
-                                var jaEstaMarc = false;
-                                $.each(ordem_arr, function(i, id) {
-                                    if (id == rowData.id) {
-                                        jaEstaMarc = true;
-                                        return false;
-                                    }
-                                });
-                                if (!jaEstaMarc) {
-                                    outrasRPS.push({
-                                        id: rowData.id,
-                                        numero: ('00000000' + rowData.id).slice(-8),
-                                        valor: rowData.valor_total
-                                    });
-                                }
-                            }
-                        });
-
-                        if (outrasRPS.length > 0) {
-                            // Há outras RPS do mesmo cliente, mostrar checkboxes para seleção
-                            var checkboxesHTML = '<div style="text-align: left; margin: 15px 0;">' +
-                                                 '<p><strong>Selecione quais ordens deseja agrupar:</strong></p>';
-
-                            // Adicionar checkbox para as ordens já selecionadas
-                            $.each(ordem_arr, function(i, ordem_id) {
-                                checkboxesHTML += '<div class="form-check" style="margin-bottom: 10px;">' +
-                                                 '<input class="form-check-input rps-checkbox" type="checkbox" id="rps_' + ordem_id + '" value="' + ordem_id + '" checked disabled>' +
-                                                 '<label class="form-check-label" for="rps_' + ordem_id + '">' +
-                                                 'OS ' + ('00000000' + ordem_id).slice(-8) + ' (já selecionada)' +
-                                                 '</label>' +
-                                                 '</div>';
-                            });
-
-                            // Adicionar checkboxes para as outras RPS (desmarcadas por padrão)
-                            $.each(outrasRPS, function(i, rps) {
-                                checkboxesHTML += '<div class="form-check" style="margin-bottom: 10px;">' +
-                                                 '<input class="form-check-input rps-checkbox" type="checkbox" id="rps_' + rps.id + '" value="' + rps.id + '">' +
-                                                 '<label class="form-check-label" for="rps_' + rps.id + '">' +
-                                                 'OS ' + rps.numero + ' - R$ ' + parseFloat(rps.valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) +
-                                                 '</label>' +
-                                                 '</div>';
-                            });
-
-                            checkboxesHTML += '</div>';
-
-                            Swal.fire({
-                                title: 'Selecionar RPS para Agrupar',
-                                html: checkboxesHTML,
-                                icon: 'question',
-                                showCancelButton: true,
-                                confirmButtonText: 'Confirmar Seleção',
-                                cancelButtonText: 'Cancelar',
-                                backdrop: true,
-                                customClass: {
-                                    confirmButton: 'btn btn-success',
-                                    cancelButton: 'btn btn-secondary'
-                                },
-                                didOpen: (modal) => {
-                                    // Atualizar valor total quando checkboxes são marcadas/desmarcadas
-                                    modal.querySelectorAll('.rps-checkbox:not(:disabled)').forEach(checkbox => {
-                                        checkbox.addEventListener('change', function() {
-                                            atualizarValorTotalSelecionado(ordem_arr, outrasRPS);
-                                        });
-                                    });
-                                    // Mostrar valor inicial
-                                    atualizarValorTotalSelecionado(ordem_arr, outrasRPS);
-                                }
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    // Coletar RPS selecionadas nos checkboxes
-                                    var ordem_arr_final = [];
-                                    var valor_total_final = 0;
-
-                                    // Adicionar as ordens originalmente selecionadas
-                                    $.each(ordem_arr, function(i, id) {
-                                        ordem_arr_final.push(id);
-                                        // Encontrar valor na lista original ou outras RPS
-                                        var rps = outrasRPS.find(r => r.id == id);
-                                        if (rps) {
-                                            valor_total_final += parseFloat(rps.valor);
-                                        } else {
-                                            // É uma das selecionadas inicialmente
-                                            $('#tblFaturamento tbody tr').each(function() {
-                                                var rowData = tblFaturamento.row($(this)).data();
-                                                if (rowData && rowData.id == id) {
-                                                    valor_total_final += parseFloat(rowData.valor_total);
-                                                    return false;
-                                                }
-                                            });
-                                        }
-                                    });
-
-                                    // Adicionar as outras RPS que foram marcadas
-                                    $.each(outrasRPS, function(i, rps) {
-                                        var checkbox = document.getElementById('rps_' + rps.id);
-                                        if (checkbox && checkbox.checked) {
-                                            ordem_arr_final.push(rps.id);
-                                            valor_total_final += parseFloat(rps.valor);
-                                        }
-                                    });
-
-                                    abrirModalEmissaoRPS(cliente_id, cliente, ordem_arr_final, valor_total_final);
-                                }
-                            });
-                        } else {
-                            // Nenhuma outra RPS, abrir modal normalmente
-                            abrirModalEmissaoRPS(cliente_id, cliente, ordem_arr, valor_total);
-                        }
-                    } else {
+                    if (!temOrdenValida) {
                         Swal.fire({
-                            title: 'Nenhuma OS válida para emissão de RPS selecionada',
-                            icon: 'warning'
+                            icon: 'warning',
+                            title: 'Nenhuma OS válida',
+                            text: 'Selecione pelo menos uma ordem com status "Aguardando RPS"'
                         });
+                        return;
                     }
+
+                    // Abrir modal de seleção de clientes
+                    carregarClientesParaRPS();
+                    var modalSelecionarCliente = new bootstrap.Modal(
+                        document.getElementById('modalSelecionarCliente'),
+                        { backdrop: 'static', keyboard: false }
+                    );
+                    modalSelecionarCliente.show();
                 }
             },{
                 extend: 'colvis',

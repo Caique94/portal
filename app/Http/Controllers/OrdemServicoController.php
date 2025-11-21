@@ -649,4 +649,52 @@ class OrdemServicoController extends Controller
         }
     }
 
+    /**
+     * Endpoint: GET /clientes-com-ordens-rps
+     * Retorna lista de clientes que têm ordens aguardando RPS
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function clientesComOrdensRPS()
+    {
+        try {
+            // Buscar todos os clientes que têm ordens com status = 6 (AGUARDANDO_RPS)
+            $clientes = \App\Models\Cliente::whereHas('ordensServico', function($query) {
+                    $query->where('status', 6);  // Status 6 = AGUARDANDO_RPS
+                })
+                ->with([
+                    'ordensServico' => function($query) {
+                        $query->where('status', 6)
+                              ->select('id', 'cliente_id', 'status');
+                    }
+                ])
+                ->select('id', 'codigo', 'nome')
+                ->orderBy('nome')
+                ->get()
+                ->map(function($cliente) {
+                    return [
+                        'id'               => $cliente->id,
+                        'codigo'           => $cliente->codigo,
+                        'nome'             => $cliente->nome,
+                        'numero_ordens'    => $cliente->ordensServico->count()
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data'    => $clientes
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar clientes para RPS', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar clientes'
+            ], 500);
+        }
+    }
+
 }
