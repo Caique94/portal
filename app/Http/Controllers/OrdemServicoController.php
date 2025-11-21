@@ -697,4 +697,49 @@ class OrdemServicoController extends Controller
         }
     }
 
+    /**
+     * Get all clients with pending orders to bill (status 4 - APROVADO)
+     * Used for client selection in billing (faturamento) workflow
+     */
+    public function clientesComOrdensParaFaturar()
+    {
+        try {
+            $clientes = \App\Models\Cliente::whereHas('ordemServicos', function($query) {
+                    $query->where('status', 4); // APROVADO - Ready for billing
+                })
+                ->with([
+                    'ordemServicos' => function($query) {
+                        $query->where('status', 4)
+                              ->select('id', 'cliente_id', 'status', 'valor_total');
+                    }
+                ])
+                ->select('id', 'codigo', 'nome')
+                ->orderBy('nome')
+                ->get()
+                ->map(function($cliente) {
+                    return [
+                        'id'               => $cliente->id,
+                        'codigo'           => $cliente->codigo,
+                        'nome'             => $cliente->nome,
+                        'numero_ordens'    => $cliente->ordemServicos->count()
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data'    => $clientes
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar clientes para faturamento', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar clientes'
+            ], 500);
+        }
+    }
+
 }

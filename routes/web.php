@@ -201,6 +201,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/deletar-ordem-servico/{id}', [OrdemServicoController::class, 'destroy']);
     Route::get('/listar-ordens-faturamento', [OrdemServicoController::class, 'list_invoice']);
     Route::get('/clientes-com-ordens-rps', [OrdemServicoController::class, 'clientesComOrdensRPS']);
+    Route::get('/clientes-com-ordens-faturar', [OrdemServicoController::class, 'clientesComOrdensParaFaturar']);
     Route::post('/faturar-ordens-servico', [OrdemServicoController::class, 'invoice_orders']);
     Route::post('/salvar_rps', [OrdemServicoController::class, 'rps_orders']);
 

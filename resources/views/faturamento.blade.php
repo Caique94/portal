@@ -153,4 +153,33 @@ use Illuminate\Support\Facades\Auth;
     </div>
     <!-- ===== FIM NOVO MODAL ===== -->
 
+    <!-- ===== NOVO MODAL: Seleção de Clientes para Faturamento ===== -->
+    <div class="modal fade" id="modalSelecionarClienteFaturamento" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Selecionar Cliente para Faturamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="inputBuscaClienteFaturamento" class="form-control" placeholder="Buscar cliente por nome ou código...">
+                        </div>
+                    </div>
+                    <div class="list-group" id="listaClientesFaturamento" style="max-height: 400px; overflow-y: auto;">
+                        <div class="list-group-item text-muted">
+                            <small>Carregando clientes...</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ===== FIM MODAL FATURAMENTO ===== -->
+
 @endsection

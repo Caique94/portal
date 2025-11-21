@@ -430,6 +430,393 @@ $(document).ready(function() {
         }
     }
 
+    // ===== NOVO: Funções para Faturamento de Ordens de Serviço =====
+    function carregarClientesParaFaturamento() {
+        $.ajax({
+            url: '/clientes-com-ordens-faturar',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                var lista = $('#listaClientesFaturamento');
+                lista.empty();
+
+                if (response.data && response.data.length > 0) {
+                    $.each(response.data, function(i, cliente) {
+                        var html = `
+                            <button type="button" class="list-group-item list-group-item-action btn-selecionar-cliente-faturamento"
+                                    data-cliente-id="${cliente.id}"
+                                    data-cliente-nome="${cliente.nome}"
+                                    data-cliente-codigo="${cliente.codigo}">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">${cliente.nome}</h6>
+                                    <small class="text-muted">${cliente.codigo}</small>
+                                </div>
+                                <p class="mb-0 text-muted"><small>${cliente.numero_ordens} ordem(s) aguardando faturamento</small></p>
+                            </button>
+                        `;
+                        lista.append(html);
+                    });
+                } else {
+                    lista.append('<div class="list-group-item text-muted"><small>Nenhum cliente com ordens para faturar</small></div>');
+                }
+            }
+        });
+    }
+
+    // Busca em tempo real por cliente (faturamento)
+    $('#inputBuscaClienteFaturamento').on('keyup', function() {
+        var termo = $(this).val().toLowerCase();
+        $('#listaClientesFaturamento .btn-selecionar-cliente-faturamento').each(function() {
+            var nome = $(this).data('cliente-nome').toLowerCase();
+            var codigo = $(this).data('cliente-codigo').toLowerCase();
+
+            if (nome.includes(termo) || codigo.includes(termo)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    // Selecionar cliente para faturamento
+    $(document).on('click', '.btn-selecionar-cliente-faturamento', function() {
+        var cliente_id = $(this).data('cliente-id');
+        var cliente_nome = $(this).data('cliente-nome');
+
+        var modalSelecionarCliente = bootstrap.Modal.getInstance(document.getElementById('modalSelecionarClienteFaturamento'));
+        if (modalSelecionarCliente) {
+            modalSelecionarCliente.hide();
+        }
+
+        filtrarTabelaPorClienteFaturamento(cliente_id, cliente_nome);
+    });
+
+    // Filtrar tabela por cliente e abrir modal de seleção de ordens
+    function filtrarTabelaPorClienteFaturamento(cliente_id, cliente_nome) {
+        var ordem_arr = [];
+        var valor_total = 0;
+
+        $('#tblFaturamento tbody tr').each(function() {
+            var row = $(this);
+            var rowData = tblFaturamento.row(row).data();
+
+            if (rowData.cliente_id == cliente_id && rowData.status == 4) {
+                ordem_arr.push({
+                    id: rowData.id,
+                    numero: ('00000000' + rowData.id).slice(-8),
+                    valor: parseFloat(rowData.valor_total),
+                    cliente_nome: rowData.cliente_nome,
+                    descricao: rowData.assunto
+                });
+                valor_total += parseFloat(rowData.valor_total);
+            }
+        });
+
+        if (ordem_arr.length > 0) {
+            abrirModalSelecaoOSFaturamento(cliente_id, cliente_nome, ordem_arr, valor_total);
+        } else {
+            Swal.fire({
+                title: 'Nenhuma Ordem',
+                text: 'Cliente selecionado não possui ordens para faturar.',
+                icon: 'info'
+            });
+        }
+    }
+
+    // Modal de seleção de múltiplas ordens para faturamento
+    function abrirModalSelecaoOSFaturamento(cliente_id, cliente_nome, ordem_arr, valor_total) {
+        var ordensHTML = '';
+        var totalFormatado = valor_total.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+
+        ordem_arr.forEach(function(ordem) {
+            var valorFormatado = ordem.valor.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+            ordensHTML += `
+                <div class="rps-ordem-item">
+                    <input type="checkbox" class="rps-checkbox-faturamento" value="${ordem.id}" checked>
+                    <div class="rps-ordem-info">
+                        <div class="rps-ordem-numero">OS ${ordem.numero}</div>
+                        <div class="rps-ordem-assunto">${ordem.descricao}</div>
+                        <div class="rps-ordem-valor">${valorFormatado}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        var checkboxesHTML = `
+            <div class="rps-selecao-container">
+                <div class="rps-header-selecao">
+                    <div class="rps-cliente-info">
+                        <i class="bi bi-building"></i>
+                        <strong>${cliente_nome}</strong>
+                    </div>
+                    <div class="rps-total-header">
+                        Total: <span id="totalHeaderFaturamento">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="rps-ordens-list">
+                    ${ordensHTML}
+                </div>
+
+                <div class="rps-resumo-selecao">
+                    <div class="rps-resumo-item">
+                        <span>Ordens Selecionadas:</span>
+                        <strong id="ordensCountFaturamento">0</strong>
+                    </div>
+                    <div class="rps-resumo-total">
+                        <span>Total a Faturar:</span>
+                        <strong id="totalFaturamento">R$ 0,00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .rps-selecao-container {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                }
+
+                .rps-header-selecao {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 15px;
+                    border-radius: 8px 8px 0 0;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                }
+
+                .rps-cliente-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-size: 16px;
+                    font-weight: 600;
+                }
+
+                .rps-cliente-info i {
+                    font-size: 24px;
+                }
+
+                .rps-total-header {
+                    font-size: 14px;
+                    opacity: 0.95;
+                }
+
+                .rps-total-header span {
+                    font-weight: 700;
+                    font-size: 18px;
+                }
+
+                .rps-ordens-list {
+                    max-height: 400px;
+                    overflow-y: auto;
+                    margin-bottom: 15px;
+                    padding: 5px;
+                }
+
+                .rps-ordens-list::-webkit-scrollbar {
+                    width: 6px;
+                }
+
+                .rps-ordens-list::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                    border-radius: 3px;
+                }
+
+                .rps-ordens-list::-webkit-scrollbar-thumb {
+                    background: #888;
+                    border-radius: 3px;
+                }
+
+                .rps-ordens-list::-webkit-scrollbar-thumb:hover {
+                    background: #555;
+                }
+
+                .rps-ordem-item {
+                    display: flex;
+                    gap: 12px;
+                    padding: 12px;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 6px;
+                    margin-bottom: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    background: white;
+                }
+
+                .rps-ordem-item:hover {
+                    border-color: #667eea;
+                    background: #f8f9ff;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+                }
+
+                .rps-ordem-item input[type="checkbox"] {
+                    margin-top: 3px;
+                    cursor: pointer;
+                }
+
+                .rps-ordem-info {
+                    flex: 1;
+                }
+
+                .rps-ordem-numero {
+                    font-weight: 600;
+                    color: #333;
+                    font-size: 14px;
+                }
+
+                .rps-ordem-assunto {
+                    font-size: 12px;
+                    color: #666;
+                    margin: 4px 0;
+                }
+
+                .rps-ordem-valor {
+                    font-weight: 600;
+                    color: #667eea;
+                    font-size: 13px;
+                    text-align: right;
+                }
+
+                .rps-resumo-selecao {
+                    background: #f5f5f5;
+                    padding: 12px 15px;
+                    border-radius: 6px;
+                    display: flex;
+                    justify-content: space-between;
+                    border: 1px solid #e0e0e0;
+                }
+
+                .rps-resumo-item,
+                .rps-resumo-total {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 20px;
+                    font-size: 14px;
+                }
+
+                .rps-resumo-total {
+                    font-weight: 600;
+                    color: #667eea;
+                }
+            </style>
+        `;
+
+        Swal.fire({
+            title: 'Selecionar Ordens de Serviço',
+            html: checkboxesHTML,
+            icon: 'info',
+            width: 600,
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar Seleção',
+            cancelButtonText: 'Voltar',
+            customClass: {
+                confirmButton: 'btn btn-success',
+                cancelButton: 'btn btn-secondary'
+            },
+            didOpen: function() {
+                atualizarValorTotalFaturamento(ordem_arr);
+
+                document.querySelectorAll('.rps-checkbox-faturamento').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        atualizarValorTotalFaturamento(ordem_arr);
+                    });
+                });
+
+                document.querySelectorAll('.rps-ordem-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        if (e.target.tagName !== 'INPUT') {
+                            var checkbox = this.querySelector('.rps-checkbox-faturamento');
+                            checkbox.checked = !checkbox.checked;
+                            atualizarValorTotalFaturamento(ordem_arr);
+                        }
+                    });
+                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var ordem_ids = [];
+                document.querySelectorAll('.rps-checkbox-faturamento:checked').forEach(checkbox => {
+                    ordem_ids.push(parseInt(checkbox.value));
+                });
+
+                if (ordem_ids.length > 0) {
+                    var data = {
+                        id_list: ordem_ids
+                    };
+
+                    $.ajax({
+                        url: '/faturar-ordens-servico',
+                        type: 'POST',
+                        data: data,
+                        success: function(response) {
+                            tblFaturamento.ajax.reload();
+
+                            Toast.fire({
+                                icon: 'success',
+                                title: response.message
+                            });
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            Toast.fire({
+                                icon: 'error',
+                                title: 'Erro ao faturar ordens'
+                            });
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Atenção',
+                        text: 'Selecione pelo menos uma ordem para faturar.',
+                        icon: 'warning'
+                    });
+                }
+            }
+        });
+    }
+
+    function atualizarValorTotalFaturamento(ordem_arr) {
+        var valor_total = 0;
+        var checked = [];
+
+        document.querySelectorAll('.rps-checkbox-faturamento:checked').forEach(checkbox => {
+            var id = parseInt(checkbox.value);
+            var ordem = ordem_arr.find(o => o.id == id);
+            if (ordem) {
+                valor_total += ordem.valor;
+                checked.push(ordem.numero);
+            }
+        });
+
+        var totalFormatado = valor_total.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+
+        var ordensCountEl = document.getElementById('ordensCountFaturamento');
+        var totalSelecaoEl = document.getElementById('totalFaturamento');
+        var totalHeaderEl = document.getElementById('totalHeaderFaturamento');
+
+        if (ordensCountEl) {
+            ordensCountEl.textContent = checked.length;
+        }
+
+        if (totalSelecaoEl) {
+            totalSelecaoEl.textContent = totalFormatado;
+        }
+
+        if (totalHeaderEl) {
+            totalHeaderEl.textContent = totalFormatado;
+        }
+    }
+
     let tblFaturamento = $('#tblFaturamento').DataTable({
         ajax: {
             url: '/listar-ordens-faturamento',
@@ -573,85 +960,14 @@ $(document).ready(function() {
                 text: 'Faturar',
                 className: 'btn-primary',
                 visible: papel == 'financeiro' || papel == 'admin',
-                action: function (e, dt, node, config) {
-                    var ordem_arr = [];
-                    var cliente = '';
-                    var ordens = '';
-                    $('#tblFaturamento').find('.check-faturamento-row:checked').each(function() {
-                        var row = $(this).closest('tr');
-                        var rowData = tblFaturamento.row(row).data();
-
-                        if (rowData.status == 4) {
-                            cliente = rowData.cliente_nome;
-                            ordens += ordens != '' ? (', ' + ('00000000' + rowData.id).slice(-8)) : ('00000000' + rowData.id).slice(-8);
-                            ordem_arr.push(rowData.id);
-                        }
-                    });
-
-                    if (ordem_arr.length > 0) {
-                        var msg = ordem_arr.length == 1 ? ('Faturar a ordem <b>' + ordens + '</b> do cliente <b>' + cliente + '</b>.') : ('Faturar as ordens <b>' + ordens + '</b> do cliente <b>' + cliente + '</b>.');
-
-                        Swal.fire({
-                            html: msg,
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: 'Faturar',
-                            cancelButtonText: 'Cancelar',
-                            backdrop: true,
-                            customClass: {
-                                confirmButton: 'btn btn-success',
-                                cancelButton: 'btn btn-secondary'
-                            },
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                var data = {
-                                    id_list: ordem_arr
-                                }
-
-                                $.ajax({
-                                    url: '/faturar-ordens-servico',
-                                    type: 'POST',
-                                    data: data,
-                                    success: function(response) {
-                                        tblFaturamento.ajax.reload();
-
-                                        Toast.fire({
-                                            icon: 'success',
-                                            title: response.message
-                                        });
-                                    },
-                                    error: function(jqXHR, textStatus, errorThrown) {
-                                        if (jqXHR.status === 422) {
-                                            var errors = jqXHR.responseJSON.errors;
-                                            var errorsHtml = '';
-                                            $.each(errors, function(key, value) {
-                                                $.each(value, function(index, error) {
-                                                    errorsHtml += errorsHtml == '' ? error : ('<br>' + error);
-                                                });
-                                            });
-
-                                            Toast.fire({
-                                                icon: 'error',
-                                                title: errorsHtml
-                                            });
-                                        } else {
-                                            console.error('Error: ' + textStatus + ' - ' + errorThrown);
-
-                                            Toast.fire({
-                                                icon: 'error',
-                                                title: errorThrown
-                                            });
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Nenhuma OS válida para faturar selecionada',
-                            icon: 'warning'
-                        });
-                    }
+                action: function(e, dt, node, config) {
+                    // Abrir modal de seleção de clientes para faturamento
+                    carregarClientesParaFaturamento();
+                    var modalSelecionarCliente = new bootstrap.Modal(
+                        document.getElementById('modalSelecionarClienteFaturamento'),
+                        { backdrop: 'static', keyboard: false }
+                    );
+                    modalSelecionarCliente.show();
                 }
             },{
                 text: 'Emitir RPS',
