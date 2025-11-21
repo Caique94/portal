@@ -168,12 +168,16 @@ use Illuminate\Support\Facades\Auth;
                             </div>
                         </div>
 
-                        @if(auth()->user()->papel === 'admin')
+                        @if(auth()->user()->papel !== 'cliente')
                         <div id="divTotalizadorAdmin" class="row mt-4" style="display: none;">
                             <div class="col-md-12">
                                 <div class="card bg-light border-primary">
                                     <div class="card-header bg-primary text-white">
-                                        <h6 class="mb-0"><i class="bi bi-calculator"></i> Totalizador - Administração</h6>
+                                        @if(auth()->user()->papel === 'admin')
+                                            <h6 class="mb-0"><i class="bi bi-calculator"></i> Totalizador - Administração</h6>
+                                        @else
+                                            <h6 class="mb-0"><i class="bi bi-calculator"></i> Totalizador - Consultor</h6>
+                                        @endif
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
