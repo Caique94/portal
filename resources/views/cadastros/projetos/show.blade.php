@@ -149,27 +149,27 @@
                                     @foreach ($projeto->ordemServicos as $os)
                                         <tr>
                                             <td>#{{ $os->id }}</td>
-                                            <td>{{ $os->consultor->name }}</td>
+                                            <td>{{ $os->consultor?->name ?? '-' }}</td>
                                             <td>
                                                 @php
                                                     $osStatusClass = match($os->status) {
-                                                        0 => 'warning',
                                                         1 => 'info',
-                                                        2 => 'danger',
-                                                        3 => 'secondary',
-                                                        4 => 'success',
-                                                        5 => 'primary',
-                                                        6 => 'secondary',
+                                                        2 => 'warning',
+                                                        3 => 'danger',
+                                                        4 => 'secondary',
+                                                        5 => 'success',
+                                                        6 => 'info',
+                                                        7 => 'success',
                                                         default => 'secondary'
                                                     };
                                                     $osStatusText = match($os->status) {
-                                                        0 => 'Rascunho',
-                                                        1 => 'Em Análise',
-                                                        2 => 'Rejeitada',
-                                                        3 => 'Cancelada',
-                                                        4 => 'Aprovada',
-                                                        5 => 'RPS Emitida',
-                                                        6 => 'Faturada',
+                                                        1 => 'Em Aberto',
+                                                        2 => 'Aguardando Aprovação',
+                                                        3 => 'Contestada',
+                                                        4 => 'Aguardando Faturamento',
+                                                        5 => 'Faturada',
+                                                        6 => 'Aguardando RPS',
+                                                        7 => 'RPS Emitida',
                                                         default => 'Desconhecido'
                                                     };
                                                 @endphp

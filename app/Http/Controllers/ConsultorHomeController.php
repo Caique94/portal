@@ -9,29 +9,29 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ConsultorHomeController extends Controller
 {
-    // Mapeamento de status
+    // Mapeamento de status (DEPRECATED - use statusDisplayMap instead)
     private $statusMap = [
-        0 => 'Aberta',
-        1 => 'Enviada para Aprovação',
-        2 => 'Finalizada',
+        1 => 'Em Aberto',
+        2 => 'Aguardando Aprovação',
         3 => 'Contestada',
-        4 => 'Aguardando RPS',
+        4 => 'Aguardando Faturamento',
         5 => 'Faturada',
         6 => 'Aguardando RPS',
+        7 => 'RPS Emitida',
     ];
 
-    // Status finais para consultores (até Faturada - status 5)
-    private $statusFinal = 5;
+    // Status finais para consultores (vê até status 7, mas exibe 6,7 como 5)
+    private $statusFinal = 7;
 
-    // Mapeamento de status para EXIBIÇÃO (Aguardando RPS aparece como Faturada para o consultor)
+    // Mapeamento de status para EXIBIÇÃO (Status 6 e 7 aparecem como Faturada para o consultor)
     private $statusDisplayMap = [
-        0 => 'Aberta',
-        1 => 'Enviada para Aprovação',
-        2 => 'Finalizada',
+        1 => 'Em Aberto',
+        2 => 'Aguardando Aprovação',
         3 => 'Contestada',
-        4 => 'Faturada',        // Aguardando RPS é exibido como Faturada
+        4 => 'Aguardando Faturamento',
         5 => 'Faturada',
-        6 => 'Faturada',        // Aguardando RPS é exibido como Faturada
+        6 => 'Faturada',        // Aguardando RPS aparece como Faturada
+        7 => 'Faturada',        // RPS Emitida aparece como Faturada
     ];
 
     public function index(Request $request)
@@ -44,10 +44,10 @@ class ConsultorHomeController extends Controller
             ->where('status', '<=', $this->statusFinal)
             ->count();
 
-        // Contar as abertas/em andamento (status 0, 1)
+        // Contar as abertas/em andamento (status 1, 2 = Em Aberto, Aguardando Aprovação)
         $abertas_meu = DB::table('ordem_servico')
             ->where('consultor_id', $uid)
-            ->whereIn('status', [0, 1]) // Aberta, Enviada para Aprovação
+            ->whereIn('status', [1, 2]) // Em Aberto, Aguardando Aprovação
             ->count();
 
         // Período do mês
@@ -81,6 +81,7 @@ class ConsultorHomeController extends Controller
             });
 
         // Resumo por status (apenas até Faturada)
+        // Get OS count by status, consolidating 5, 6, 7 as "Faturada"
         $por_status = DB::table('ordem_servico')
             ->select('status', DB::raw('COUNT(*) as qtd'))
             ->where('consultor_id', $uid)
@@ -91,7 +92,17 @@ class ConsultorHomeController extends Controller
             ->map(function ($r) {
                 $r->status_txt = $this->getDisplayStatus($r->status);
                 return $r;
-            });
+            })
+            ->groupBy('status_txt')
+            ->map(function ($group) {
+                // Consolidate status 5, 6, 7 into one "Faturada" entry by summing qtd
+                $total_qtd = $group->sum('qtd');
+                return (object)[
+                    'status_txt' => $group->first()->status_txt,
+                    'qtd' => $total_qtd
+                ];
+            })
+            ->values();
 
         // Buscar clientes para o filtro
         $clientes = DB::table('cliente')

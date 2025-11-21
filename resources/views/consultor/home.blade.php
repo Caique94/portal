@@ -492,9 +492,10 @@
                   'enviada para aprovação' => 'badge-warning',
                   'finalizada' => 'badge-success',
                   'contestada' => 'badge-danger',
+                  'aguardando faturamento' => 'badge-warning',
                   'faturada' => 'badge-primary',
                   'aguardando rps' => 'badge-info',
-                  default => 'badge-secondary'
+                  default => 'badge-info'
                 };
               @endphp
               <tr>
@@ -542,6 +543,7 @@
             'enviada para aprovação' => 'var(--warning)',
             'finalizada' => 'var(--success)',
             'contestada' => 'var(--danger)',
+            'aguardando faturamento' => '#FF6B35',
             'faturada' => 'var(--primary)',
             'aguardando rps' => 'var(--info)',
             default => 'var(--text-muted)'
@@ -716,8 +718,8 @@ $(document).ready(function() {
       url: '/listar-ordens-servico',
       type: 'GET',
       dataType: 'json',
-      success: function(data) {
-        const os = data.find(o => o.id == osId);
+      success: function(response) {
+        const os = response.data.find(o => o.id == osId);
 
         if (os) {
           $('#osId').text('#' + os.id);
@@ -735,7 +737,9 @@ $(document).ready(function() {
             5: { text: 'Faturada', class: 'badge badge-primary' }
           };
 
-          const status = statusMap[os.status] || { text: 'Desconhecido', class: 'badge' };
+          // Use display_status if available (for consultores viewing OS they created)
+          const statusToDisplay = os.display_status !== undefined ? os.display_status : os.status;
+          const status = statusMap[statusToDisplay] || { text: 'Desconhecido', class: 'badge' };
           $('#osStatus').html('<span class="' + status.class + '">' + status.text + '</span>');
           $('#btnEditarOS').attr('href', "{{ route('ordem-servico') }}?id=" + osId);
 

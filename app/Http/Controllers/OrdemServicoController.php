@@ -10,10 +10,15 @@ use App\Services\StateMachine;
 use App\Services\OSValidation;
 use App\Services\AuditService;
 use App\Services\PermissionService;
+use App\Events\OSCreated;
 use App\Events\OSApproved;
+use App\Events\OSRejected;
+use App\Events\OSBilled;
+use App\Events\RPSEmitted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrdemServicoController extends Controller
 {
@@ -131,6 +136,11 @@ class OrdemServicoController extends Controller
             $auditService = new AuditService($ordem);
             $auditService->recordCreation($mappedData);
 
+            // Dispatch OSCreated event to notify admins
+            Log::info("store(): Despachando evento OSCreated para OS #{$ordem->id}");
+            OSCreated::dispatch($ordem);
+            Log::info("store(): Evento OSCreated despachado com sucesso para OS #{$ordem->id}");
+
             return response()->json([
                 'message' => 'Ordem de Serviço criada com sucesso',
                 'data' => $ordem,
@@ -175,6 +185,20 @@ class OrdemServicoController extends Controller
                     ->orderByDesc('ordem_servico.created_at')
                     ->get();
                 break;
+        }
+
+        // Apply display status transformation for consultores
+        if ($papel === 'consultor' && $data) {
+            $data = $data->map(function ($item) {
+                // For consultores, if status is 6 or 7 (Aguardando RPS or RPS Emitida),
+                // display it as 5 (Faturada)
+                if (in_array($item->status, [6, 7])) {
+                    $item->display_status = 5; // Faturada
+                } else {
+                    $item->display_status = $item->status;
+                }
+                return $item;
+            });
         }
 
         // Return in DataTables format with user role info
@@ -248,10 +272,12 @@ class OrdemServicoController extends Controller
         // Update status and approval fields
         $ordem->status = 4; // APROVADO
 
+        $shouldDispatchEvent = false;
         if ($ordem->approval_status !== 'approved') {
             $ordem->approval_status = 'approved';
             $ordem->approved_at = now();
             $ordem->approved_by = Auth::id();
+            $shouldDispatchEvent = true;
         }
 
         $ordem->save();
@@ -261,8 +287,8 @@ class OrdemServicoController extends Controller
         $auditService->recordApproval();
 
         // Dispatch OSApproved event to trigger PDF generation and email sending
-        // Only dispatch if approval_status was changed (wasChanged checks before save)
-        if ($ordem->wasChanged('approval_status')) {
+        // Dispatch if approval_status was changed
+        if ($shouldDispatchEvent) {
             OSApproved::dispatch($ordem);
         }
 
@@ -313,6 +339,9 @@ class OrdemServicoController extends Controller
         // Record audit
         $auditService = new AuditService($ordem);
         $auditService->recordContestacao($motivo);
+
+        // Dispatch OSRejected event to send notification
+        OSRejected::dispatch($ordem->refresh(), $motivo);
 
         return response()->json([
             'message' => 'Ordem de Serviço contestada com sucesso',
@@ -379,6 +408,11 @@ class OrdemServicoController extends Controller
             ]);
 
             DB::commit();
+
+            // Dispatch OSBilled event to send notification
+            Log::info("bill(): Despachando evento OSBilled para OS #{$ordem->id}");
+            OSBilled::dispatch($ordem->refresh());
+            Log::info("bill(): Evento OSBilled despachado com sucesso para OS #{$ordem->id}");
 
             return response()->json([
                 'message' => 'Ordem de Serviço faturada com sucesso',
@@ -475,15 +509,17 @@ class OrdemServicoController extends Controller
         $ordem = OrdemServico::find($id);
         $ordem->status = $status;
 
+        $shouldDispatchEvent = false;
         if ($status == 4 && $ordem->approval_status !== 'approved') {
             $ordem->approval_status = 'approved';
             $ordem->approved_at = now();
             $ordem->approved_by = Auth::id();
+            $shouldDispatchEvent = true;
         }
 
         $ordem->save();
 
-        if ($status == 4 && $ordem->wasChanged('approval_status')) {
+        if ($status == 4 && $shouldDispatchEvent) {
             event(new \App\Events\OSApproved($ordem));
         }
 

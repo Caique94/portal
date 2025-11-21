@@ -6,7 +6,38 @@ $(function () {
     ajax: {
       url: '/listar-usuarios',
       type: 'GET',
-      dataSrc: 'data' // { data: [...] }
+      dataSrc: 'data', // { data: [...] }
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      // Tratamento detalhado de erros
+      error: function(xhr, status, error) {
+        console.error('DataTables AJAX Error:', {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          responseText: xhr.responseText.substring(0, 200),
+          error: error
+        });
+
+        let errorMsg = 'Erro ao carregar dados';
+
+        if (xhr.status === 401) {
+          errorMsg = 'Sessão expirada. Faça login novamente.';
+          console.error('401 Unauthorized - Precisa fazer login novamente');
+        } else if (xhr.status === 403) {
+          errorMsg = 'Você não tem permissão para acessar este recurso';
+        } else if (xhr.status === 404) {
+          errorMsg = 'Rota não encontrada';
+        } else if (xhr.status === 500) {
+          errorMsg = 'Erro no servidor';
+        }
+
+        Toast.fire({
+          icon: 'error',
+          title: errorMsg
+        });
+      }
     },
     columns: [
       { title: 'Nome',      data: 'name',    defaultContent: '' },
@@ -194,11 +225,57 @@ $(function () {
   // Salvar do modal (criar/atualizar)
   $('.btn-salvar-usuario').on('click', function () {
     const $f = $('#formUsuario');
+
+    // Validação básica: campos obrigatórios
+    if (!validateFormRequired($f)) {
+      return;
+    }
+
+    // Coletar dados do formulário
+    const formData = new FormData($f[0]);
+    const jsonData = {};
+
+    formData.forEach((value, key) => {
+      // ✅ SANITIZAR CNPJ: remover máscara (deixar só números)
+      if (key === 'txtPJCNPJ' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
+      // ✅ SANITIZAR CPF/CNPJ DO TITULAR: remover máscara
+      else if (key === 'txtPagCpfCnpjTitular' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
+      // ✅ VALIDAR user_id: converter para inteiro ou null
+      else if (key === 'id') {
+        const id = parseInt(value);
+        jsonData[key] = !isNaN(id) && id > 0 ? id : null;
+      }
+      // ✅ SANITIZAR CEP: remover máscara
+      else if (key === 'txtPJCEP' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
+      // Resto dos campos - deixar como estão
+      else {
+        jsonData[key] = value;
+      }
+    });
+
+    console.log('Dados sanitizados prontos para envio:', jsonData);
+
     $.ajax({
       url: '/salvar-usuario',
       type: 'POST',
-      data: $f.serialize(),
+      contentType: 'application/json',  // ← IMPORTANTE: indicar que é JSON
+      data: JSON.stringify(jsonData),   // ← Enviar como JSON string
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')  // ← Token CSRF
+      },
+      dataType: 'json',  // ← Esperar JSON na resposta
+      timeout: 30000,    // ← Timeout de 30 segundos
+
       success: function (response) {
+        console.log('Sucesso:', response);
         Toast.fire({
           icon: 'success',
           title: response.message || 'Usuário salvo com sucesso!'
@@ -206,22 +283,72 @@ $(function () {
         $('#modalUsuario').modal('hide');
         tblUsuarios.ajax.reload(null, false);
       },
-      error: function (jqXHR) {
+
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.error('Erro completo:', {
+          status: jqXHR.status,
+          statusText: jqXHR.statusText,
+          textStatus: textStatus,
+          errorThrown: errorThrown,
+          responseText: jqXHR.responseText.substring(0, 500),
+          responseJSON: jqXHR.responseJSON
+        });
+
         let errorMsg = 'Erro ao salvar usuário';
-        if (jqXHR.status === 422) {
-          const errors = jqXHR.responseJSON.errors || {};
+        let errorDetails = '';
+
+        // Tratamento detalhado por status HTTP
+        if (jqXHR.status === 0) {
+          // Erro de conexão
+          errorMsg = 'Erro de conexão com o servidor';
+          errorDetails = 'Verifique se o servidor está rodando';
+        } else if (jqXHR.status === 422) {
+          // Erro de validação
+          errorMsg = 'Erro de validação dos dados';
+          const errors = jqXHR.responseJSON?.errors || {};
           let errorText = '';
           for (const field in errors) {
-            errorText += errors[field].join('<br>') + '<br>';
+            const messages = Array.isArray(errors[field]) ? errors[field] : [errors[field]];
+            errorText += messages.join(', ') + ' • ';
           }
-          errorMsg = errorText || 'Dados inválidos';
+          if (errorText) {
+            errorDetails = errorText.slice(0, -2);
+          }
+        } else if (jqXHR.status === 401) {
+          // Não autenticado
+          errorMsg = 'Sessão expirada';
+          errorDetails = 'Faça login novamente';
+        } else if (jqXHR.status === 403) {
+          // Não autorizado
+          errorMsg = 'Acesso negado';
+          errorDetails = 'Você não tem permissão para esta ação';
+        } else if (jqXHR.status === 500) {
+          // Erro do servidor
+          errorMsg = 'Erro no servidor';
+          errorDetails = 'Verifique os logs em storage/logs/laravel.log';
+        } else if (textStatus === 'timeout') {
+          errorMsg = 'Requisição expirou';
+          errorDetails = 'Tente novamente em alguns segundos';
+        } else if (textStatus === 'parsererror') {
+          errorMsg = 'Erro ao processar resposta';
+          errorDetails = 'A resposta do servidor não é JSON válido';
         } else if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
           errorMsg = jqXHR.responseJSON.message;
         }
-        Toast.fire({
-          icon: 'error',
-          title: errorMsg
-        });
+
+        // Mostrar erro
+        if (errorDetails) {
+          Toast.fire({
+            icon: 'error',
+            title: errorMsg,
+            text: errorDetails
+          });
+        } else {
+          Toast.fire({
+            icon: 'error',
+            title: errorMsg
+          });
+        }
       }
     });
   });

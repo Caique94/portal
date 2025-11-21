@@ -118,6 +118,70 @@
 
 <input type="hidden" id="txtParcelaReciboId" />
 
+<!-- Modal Editar Parcela -->
+<div class="modal fade" id="modalEditarParcela" tabindex="-1" data-bs-backdrop="static" aria-labelledby="modalEditarParcelaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarParcelaLabel">Editar Parcela</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarParcela">
+                    <input type="hidden" id="txtEditarParcelaId" />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="txtEditarValor" class="form-label">Valor da Parcela *</label>
+                            <input type="text" class="form-control" id="txtEditarValor" placeholder="0,00" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="slcEditarStatus" class="form-label">Status *</label>
+                            <select class="form-select" id="slcEditarStatus" required>
+                                <option value="pendente">Pendente</option>
+                                <option value="paga">Paga</option>
+                                <option value="atrasada">Atrasada</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="txtEditarDataVencimento" class="form-label">Data de Vencimento *</label>
+                            <input type="date" class="form-control" id="txtEditarDataVencimento" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="txtEditarDataPagamento" class="form-label">Data de Pagamento</label>
+                            <input type="date" class="form-control" id="txtEditarDataPagamento">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="txtEditarObservacao" class="form-label">Observação</label>
+                        <textarea class="form-control" id="txtEditarObservacao" rows="3"></textarea>
+                    </div>
+
+                    <!-- Validação de totais -->
+                    <div id="alertValidacaoPagamento" class="alert alert-info d-none mb-3">
+                        <strong>Resumo de Valores:</strong><br>
+                        Valor da RPS: <span id="spanValorRps">R$ 0,00</span><br>
+                        Total das Parcelas: <span id="spanTotalParcelas">R$ 0,00</span><br>
+                        Diferença: <span id="spanDiferenca">R$ 0,00</span>
+                    </div>
+
+                    <div id="alertAvisoValidacao" class="alert alert-warning d-none mb-3">
+                        <span id="textoAvisoValidacao"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSalvarParcela">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')

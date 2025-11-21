@@ -7,6 +7,7 @@ use App\Models\OrdemServico;
 use App\Enums\OrdemServicoStatus;
 use App\Services\PermissionService;
 use App\Services\AuditService;
+use App\Events\RPSEmitted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -126,11 +127,14 @@ class RPSController extends Controller
 
             // Link OS to RPS
             if ($rps->linkOrdensServico($ordemServicoIds)) {
-                // Record audit for each linked OS
+                // Record audit and dispatch RPS event for each linked OS
                 foreach ($ordemServicoIds as $osId) {
                     $os = OrdemServico::find($osId);
                     $auditService = new AuditService($os);
                     $auditService->recordRpsLinking($rps->id);
+
+                    // Dispatch RPSEmitted event to send notification
+                    RPSEmitted::dispatch($os);
                 }
 
                 DB::commit();

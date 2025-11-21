@@ -46,4 +46,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(RelatorioFechamento::class, 'aprovado_por');
     }
+
+    /**
+     * Get the legal person information for this user
+     */
+    public function pessoaJuridica()
+    {
+        return $this->hasOne(PessoaJuridicaUsuario::class);
+    }
+
+    /**
+     * Get the payment information for this user
+     */
+    public function pagamento()
+    {
+        return $this->hasOne(PagamentoUsuario::class);
+    }
 }

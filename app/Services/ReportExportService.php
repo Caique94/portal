@@ -71,8 +71,8 @@ class ReportExportService
         $summary = [
             'total_ordens' => $query->count(),
             'valor_total' => (float) $this->sumValues($query->clone()->pluck('valor_total')),
-            'total_ordens_faturadas' => $query->clone()->whereIn('status', [5, 6, 7, 8])->count(),
-            'valor_faturado' => (float) $this->sumValues($query->clone()->whereIn('status', [5, 6, 7, 8])->pluck('valor_total')),
+            'total_ordens_faturadas' => $query->clone()->whereIn('status', [5, 6, 7])->count(),
+            'valor_faturado' => (float) $this->sumValues($query->clone()->whereIn('status', [5, 6, 7])->pluck('valor_total')),
             'total_ordens_pendentes' => $query->clone()->whereIn('status', [1, 2, 3, 4])->count(),
             'valor_pendente' => (float) $this->sumValues($query->clone()->whereIn('status', [1, 2, 3, 4])->pluck('valor_total')),
         ];

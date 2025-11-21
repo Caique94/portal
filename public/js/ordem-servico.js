@@ -55,6 +55,9 @@ $(document).ready(function() {
             title: 'Cliente',
             data: 'cliente_nome'
         },{
+            title: 'Consultor',
+            data: 'consultor_nome'
+        },{
             title: 'Assunto',
             data: 'assunto'
         },{
@@ -88,11 +91,13 @@ $(document).ready(function() {
                     '7': { text: 'RPS Emitida', class: 'status-7-text' }
                 };
 
-                var status = statusMap[data] || statusMap[String(data)];
+                // Use display_status if available (for consultores viewing OS they created)
+                var statusToDisplay = row.display_status !== undefined ? row.display_status : data;
+                var status = statusMap[statusToDisplay] || statusMap[String(statusToDisplay)];
                 if (status) {
                     html = '<span class="' + status.class + '">' + status.text + '</span>';
                 } else {
-                    html = '<span class="status-unknown">' + data + '</span>';
+                    html = '<span class="status-unknown">' + statusToDisplay + '</span>';
                 }
 
                 return html;
@@ -165,7 +170,10 @@ $(document).ready(function() {
         createdRow: function(row, data, dataIndex) {
             $('td:eq(0)', row).addClass('first-column-border');
 
-            switch(data.status) {
+            // Use display_status if available (for consultores viewing OS they created)
+            var statusForBorder = data.display_status !== undefined ? data.display_status : data.status;
+
+            switch(statusForBorder) {
                 case 1:
                     $('td:eq(0)', row).addClass('status-1-border');
                     break;

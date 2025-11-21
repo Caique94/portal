@@ -1,8 +1,20 @@
 $(document).ready(function() {
 
+    // ========== AJAX SETUP GLOBAL ==========
     $.ajaxSetup({
         headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            'Accept': 'application/json'  // Força retorno em JSON
+        },
+        error: function(xhr, status, error) {
+            // Handle AJAX errors globally
+            if (xhr.status === 401) {
+                console.error('Erro 401: Sessão expirada ou não autenticado');
+                // Redirecionar para login se necessário
+                // window.location.href = '/login';
+            } else if (xhr.status === 403) {
+                console.error('Erro 403: Acesso negado');
+            }
         }
     });
 

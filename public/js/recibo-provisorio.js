@@ -2,6 +2,41 @@ $(document).ready(function() {
 
     let reciboAtual = null;
 
+    // Função helper para converter valor em formato brasileiro para número
+    function parseValorBrasileiro(valor) {
+        // Se já é um número, retorna direto
+        if (typeof valor === 'number') {
+            return valor;
+        }
+
+        if (!valor) return 0;
+
+        // Converter para string
+        var valorStr = String(valor).trim();
+
+        // Remover "R$" e espaços
+        valorStr = valorStr.replace('R$', '').trim();
+
+        // Se contém vírgula, assume formato brasileiro (1.234,56)
+        if (valorStr.includes(',')) {
+            // Remove pontos (separador de milhares) e substitui vírgula por ponto
+            return parseFloat(valorStr.replace(/\./g, '').replace(',', '.'));
+        } else if (valorStr.includes('.')) {
+            // Se contém ponto, pode ser separador de milhares ou decimal
+            // Se há 2 dígitos após o ponto, é decimal; caso contrário, é separador
+            var parts = valorStr.split('.');
+            if (parts[parts.length - 1].length === 2) {
+                // Formato com milhar: 1.234,56 ou 1.234.56
+                return parseFloat(valorStr.replace(/\./g, '.'));
+            } else {
+                // Ponto é separador de milhares, remover
+                return parseFloat(valorStr.replace(/\./g, ''));
+            }
+        }
+
+        return parseFloat(valorStr);
+    }
+
     // Configuração comum para todas as DataTables
     const dataTableConfig = function(status = 'todos') {
         return {
@@ -228,10 +263,17 @@ $(document).ready(function() {
                 }
             }
 
-            var valor = parseFloat(parcela.valor).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            });
+            // Safe valor formatting
+            var valor = '-';
+            if (parcela.valor) {
+                var valorNum = parseValorBrasileiro(parcela.valor);
+                if (!isNaN(valorNum)) {
+                    valor = valorNum.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL'
+                    });
+                }
+            }
 
             var acoes = '';
             if (parcela.status !== 'paga') {
@@ -241,11 +283,11 @@ $(document).ready(function() {
             acoes += '<button class="btn btn-sm btn-danger btn-deletar-parcela" data-id="' + parcela.id + '" title="Deletar"><i class="bi bi-trash"></i></button>';
 
             var tr = '<tr>' +
-                '<td class="text-center">' + parcela.numero_parcela + '/' + parcela.total_parcelas + '</td>' +
-                '<td class="text-center">' + dataVencimentoFormatada + '</td>' +
+                '<td class="text-center">' + (parcela.numero_parcela || '-') + '/' + (parcela.total_parcelas || '-') + '</td>' +
                 '<td class="text-end">' + valor + '</td>' +
-                '<td class="text-center">' + statusBadge + '</td>' +
+                '<td class="text-center">' + dataVencimentoFormatada + '</td>' +
                 '<td class="text-center">' + dataPagamento + '</td>' +
+                '<td class="text-center">' + statusBadge + '</td>' +
                 '<td class="text-center">' + acoes + '</td>' +
                 '</tr>';
 
@@ -253,6 +295,86 @@ $(document).ready(function() {
         });
 
         initializeTooltips();
+
+        // Adicionar handlers para editar/deletar parcelas nesta tabela
+        bindParcelaActions();
+    }
+
+    // Bind actions para parcelas (editar, deletar, marcar paga)
+    function bindParcelaActions() {
+        $('#tblParcelas').off('click', '.btn-editar-parcela').on('click', '.btn-editar-parcela', function() {
+            var parcelaId = $(this).data('id');
+            editarParcelaRPS(parcelaId);
+        });
+
+        $('#tblParcelas').off('click', '.btn-marcar-paga').on('click', '.btn-marcar-paga', function() {
+            var parcelaId = $(this).data('id');
+            marcarComoPaga(parcelaId);
+        });
+
+        $('#tblParcelas').off('click', '.btn-deletar-parcela').on('click', '.btn-deletar-parcela', function() {
+            var parcelaId = $(this).data('id');
+            deletarParcela(parcelaId);
+        });
+    }
+
+    // Editar parcela de RPS
+    function editarParcelaRPS(parcelaId) {
+        $.ajax({
+            url: '/listar-parcelas',
+            type: 'GET',
+            data: { recibo_provisorio_id: $('#txtParcelaReciboId').val() },
+            success: function(response) {
+                var parcela = response.find(p => p.id == parcelaId);
+
+                if (parcela) {
+                    $('#txtEditarParcelaId').val(parcela.id);
+                    $('#txtEditarDataVencimento').val(parcela.data_vencimento || '');
+
+                    // Validate and format valor
+                    var valorFormatado = '';
+                    if (parcela.valor) {
+                        var valor = (typeof parcela.valor === 'string')
+                            ? parcela.valor
+                            : parseFloat(parcela.valor).toFixed(2);
+                        valorFormatado = valor.replace('.', ',');
+                    }
+                    $('#txtEditarValor').val(valorFormatado);
+
+                    $('#slcEditarStatus').val(parcela.status || '');
+                    $('#txtEditarDataPagamento').val(parcela.data_pagamento || '');
+                    $('#txtEditarObservacao').val(parcela.observacao || '');
+
+                    // Fechar modal de gerenciar e abrir a de editar
+                    $('#modalGerenciarParcelas').modal('hide');
+                    atualizarValidacaoParcelas(response, parcelaId);
+                    $('#modalEditarParcela').modal('show');
+                } else {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Parcela não encontrada'
+                    });
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Erro ao carregar parcela'
+                });
+            }
+        });
+    }
+
+    // Marcar parcela como paga
+    function marcarComoPaga(parcelaId) {
+        // Implementar lógica de marcar como paga
+        console.log('Marcar como paga: ' + parcelaId);
+    }
+
+    // Deletar parcela
+    function deletarParcela(parcelaId) {
+        // Implementar lógica de deletar
+        console.log('Deletar parcela: ' + parcelaId);
     }
 
     // Abrir modal criar parcelas
@@ -426,9 +548,19 @@ $(document).ready(function() {
 
                 if (parcela) {
                     $('#txtEditarParcelaId').val(parcela.id);
-                    $('#txtEditarDataVencimento').val(parcela.data_vencimento);
-                    $('#txtEditarValor').val(parseFloat(parcela.valor).toFixed(2).replace('.', ','));
-                    $('#slcEditarStatus').val(parcela.status);
+                    $('#txtEditarDataVencimento').val(parcela.data_vencimento || '');
+
+                    // Validate and format valor
+                    var valorFormatado = '';
+                    if (parcela.valor) {
+                        var valor = (typeof parcela.valor === 'string')
+                            ? parcela.valor
+                            : parseFloat(parcela.valor).toFixed(2);
+                        valorFormatado = valor.replace('.', ',');
+                    }
+                    $('#txtEditarValor').val(valorFormatado);
+
+                    $('#slcEditarStatus').val(parcela.status || '');
                     $('#txtEditarDataPagamento').val(parcela.data_pagamento || '');
                     $('#txtEditarObservacao').val(parcela.observacao || '');
 
@@ -436,6 +568,11 @@ $(document).ready(function() {
                     atualizarValidacaoParcelas(response, parcelaId);
 
                     $('#modalEditarParcela').modal('show');
+                } else {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Parcela não encontrada'
+                    });
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -449,19 +586,27 @@ $(document).ready(function() {
 
     // Função para atualizar validação de parcelas
     function atualizarValidacaoParcelas(parcelas, parcelaIdEditando) {
-        var valorRps = parseFloat(reciboAtual.valor) || 0;
+        var valorRps = (reciboAtual && parseFloat(reciboAtual.valor)) || 0;
         var totalParcelas = 0;
 
         // Calcular total das parcelas
-        parcelas.forEach(function(p) {
-            if (p.id == parcelaIdEditando) {
-                // Usar o valor sendo editado
-                var valorEditado = parseFloat($('#txtEditarValor').val().replace(/\./g, '').replace(/,/g, '.')) || 0;
-                totalParcelas += valorEditado;
-            } else {
-                totalParcelas += parseFloat(p.valor) || 0;
-            }
-        });
+        if (parcelas && Array.isArray(parcelas)) {
+            parcelas.forEach(function(p) {
+                if (!p) return; // Skip null/undefined parcelas
+
+                if (p.id == parcelaIdEditando) {
+                    // Usar o valor sendo editado
+                    var valorStr = $('#txtEditarValor').val();
+                    var valorEditado = parseValorBrasileiro(valorStr);
+                    totalParcelas += valorEditado;
+                } else {
+                    var parcelaValor = (typeof p.valor === 'string') ?
+                        parseValorBrasileiro(p.valor) :
+                        parseFloat(p.valor) || 0;
+                    totalParcelas += parcelaValor;
+                }
+            });
+        }
 
         var diferenca = valorRps - totalParcelas;
         var diferencaFormatada = Math.abs(diferenca).toLocaleString('pt-BR', {
@@ -637,6 +782,89 @@ $(document).ready(function() {
                             title: errorThrown
                         });
                     }
+                });
+            }
+        });
+    });
+
+    // Monitorar mudança de valor no modal de editar
+    $('#txtEditarValor').on('input change', function() {
+        var parcelaIdEditando = $('#txtEditarParcelaId').val();
+        if (parcelaIdEditando && reciboAtual) {
+            // Carregar parcelas para recalcular totais
+            $.ajax({
+                url: '/listar-parcelas',
+                type: 'GET',
+                data: { recibo_provisorio_id: $('#txtParcelaReciboId').val() },
+                success: function(response) {
+                    atualizarValidacaoParcelas(response, parcelaIdEditando);
+                }
+            });
+        }
+    });
+
+    // Salvar parcela editada
+    $('#btnSalvarParcela').on('click', function() {
+        var parcelaId = $('#txtEditarParcelaId').val();
+        var valorStr = $('#txtEditarValor').val();
+        var valor = parseValorBrasileiro(valorStr);
+        var dataVencimento = $('#txtEditarDataVencimento').val();
+        var dataPagamento = $('#txtEditarDataPagamento').val();
+        var status = $('#slcEditarStatus').val();
+        var observacao = $('#txtEditarObservacao').val();
+
+        if (!valor || isNaN(valor)) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Valor inválido'
+            });
+            return;
+        }
+
+        if (!dataVencimento) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Data de vencimento obrigatória'
+            });
+            return;
+        }
+
+        // Validar se total das parcelas não excede valor da RPS
+        var alertaAvisoValidacao = $('#alertAvisoValidacao');
+        if (alertaAvisoValidacao.hasClass('alert-danger')) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Total das parcelas não pode exceder o valor da RPS'
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '/atualizar-parcela/' + parcelaId,
+            type: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: {
+                valor: valor,
+                data_vencimento: dataVencimento,
+                data_pagamento: dataPagamento,
+                status: status,
+                observacao: observacao
+            },
+            success: function(response) {
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Parcela atualizada com sucesso'
+                });
+
+                $('#modalEditarParcela').modal('hide');
+                carregarParcelas(reciboAtual.id);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Erro ao salvar parcela: ' + errorThrown
                 });
             }
         });
