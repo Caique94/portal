@@ -234,11 +234,32 @@ $(function () {
     // Coletar dados do formulário
     const formData = new FormData($f[0]);
     const jsonData = {};
+
     formData.forEach((value, key) => {
-      jsonData[key] = value;
+      // ✅ SANITIZAR CNPJ: remover máscara (deixar só números)
+      if (key === 'txtPJCNPJ' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
+      // ✅ SANITIZAR CPF/CNPJ DO TITULAR: remover máscara
+      else if (key === 'txtPagCpfCnpjTitular' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
+      // ✅ VALIDAR user_id: converter para inteiro ou null
+      else if (key === 'id') {
+        const id = parseInt(value);
+        jsonData[key] = !isNaN(id) && id > 0 ? id : null;
+      }
+      // ✅ SANITIZAR CEP: remover máscara
+      else if (key === 'txtPJCEP' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
+      // Resto dos campos - deixar como estão
+      else {
+        jsonData[key] = value;
+      }
     });
 
-    console.log('Enviando dados:', jsonData);
+    console.log('Dados sanitizados prontos para envio:', jsonData);
 
     $.ajax({
       url: '/salvar-usuario',

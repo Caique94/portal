@@ -7,6 +7,7 @@ use App\Models\PessoaJuridicaUsuario;
 use App\Models\PagamentoUsuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +63,32 @@ class UserController extends Controller
                     $user = $this->createUser($validated);
                     $message = 'Usuário criado com sucesso';
                     $statusCode = 201;
+                }
+
+                // ===== 4.5 Salvar Pessoa Jurídica (se fornecida) =====
+                if (!empty($validated['txtPJRazaoSocial']) || !empty($validated['txtPJCNPJ'])) {
+                    try {
+                        $pessoaJuridica = $this->validatePessoaJuridica($validated);
+                        $this->savePessoaJuridica($user, $pessoaJuridica);
+                    } catch (\Exception $e) {
+                        \Log::error('Erro ao salvar Pessoa Jurídica', ['error' => $e->getMessage()]);
+                        throw $e;
+                    }
+                }
+
+                // ===== 4.6 Salvar Dados de Pagamento (se fornecidos) =====
+                if (!empty($validated['txtPagTitularConta']) || !empty($validated['txtPagBanco'])) {
+                    try {
+                        $pagamento = $this->validatePagamento($validated);
+                        $user->pagamento()->updateOrCreate(
+                            ['user_id' => $user->id],
+                            $pagamento
+                        );
+                        \Log::info('Dados de Pagamento salvos', ['user_id' => $user->id]);
+                    } catch (\Exception $e) {
+                        \Log::error('Erro ao salvar Pagamento', ['error' => $e->getMessage()]);
+                        throw $e;
+                    }
                 }
 
                 // ===== 5. Commit da transação =====
@@ -146,6 +173,34 @@ class UserController extends Controller
             'txtUsuarioValorDesloc' => 'nullable|numeric|min:0',
             'txtUsuarioValorKM'     => 'nullable|numeric|min:0',
             'txtUsuarioSalarioBase' => 'nullable|numeric|min:0',
+
+            // Pessoa Jurídica
+            'txtPJCNPJ'              => 'nullable|string|max:20',
+            'txtPJRazaoSocial'       => 'nullable|string|max:255',
+            'txtPJNomeFantasia'      => 'nullable|string|max:255',
+            'txtPJInscricaoEstadual' => 'nullable|string|max:20',
+            'txtPJInscricaoMunicipal'=> 'nullable|string|max:20',
+            'txtPJEndereco'          => 'nullable|string|max:255',
+            'txtPJNumero'            => 'nullable|string|max:20',
+            'txtPJComplemento'       => 'nullable|string|max:100',
+            'txtPJBairro'            => 'nullable|string|max:100',
+            'txtPJCidade'            => 'nullable|string|max:100',
+            'txtPJEstado'            => 'nullable|string|max:2',
+            'txtPJCEP'               => 'nullable|string|max:10',
+            'txtPJTelefone'          => 'nullable|string|max:20',
+            'txtPJEmail'             => 'nullable|email|max:255',
+            'txtPJSite'              => 'nullable|string|max:255',
+            'txtPJRamoAtividade'     => 'nullable|string|max:255',
+            'txtPJDataConstituicao'  => 'nullable|date_format:Y-m-d',
+
+            // Pagamento
+            'txtPagTitularConta'     => 'nullable|string|max:255',
+            'txtPagCpfCnpjTitular'   => 'nullable|string|max:20',
+            'txtPagBanco'            => 'nullable|string|max:100',
+            'txtPagAgencia'          => 'nullable|string|max:20',
+            'txtPagConta'            => 'nullable|string|max:20',
+            'slcPagTipoConta'        => 'nullable|in:corrente,poupanca',
+            'txtPagPixKey'           => 'nullable|string|max:255',
         ];
 
         return $request->validate($rules, $this->validationMessages());
@@ -230,6 +285,128 @@ class UserController extends Controller
         ]);
 
         return $user;
+    }
+
+    /**
+     * ========================================
+     * PESSOA JURÍDICA - MÉTODOS DE VALIDAÇÃO
+     * ========================================
+     */
+
+    /**
+     * Validar e sanitizar dados de Pessoa Jurídica
+     */
+    private function validatePessoaJuridica(array $data): array
+    {
+        $cnpj = isset($data['txtPJCNPJ'])
+            ? preg_replace('/\D/', '', (string)$data['txtPJCNPJ'])
+            : null;
+
+        if (!empty($cnpj) && strlen($cnpj) !== 14) {
+            Log::warning('CNPJ inválido', ['cnpj' => $cnpj, 'comprimento' => strlen($cnpj)]);
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'txtPJCNPJ' => ['CNPJ deve conter exatamente 14 dígitos']
+            ]);
+        }
+
+        Log::info('Pessoa Jurídica validada', ['cnpj' => $cnpj]);
+
+        return [
+            'user_id'              => $data['user_id'] ?? null,
+            'cnpj'                 => $cnpj,
+            'razao_social'         => $data['txtPJRazaoSocial'] ?? null,
+            'nome_fantasia'        => $data['txtPJNomeFantasia'] ?? null,
+            'inscricao_estadual'   => $data['txtPJInscricaoEstadual'] ?? null,
+            'inscricao_municipal'  => $data['txtPJInscricaoMunicipal'] ?? null,
+            'endereco'             => $data['txtPJEndereco'] ?? null,
+            'numero'               => $data['txtPJNumero'] ?? null,
+            'complemento'          => $data['txtPJComplemento'] ?? null,
+            'bairro'               => $data['txtPJBairro'] ?? null,
+            'cidade'               => $data['txtPJCidade'] ?? null,
+            'estado'               => $data['txtPJEstado'] ?? null,
+            'cep'                  => $data['txtPJCEP'] ?? null,
+            'telefone'             => $data['txtPJTelefone'] ?? null,
+            'email'                => $data['txtPJEmail'] ?? null,
+            'site'                 => $data['txtPJSite'] ?? null,
+            'ramo_atividade'       => $data['txtPJRamoAtividade'] ?? null,
+            'data_constituicao'    => $data['txtPJDataConstituicao'] ?? null,
+        ];
+    }
+
+    /**
+     * Verificar se CNPJ já existe
+     */
+    private function checkCNPJDuplicate(?string $cnpj, ?int $userId = null, ?int $pessoaJuridicaId = null): bool
+    {
+        if (empty($cnpj)) {
+            return false;
+        }
+
+        $query = PessoaJuridicaUsuario::where('cnpj', $cnpj);
+
+        if (!empty($pessoaJuridicaId)) {
+            $query->where('id', '!=', $pessoaJuridicaId);
+        } elseif (!empty($userId)) {
+            $query->where('user_id', '!=', intval($userId));
+        }
+
+        $exists = $query->exists();
+
+        if ($exists) {
+            Log::warning('CNPJ duplicado detectado', ['cnpj' => $cnpj]);
+        }
+
+        return $exists;
+    }
+
+    /**
+     * Validar dados de Pagamento
+     */
+    private function validatePagamento(array $data): array
+    {
+        $cpfCnpj = isset($data['txtPagCpfCnpjTitular'])
+            ? preg_replace('/\D/', '', (string)$data['txtPagCpfCnpjTitular'])
+            : null;
+
+        return [
+            'user_id'           => $data['user_id'] ?? null,
+            'titular_conta'     => $data['txtPagTitularConta'] ?? null,
+            'cpf_cnpj_titular'  => $cpfCnpj,
+            'banco'             => $data['txtPagBanco'] ?? null,
+            'agencia'           => $data['txtPagAgencia'] ?? null,
+            'conta'             => $data['txtPagConta'] ?? null,
+            'tipo_conta'        => $data['slcPagTipoConta'] ?? 'corrente',
+            'pix_key'           => $data['txtPagPixKey'] ?? null,
+            'ativo'             => true,
+        ];
+    }
+
+    /**
+     * Salvar Pessoa Jurídica com validação
+     */
+    private function savePessoaJuridica(User $user, array $pessoaJuridicaData): void
+    {
+        if (!empty($pessoaJuridicaData['cnpj'])) {
+            $pessoaJurExistente = $user->pessoaJuridica;
+            $pessoaJuridicaId = $pessoaJurExistente?->id;
+
+            if ($this->checkCNPJDuplicate(
+                $pessoaJuridicaData['cnpj'],
+                $user->id,
+                $pessoaJuridicaId
+            )) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'txtPJCNPJ' => ['CNPJ já cadastrado para outro usuário']
+                ]);
+            }
+        }
+
+        $user->pessoaJuridica()->updateOrCreate(
+            ['user_id' => $user->id],
+            $pessoaJuridicaData
+        );
+
+        Log::info('Pessoa Jurídica salva', ['user_id' => $user->id, 'cnpj' => $pessoaJuridicaData['cnpj'] ?? null]);
     }
 
     // === ALTERAR SENHA ===
