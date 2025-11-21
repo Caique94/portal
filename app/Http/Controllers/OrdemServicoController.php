@@ -742,4 +742,53 @@ class OrdemServicoController extends Controller
         }
     }
 
+    /**
+     * Get totalizer data for OS (consultant rates, not client rates)
+     * Returns consultant's hora, km, and displacement values
+     */
+    public function getTotalizadorData($id)
+    {
+        try {
+            $os = OrdemServico::with('consultor', 'cliente')->findOrFail($id);
+
+            // Check permissions
+            $user = auth()->user();
+            if ($user->papel === 'consultor' && $os->consultor_id !== $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Acesso negado'
+                ], 403);
+            }
+
+            $consultor = $os->consultor;
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'os_id' => $os->id,
+                    'consultor_id' => $consultor->id,
+                    'consultor_nome' => $consultor->name,
+                    'valor_hora_consultor' => floatval($consultor->valor_hora ?? 0),
+                    'valor_km_consultor' => floatval($consultor->valor_km ?? 0),
+                    'valor_desloc_consultor' => floatval($consultor->valor_desloc ?? 0),
+                    'preco_produto' => floatval($os->preco_produto ?? 0),
+                    'papel_user_atual' => $user->papel,
+                    'cliente_id' => $os->cliente_id,
+                    'cliente_km' => floatval($os->cliente->km ?? 0)
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar dados do totalizador', [
+                'os_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar dados do totalizador'
+            ], 500);
+        }
+    }
+
 }

@@ -144,14 +144,14 @@ use Illuminate\Support\Facades\Auth;
                             <div class="col-md-6">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text"><label for="chkOrdemPresencial">Presencial</label></span>
-                                    <div class="input-group-text"><input class="form-check-input" type="checkbox" name="chkOrdemPresencial" id="chkOrdemPresencial" value="1"></div>
+                                    <div class="input-group-text"><input class="form-check-input calculo-valor-total" type="checkbox" name="chkOrdemPresencial" id="chkOrdemPresencial" value="1"></div>
                                     <div class="form-floating">
-                                        <input type="text" id="txtOrdemKM" class="form-control money" placeholder="KM" disabled />
+                                        <input type="text" id="txtOrdemKM" class="form-control money calculo-valor-total" placeholder="KM" disabled />
                                         <label for="txtOrdemKM">KM</label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="text" name="txtOrdemDeslocamento" id="txtOrdemDeslocamento" class="form-control money" placeholder="Deslocameento" disabled />
-                                        <label for="txtOrdemDeslocamento">Deslocamento</label>
+                                        <input type="text" name="txtOrdemDeslocamento" id="txtOrdemDeslocamento" class="form-control calculo-valor-total" placeholder="HH:MM" disabled />
+                                        <label for="txtOrdemDeslocamento">Deslocamento (HH:MM)</label>
                                     </div>
                                 </div>
                             </div>
@@ -180,6 +180,14 @@ use Illuminate\Support\Facades\Auth;
                                             <div class="col-md-6">
                                                 <table class="table table-sm">
                                                     <tbody>
+                                                        <tr>
+                                                            <td><strong>Valor Hora Consultor:</strong></td>
+                                                            <td class="text-end" id="valorHoraConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Valor KM Consultor:</strong></td>
+                                                            <td class="text-end" id="valorKMConsultor">R$ 0,00</td>
+                                                        </tr>
                                                         <tr>
                                                             <td><strong>Valor do Serviço:</strong></td>
                                                             <td class="text-end" id="totalValorServico">R$ 0,00</td>

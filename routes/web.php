@@ -213,6 +213,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/os/aguardando-rps', [OrdemServicoController::class, 'listForRps']);
     Route::get('/os/{id}/auditoria', [OrdemServicoController::class, 'getAuditTrail']);
     Route::get('/os/{id}/permissoes', [OrdemServicoController::class, 'getPermissions']);
+    Route::get('/os/{id}/totalizador-data', [OrdemServicoController::class, 'getTotalizadorData']);
 
     // RPS ENDPOINTS
     Route::get('/rps', [RPSController::class, 'index']);

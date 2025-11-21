@@ -623,8 +623,8 @@ $(document).ready(function() {
         $('#txtProdutoOrdemQtdeTotal').val(qtde_horas).trigger('change');
     });
 
-    // IBCLUIR LOGICA CALCULO VALOR TOTAL
-    $('.calculo-valor-total, #chkOrdemPresencial').on('change', function() {
+    // INCLUIR LOGICA CALCULO VALOR TOTAL COM VALORES DO CONSULTOR
+    $('.calculo-valor-total, #chkOrdemPresencial').on('change', async function() {
         var valor_total = 0;
         var preco = $('#txtOrdemPrecoProduto').val() != '' ? parseFloat($('#txtOrdemPrecoProduto').val().replace(/\./g, '').replace(/,/g, '.')) : 0;
         var horas = $('#txtProdutoOrdemQtdeTotal').val() != '' ? parseFloat($('#txtProdutoOrdemQtdeTotal').val()) : 0;
@@ -633,54 +633,122 @@ $(document).ready(function() {
         // Verificar se precisa deslocamento / km no valor da ordem
         var km = 0;
         var deslocamento = 0;
+        var horasDeslocamento = 0;
 
         if ($('#chkOrdemPresencial').is(':checked')) {
             km = $('#txtOrdemKM').val() != '' ? parseFloat($('#txtOrdemKM').val().replace(/\./g, '').replace(/,/g, '.')) : 0;
             deslocamento = $('#txtOrdemDeslocamento').val() != '' ? parseFloat($('#txtOrdemDeslocamento').val().replace(/\./g, '').replace(/,/g, '.')) : 0;
+
+            // Extrair horas de deslocamento do campo de deslocamento (formato HH:MM)
+            var deslocamentoStr = $('#txtOrdemDeslocamento').val();
+            if (deslocamentoStr && deslocamentoStr.includes(':')) {
+                horasDeslocamento = calcularHorasDesdeTexto(deslocamentoStr);
+            }
         }
 
         valor_total = (preco * horas) + despesas + km + deslocamento;
 
         $('#txtOrdemValorTotal').val(Number.isNaN(valor_total) ? 0 : valor_total.toFixed(2));
 
-        // Atualizar totalizador para administrador
-        atualizarTotalizadorAdmin(preco * horas, despesas, km, deslocamento);
+        // Buscar dados do consultor e atualizar totalizador
+        var osId = $('#txtOrdemId').val();
+        if (osId) {
+            await atualizarTotalizadorComValoresConsultor(osId, preco, horas, despesas, km, horasDeslocamento);
+        }
     });
 
-    // Função para atualizar o totalizador do administrador
-    function atualizarTotalizadorAdmin(valorServico, despesas, km, deslocamento) {
-        if (papel == 'admin' && $('#divTotalizadorAdmin').length > 0) {
-            // Exibir o totalizador
-            $('#divTotalizadorAdmin').show();
+    // Função auxiliar para calcular horas a partir de string HH:MM
+    function calcularHorasDesdeTexto(texto) {
+        if (!texto || !texto.includes(':')) return 0;
+        var partes = texto.split(':');
+        var horas = parseInt(partes[0]) || 0;
+        var minutos = parseInt(partes[1]) || 0;
+        return horas + (minutos / 60);
+    }
 
-            // Atualizar valores
-            $('#totalValorServico').text('R$ ' + valorServico.toFixed(2).replace('.', ','));
-            $('#totalDespesas').text('R$ ' + despesas.toFixed(2).replace('.', ','));
+    // Função para formatar valor em R$ com separadores brasileiros
+    function formatarMoeda(valor) {
+        return 'R$ ' + valor.toFixed(2).replace('.', ',');
+    }
 
-            // Mostrar/ocultar linhas de KM e Deslocamento
-            if ($('#chkOrdemPresencial').is(':checked') && (km > 0 || deslocamento > 0)) {
-                if (km > 0) {
-                    $('#linhaKM').show();
-                    $('#totalKM').text('R$ ' + km.toFixed(2).replace('.', ','));
-                } else {
-                    $('#linhaKM').hide();
+    // Função para buscar dados do consultor e atualizar totalizador
+    async function atualizarTotalizadorComValoresConsultor(osId, precoProduto, horas, despesas, km, horasDeslocamento) {
+        try {
+            const response = await $.ajax({
+                url: `/os/${osId}/totalizador-data`,
+                type: 'GET',
+                dataType: 'json'
+            });
+
+            if (response.success) {
+                const dados = response.data;
+                const userRole = dados.papel_user_atual;
+
+                // Mostrar totalizador se usuário é admin, consultor ou superadmin
+                if (['admin', 'consultor', 'superadmin'].includes(userRole) && $('#divTotalizadorAdmin').length > 0) {
+                    $('#divTotalizadorAdmin').show();
+
+                    let valorServico = 0;
+                    let valorKM = 0;
+                    let valorDeslocamento = 0;
+
+                    // Admin: valor serviço = preco_produto × horas
+                    if (userRole === 'admin') {
+                        valorServico = precoProduto * horas;
+                    }
+                    // Consultor e Superadmin: valor serviço = horas × valor_hora_consultor
+                    else if (['consultor', 'superadmin'].includes(userRole)) {
+                        valorServico = horas * dados.valor_hora_consultor;
+                    }
+
+                    // KM = km × valor_km_consultor (ambos usam valor do consultor)
+                    valorKM = km * dados.valor_km_consultor;
+
+                    // Deslocamento = horas_deslocamento × valor_hora_consultor
+                    valorDeslocamento = horasDeslocamento * dados.valor_hora_consultor;
+
+                    // Atualizar exibição
+                    $('#totalValorServico').text(formatarMoeda(valorServico));
+                    $('#totalDespesas').text(formatarMoeda(despesas));
+
+                    // Exibir valor/hora consultor
+                    $('#valorHoraConsultor').text(formatarMoeda(dados.valor_hora_consultor));
+                    $('#valorKMConsultor').text(formatarMoeda(dados.valor_km_consultor));
+
+                    // Mostrar/ocultar linhas de KM e Deslocamento
+                    if ($('#chkOrdemPresencial').is(':checked') && (km > 0 || horasDeslocamento > 0)) {
+                        if (km > 0) {
+                            $('#linhaKM').show();
+                            $('#totalKM').text(formatarMoeda(valorKM));
+                        } else {
+                            $('#linhaKM').hide();
+                        }
+
+                        if (horasDeslocamento > 0) {
+                            $('#linhaDeslocamento').show();
+                            $('#totalDeslocamento').text(formatarMoeda(valorDeslocamento));
+                        } else {
+                            $('#linhaDeslocamento').hide();
+                        }
+                    } else {
+                        $('#linhaKM').hide();
+                        $('#linhaDeslocamento').hide();
+                    }
+
+                    // Calcular e exibir total geral
+                    var totalGeral = valorServico + despesas + valorKM + valorDeslocamento;
+                    $('#totalGeral').text(formatarMoeda(totalGeral));
                 }
-
-                if (deslocamento > 0) {
-                    $('#linhaDeslocamento').show();
-                    $('#totalDeslocamento').text('R$ ' + deslocamento.toFixed(2).replace('.', ','));
-                } else {
-                    $('#linhaDeslocamento').hide();
-                }
-            } else {
-                $('#linhaKM').hide();
-                $('#linhaDeslocamento').hide();
             }
-
-            // Calcular e exibir total geral
-            var totalGeral = valorServico + despesas + km + deslocamento;
-            $('#totalGeral').text('R$ ' + totalGeral.toFixed(2).replace('.', ','));
+        } catch (error) {
+            console.error('Erro ao buscar dados do totalizador:', error);
         }
+    }
+
+    // Função compatível com código legado (mantida para referência)
+    function atualizarTotalizadorAdmin(valorServico, despesas, km, deslocamento) {
+        // Função mantida para compatibilidade com código legado
+        // Agora o cálculo é feito em atualizarTotalizadorComValoresConsultor()
     }
 
     $('#slcOrdemTipoDespesa').on('change', function() {
