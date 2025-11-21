@@ -222,6 +222,59 @@ use Illuminate\Support\Facades\Auth;
                                 </div>
                             </div>
                         </div>
+
+                        {{-- Segundo totalizador para Admin ver também a visão do Consultor --}}
+                        @if(auth()->user()->papel === 'admin')
+                        <div id="divTotalizadorConsultor" class="row mt-4" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="card bg-light border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0"><i class="bi bi-calculator"></i> Totalizador - Visão do Consultor</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <table class="table table-sm">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><strong>Valor Hora Consultor:</strong></td>
+                                                            <td class="text-end" id="valorHoraConsultorConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Valor KM Consultor:</strong></td>
+                                                            <td class="text-end" id="valorKMConsultorConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Valor do Serviço:</strong></td>
+                                                            <td class="text-end" id="totalValorServicoConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Despesas:</strong></td>
+                                                            <td class="text-end" id="totalDespesasConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr id="linhaKMConsultor" style="display: none;">
+                                                            <td><strong>KM:</strong></td>
+                                                            <td class="text-end" id="totalKMConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr id="linhaDeslocamentoConsultor" style="display: none;">
+                                                            <td><strong>Deslocamento:</strong></td>
+                                                            <td class="text-end" id="totalDeslocamentoConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="alert alert-info mb-0">
+                                                    <h5 class="mb-1">TOTAL GERAL</h5>
+                                                    <h3 class="mb-0" id="totalGeralConsultor">R$ 0,00</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                         @endif
                     </form>
                 </div>

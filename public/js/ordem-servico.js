@@ -738,6 +738,48 @@ $(document).ready(function() {
                     // Calcular e exibir total geral
                     var totalGeral = valorServico + despesas + valorKM + valorDeslocamento;
                     $('#totalGeral').text(formatarMoeda(totalGeral));
+
+                    // Se for Admin, mostrar também a visão do Consultor
+                    if (userRole === 'admin' && $('#divTotalizadorConsultor').length > 0) {
+                        $('#divTotalizadorConsultor').show();
+
+                        // Cálculo da visão do Consultor
+                        let valorServicoConsultor = horas * dados.valor_hora_consultor;
+                        let valorKMConsultor = km * dados.valor_km_consultor;
+                        let valorDeslocamentoConsultor = horasDeslocamento * dados.valor_hora_consultor;
+
+                        // Atualizar exibição do totalizador do consultor
+                        $('#totalValorServicoConsultor').text(formatarMoeda(valorServicoConsultor));
+                        $('#totalDespesasConsultor').text(formatarMoeda(despesas));
+
+                        // Exibir valor/hora consultor
+                        $('#valorHoraConsultorConsultor').text(formatarMoeda(dados.valor_hora_consultor));
+                        $('#valorKMConsultorConsultor').text(formatarMoeda(dados.valor_km_consultor));
+
+                        // Mostrar/ocultar linhas de KM e Deslocamento
+                        if ($('#chkOrdemPresencial').is(':checked') && (km > 0 || horasDeslocamento > 0)) {
+                            if (km > 0) {
+                                $('#linhaKMConsultor').show();
+                                $('#totalKMConsultor').text(formatarMoeda(valorKMConsultor));
+                            } else {
+                                $('#linhaKMConsultor').hide();
+                            }
+
+                            if (horasDeslocamento > 0) {
+                                $('#linhaDeslocamentoConsultor').show();
+                                $('#totalDeslocamentoConsultor').text(formatarMoeda(valorDeslocamentoConsultor));
+                            } else {
+                                $('#linhaDeslocamentoConsultor').hide();
+                            }
+                        } else {
+                            $('#linhaKMConsultor').hide();
+                            $('#linhaDeslocamentoConsultor').hide();
+                        }
+
+                        // Calcular e exibir total geral do consultor
+                        var totalGeralConsultor = valorServicoConsultor + despesas + valorKMConsultor + valorDeslocamentoConsultor;
+                        $('#totalGeralConsultor').text(formatarMoeda(totalGeralConsultor));
+                    }
                 }
             }
         } catch (error) {
