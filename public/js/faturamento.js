@@ -139,41 +139,219 @@ $(document).ready(function() {
         }
     }
 
-    // ===== NOVO: Modal para seleção de múltiplas RPS =====
+    // ===== NOVO: Modal para seleção de múltiplas RPS (melhorado) =====
     function abrirModalSelecaoRPS(cliente_id, cliente_nome, ordem_arr, valor_total) {
-        var checkboxesHTML = `
-            <div class="mb-3">
-                <p><strong>Selecione quais ordens deseja agrupar para este RPS:</strong></p>
-                <p class="text-muted"><small>Cliente: <strong>${cliente_nome}</strong></small></p>
-            </div>
-            <div style="max-height: 300px; overflow-y: auto;">
-        `;
+        var ordensHTML = '';
 
         $.each(ordem_arr, function(i, ordem) {
-            checkboxesHTML += `
-                <div class="form-check" style="margin-bottom: 10px;">
-                    <input class="form-check-input rps-checkbox-novo" type="checkbox"
-                           id="rps_novo_${ordem.id}" value="${ordem.id}" checked>
-                    <label class="form-check-label" for="rps_novo_${ordem.id}">
-                        OS ${ordem.numero} - R$ ${parseFloat(ordem.valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}
-                    </label>
+            ordensHTML += `
+                <div class="rps-ordem-card">
+                    <div class="rps-ordem-checkbox">
+                        <input class="form-check-input rps-checkbox-novo" type="checkbox"
+                               id="rps_novo_${ordem.id}" value="${ordem.id}" checked>
+                    </div>
+                    <div class="rps-ordem-info">
+                        <div class="rps-ordem-numero">OS ${ordem.numero}</div>
+                        <div class="rps-ordem-valor">${parseFloat(ordem.valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}</div>
+                    </div>
                 </div>
             `;
         });
 
-        checkboxesHTML += '</div>';
+        var checkboxesHTML = `
+            <div class="rps-selecao-container">
+                <div class="rps-header-selecao">
+                    <div class="rps-cliente-info">
+                        <i class="bi bi-building"></i>
+                        <strong>${cliente_nome}</strong>
+                    </div>
+                    <div class="rps-total-header">
+                        Total: <span id="totalHeaderSelecao">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="rps-ordens-list">
+                    ${ordensHTML}
+                </div>
+
+                <div class="rps-resumo-selecao">
+                    <div class="rps-resumo-item">
+                        <span>Ordens Selecionadas:</span>
+                        <strong id="ordensCount">0</strong>
+                    </div>
+                    <div class="rps-resumo-total">
+                        <span>Total a Emitir:</span>
+                        <strong id="totalSelecao">R$ 0,00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .rps-selecao-container {
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                }
+
+                .rps-header-selecao {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+
+                .rps-cliente-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-size: 16px;
+                }
+
+                .rps-cliente-info i {
+                    font-size: 24px;
+                }
+
+                .rps-total-header {
+                    font-size: 14px;
+                    opacity: 0.9;
+                }
+
+                .rps-ordens-list {
+                    max-height: 350px;
+                    overflow-y: auto;
+                    margin-bottom: 20px;
+                    padding: 10px;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 8px;
+                    background: #f9f9f9;
+                }
+
+                .rps-ordem-card {
+                    display: flex;
+                    align-items: center;
+                    padding: 14px;
+                    margin-bottom: 10px;
+                    background: white;
+                    border: 2px solid #f0f0f0;
+                    border-radius: 6px;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                }
+
+                .rps-ordem-card:hover {
+                    border-color: #667eea;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+                }
+
+                .rps-ordem-card input:checked ~ .rps-ordem-info {
+                    color: #667eea;
+                    font-weight: 500;
+                }
+
+                .rps-ordem-checkbox {
+                    margin-right: 12px;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .rps-ordem-checkbox input {
+                    width: 20px;
+                    height: 20px;
+                    cursor: pointer;
+                    accent-color: #667eea;
+                }
+
+                .rps-ordem-info {
+                    flex: 1;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    transition: all 0.2s ease;
+                }
+
+                .rps-ordem-numero {
+                    font-size: 15px;
+                    font-weight: 500;
+                    color: #333;
+                }
+
+                .rps-ordem-valor {
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #667eea;
+                }
+
+                .rps-resumo-selecao {
+                    padding: 16px;
+                    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                    border-radius: 8px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .rps-resumo-item,
+                .rps-resumo-total {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+
+                .rps-resumo-item span,
+                .rps-resumo-total span {
+                    font-size: 13px;
+                    color: #666;
+                    font-weight: 500;
+                }
+
+                .rps-resumo-item strong,
+                .rps-resumo-total strong {
+                    font-size: 18px;
+                    color: #333;
+                }
+
+                .rps-resumo-total strong {
+                    color: #667eea;
+                    font-size: 20px;
+                }
+
+                /* Scroll customizado */
+                .rps-ordens-list::-webkit-scrollbar {
+                    width: 8px;
+                }
+
+                .rps-ordens-list::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                    border-radius: 4px;
+                }
+
+                .rps-ordens-list::-webkit-scrollbar-thumb {
+                    background: #667eea;
+                    border-radius: 4px;
+                }
+
+                .rps-ordens-list::-webkit-scrollbar-thumb:hover {
+                    background: #5568d3;
+                }
+            </style>
+        `;
 
         Swal.fire({
             title: 'Selecionar Ordens para Agrupar',
             html: checkboxesHTML,
             icon: 'info',
             showCancelButton: true,
-            confirmButtonText: 'Confirmar Seleção',
-            cancelButtonText: 'Voltar',
+            confirmButtonText: '✓ Confirmar Seleção',
+            cancelButtonText: '↶ Voltar',
             backdrop: true,
+            width: '600px',
             customClass: {
-                confirmButton: 'btn btn-success',
-                cancelButton: 'btn btn-secondary'
+                confirmButton: 'btn btn-success btn-lg',
+                cancelButton: 'btn btn-secondary btn-lg',
+                popup: 'swal-rps-popup'
             },
             didOpen: (modal) => {
                 // Evento para atualizar total quando checkbox muda
@@ -234,22 +412,21 @@ $(document).ready(function() {
             currency: 'BRL'
         });
 
-        var swalContent = document.querySelector('.swal2-html-container');
-        if (swalContent) {
-            var msgAnterior = swalContent.querySelector('.total-selecionado-modal');
-            if (msgAnterior) {
-                msgAnterior.remove();
-            }
+        // Atualizar elementos do novo design melhorado
+        var ordensCountEl = document.getElementById('ordensCount');
+        var totalSelecaoEl = document.getElementById('totalSelecao');
+        var totalHeaderEl = document.getElementById('totalHeaderSelecao');
 
-            if (checked.length > 0) {
-                var msgExtra = `
-                    <div class="total-selecionado-modal mt-3 p-3 bg-light border rounded">
-                        <p class="mb-2"><strong>${checked.length} ordem(s) selecionada(s)</strong></p>
-                        <p class="mb-0"><strong>Total:</strong> <span class="text-success">${totalFormatado}</span></p>
-                    </div>
-                `;
-                swalContent.insertAdjacentHTML('beforeend', msgExtra);
-            }
+        if (ordensCountEl) {
+            ordensCountEl.textContent = checked.length;
+        }
+
+        if (totalSelecaoEl) {
+            totalSelecaoEl.textContent = totalFormatado;
+        }
+
+        if (totalHeaderEl) {
+            totalHeaderEl.textContent = totalFormatado;
         }
     }
 
