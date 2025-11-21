@@ -65,30 +65,50 @@ class UserController extends Controller
                     $statusCode = 201;
                 }
 
-                // ===== 4.5 Salvar Pessoa Jurídica (se fornecida) =====
-                if (!empty($validated['txtPJRazaoSocial']) || !empty($validated['txtPJCNPJ'])) {
-                    try {
-                        $pessoaJuridica = $this->validatePessoaJuridica($validated);
-                        $this->savePessoaJuridica($user, $pessoaJuridica);
-                    } catch (\Exception $e) {
-                        \Log::error('Erro ao salvar Pessoa Jurídica', ['error' => $e->getMessage()]);
-                        throw $e;
+                // ===== 4.5 Salvar Pessoa Jurídica (sempre, mesmo que parcial) =====
+                try {
+                    $pessoaJuridica = $this->validatePessoaJuridica($validated);
+                    // Salvar se houver algum dado preenchido
+                    if (!empty($pessoaJuridica['cnpj']) || !empty($pessoaJuridica['razao_social'])) {
+                        $pessoaJuridica['user_id'] = $user->id;
+                        $user->pessoaJuridica()->updateOrCreate(
+                            ['user_id' => $user->id],
+                            $pessoaJuridica
+                        );
+                        \Log::info('Pessoa Jurídica salva com sucesso', [
+                            'user_id' => $user->id,
+                            'cnpj' => $pessoaJuridica['cnpj'] ?? 'vazio'
+                        ]);
                     }
+                } catch (\Exception $e) {
+                    \Log::error('Erro ao salvar Pessoa Jurídica', [
+                        'error' => $e->getMessage(),
+                        'user_id' => $user->id
+                    ]);
+                    throw $e;
                 }
 
-                // ===== 4.6 Salvar Dados de Pagamento (se fornecidos) =====
-                if (!empty($validated['txtPagTitularConta']) || !empty($validated['txtPagBanco'])) {
-                    try {
-                        $pagamento = $this->validatePagamento($validated);
+                // ===== 4.6 Salvar Dados de Pagamento (sempre, mesmo que parcial) =====
+                try {
+                    $pagamento = $this->validatePagamento($validated);
+                    // Salvar se houver algum dado preenchido
+                    if (!empty($pagamento['titular_conta']) || !empty($pagamento['banco'])) {
+                        $pagamento['user_id'] = $user->id;
                         $user->pagamento()->updateOrCreate(
                             ['user_id' => $user->id],
                             $pagamento
                         );
-                        \Log::info('Dados de Pagamento salvos', ['user_id' => $user->id]);
-                    } catch (\Exception $e) {
-                        \Log::error('Erro ao salvar Pagamento', ['error' => $e->getMessage()]);
-                        throw $e;
+                        \Log::info('Dados de Pagamento salvos com sucesso', [
+                            'user_id' => $user->id,
+                            'banco' => $pagamento['banco'] ?? 'vazio'
+                        ]);
                     }
+                } catch (\Exception $e) {
+                    \Log::error('Erro ao salvar Pagamento', [
+                        'error' => $e->getMessage(),
+                        'user_id' => $user->id
+                    ]);
+                    throw $e;
                 }
 
                 // ===== 5. Commit da transação =====
@@ -379,34 +399,6 @@ class UserController extends Controller
             'pix_key'           => $data['txtPagPixKey'] ?? null,
             'ativo'             => true,
         ];
-    }
-
-    /**
-     * Salvar Pessoa Jurídica com validação
-     */
-    private function savePessoaJuridica(User $user, array $pessoaJuridicaData): void
-    {
-        if (!empty($pessoaJuridicaData['cnpj'])) {
-            $pessoaJurExistente = $user->pessoaJuridica;
-            $pessoaJuridicaId = $pessoaJurExistente?->id;
-
-            if ($this->checkCNPJDuplicate(
-                $pessoaJuridicaData['cnpj'],
-                $user->id,
-                $pessoaJuridicaId
-            )) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'txtPJCNPJ' => ['CNPJ já cadastrado para outro usuário']
-                ]);
-            }
-        }
-
-        $user->pessoaJuridica()->updateOrCreate(
-            ['user_id' => $user->id],
-            $pessoaJuridicaData
-        );
-
-        Log::info('Pessoa Jurídica salva', ['user_id' => $user->id, 'cnpj' => $pessoaJuridicaData['cnpj'] ?? null]);
     }
 
     // === ALTERAR SENHA ===
