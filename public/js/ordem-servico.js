@@ -793,6 +793,9 @@ $(document).ready(function() {
                     var totalGeral = valorServico + despesas + valorKM + valorDeslocamento;
                     $('#totalGeral').text(formatarMoeda(totalGeral));
 
+                    // Atualizar o campo hidden com o total correto para ser salvo
+                    $('#txtOrdemValorTotal').val(totalGeral.toFixed(2));
+
                     // Se for Admin, mostrar também a visão do Consultor
                     if (userRole === 'admin' && $('#divTotalizadorConsultor').length > 0) {
                         $('#divTotalizadorConsultor').show();
