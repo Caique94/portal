@@ -405,11 +405,10 @@ $(document).ready(function() {
                 // Populate KM field
                 $('#txtOrdemKM').val(rowData.km || '');
 
-                // Populate deslocamento field (convert from decimal to HH:MM if needed)
+                // Populate deslocamento field (display as decimal with comma)
                 if (rowData.deslocamento) {
-                    var horas = Math.floor(rowData.deslocamento);
-                    var minutos = Math.round((rowData.deslocamento - horas) * 60);
-                    var deslocamentoFormatado = ('0' + horas).slice(-2) + ':' + ('0' + minutos).slice(-2);
+                    // Formata como decimal com vírgula (ex: 1,5 horas)
+                    var deslocamentoFormatado = rowData.deslocamento.toFixed(2).replace('.', ',');
                     $('#txtOrdemDeslocamento').val(deslocamentoFormatado);
                 } else {
                     $('#txtOrdemDeslocamento').val('');
@@ -456,11 +455,10 @@ $(document).ready(function() {
                 // Populate KM field
                 $('#txtOrdemKM').val(rowData.km || '');
 
-                // Populate deslocamento field (convert from decimal to HH:MM if needed)
+                // Populate deslocamento field (display as decimal with comma)
                 if (rowData.deslocamento) {
-                    var horas = Math.floor(rowData.deslocamento);
-                    var minutos = Math.round((rowData.deslocamento - horas) * 60);
-                    var deslocamentoFormatado = ('0' + horas).slice(-2) + ':' + ('0' + minutos).slice(-2);
+                    // Formata como decimal com vírgula (ex: 1,5 horas)
+                    var deslocamentoFormatado = rowData.deslocamento.toFixed(2).replace('.', ',');
                     $('#txtOrdemDeslocamento').val(deslocamentoFormatado);
                 } else {
                     $('#txtOrdemDeslocamento').val('');
@@ -677,12 +675,20 @@ $(document).ready(function() {
 
         if ($('#chkOrdemPresencial').is(':checked')) {
             km = $('#txtOrdemKM').val() != '' ? parseFloat($('#txtOrdemKM').val().replace(/\./g, '').replace(/,/g, '.')) : 0;
-            deslocamento = $('#txtOrdemDeslocamento').val() != '' ? parseFloat($('#txtOrdemDeslocamento').val().replace(/\./g, '').replace(/,/g, '.')) : 0;
 
-            // Extrair horas de deslocamento do campo de deslocamento (formato HH:MM)
+            // Processar deslocamento: pode ser HH:MM ou valor decimal com vírgula
             var deslocamentoStr = $('#txtOrdemDeslocamento').val();
-            if (deslocamentoStr && deslocamentoStr.includes(':')) {
-                horasDeslocamento = calcularHorasDesdeTexto(deslocamentoStr);
+            if (deslocamentoStr) {
+                deslocamentoStr = deslocamentoStr.trim();
+                if (deslocamentoStr.includes(':')) {
+                    // Formato HH:MM - converter para horas decimais
+                    horasDeslocamento = calcularHorasDesdeTexto(deslocamentoStr);
+                    deslocamento = 0; // Será calculado depois
+                } else {
+                    // Formato decimal - converter vírgula para ponto
+                    horasDeslocamento = parseFloat(deslocamentoStr.replace(/\./g, '').replace(/,/g, '.')) || 0;
+                    deslocamento = 0; // Será calculado depois
+                }
             }
         }
 
@@ -697,13 +703,21 @@ $(document).ready(function() {
         }
     });
 
-    // Função auxiliar para calcular horas a partir de string HH:MM
+    // Função auxiliar para calcular horas a partir de string HH:MM ou valor decimal
     function calcularHorasDesdeTexto(texto) {
-        if (!texto || !texto.includes(':')) return 0;
-        var partes = texto.split(':');
-        var horas = parseInt(partes[0]) || 0;
-        var minutos = parseInt(partes[1]) || 0;
-        return horas + (minutos / 60);
+        if (!texto) return 0;
+        texto = texto.trim();
+
+        // Se contém ":", trata como HH:MM
+        if (texto.includes(':')) {
+            var partes = texto.split(':');
+            var horas = parseInt(partes[0]) || 0;
+            var minutos = parseInt(partes[1]) || 0;
+            return horas + (minutos / 60);
+        }
+
+        // Senão, trata como valor decimal (pode ter vírgula)
+        return parseFloat(texto.replace(/\./g, '').replace(/,/g, '.')) || 0;
     }
 
     // Função para formatar valor em R$ com separadores brasileiros

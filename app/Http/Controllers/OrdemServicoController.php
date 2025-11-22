@@ -83,14 +83,20 @@ class OrdemServicoController extends Controller
         $consultor = \App\Models\User::find($validatedData['txtOrdemConsultorId']);
         $cliente = \App\Models\Cliente::find($validatedData['slcOrdemClienteId']);
 
-        // Converter deslocamento de HH:MM para decimal (horas)
+        // Converter deslocamento para decimal (horas)
+        // Aceita: HH:MM (ex: 01:30) ou valor decimal com vírgula (ex: 1,5)
         $deslocamento_decimal = 0;
         if (isset($validatedData['txtOrdemDeslocamento']) && !empty($validatedData['txtOrdemDeslocamento'])) {
-            $deslocamento_str = $validatedData['txtOrdemDeslocamento'];
+            $deslocamento_str = trim($validatedData['txtOrdemDeslocamento']);
+
             if (strpos($deslocamento_str, ':') !== false) {
+                // Formato HH:MM
                 list($horas, $minutos) = explode(':', $deslocamento_str);
                 $deslocamento_decimal = floatval($horas) + (floatval($minutos) / 60);
             } else {
+                // Formato decimal (com vírgula ou ponto)
+                // Substitui vírgula por ponto para conversão correta
+                $deslocamento_str = str_replace(',', '.', $deslocamento_str);
                 $deslocamento_decimal = floatval($deslocamento_str);
             }
         }

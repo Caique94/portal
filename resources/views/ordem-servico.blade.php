@@ -150,8 +150,8 @@ use Illuminate\Support\Facades\Auth;
                                         <label for="txtOrdemKM">KM</label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="text" name="txtOrdemDeslocamento" id="txtOrdemDeslocamento" class="form-control calculo-valor-total" placeholder="HH:MM" />
-                                        <label for="txtOrdemDeslocamento">Deslocamento (HH:MM)</label>
+                                        <input type="text" name="txtOrdemDeslocamento" id="txtOrdemDeslocamento" class="form-control money calculo-valor-total" placeholder="0,00" />
+                                        <label for="txtOrdemDeslocamento">Deslocamento (HH:MM ou horas)</label>
                                     </div>
                                 </div>
                             </div>
