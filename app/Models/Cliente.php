@@ -26,7 +26,8 @@ class Cliente extends Model
         'estado',
         'km',
         'deslocamento',
-        'tabela_preco_id'
+        'tabela_preco_id',
+        'valor_hora'
     ];
 
     public function contatos()

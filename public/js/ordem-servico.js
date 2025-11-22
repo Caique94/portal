@@ -692,9 +692,9 @@ $(document).ready(function() {
                     let valorKM = 0;
                     let valorDeslocamento = 0;
 
-                    // Admin: valor serviço = preco_produto × horas
+                    // Admin: valor serviço = horas × valor_hora_CLIENTE (from cliente.valor_hora)
                     if (userRole === 'admin') {
-                        valorServico = precoProduto * horas;
+                        valorServico = horas * dados.valor_hora_cliente;
                     }
                     // Consultor e Superadmin: valor serviço = horas × valor_hora_consultor
                     else if (['consultor', 'superadmin'].includes(userRole)) {
@@ -704,7 +704,7 @@ $(document).ready(function() {
                     // KM = km × valor_km_consultor (ambos usam valor do consultor)
                     valorKM = km * dados.valor_km_consultor;
 
-                    // Deslocamento = horas_deslocamento × valor_hora_consultor
+                    // Deslocamento = horas_deslocamento × valor_hora_consultor (ambos iguais)
                     valorDeslocamento = horasDeslocamento * dados.valor_hora_consultor;
 
                     // Atualizar exibição
