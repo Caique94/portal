@@ -402,6 +402,26 @@ $(document).ready(function() {
                 $('#txtOrdemNrAtendimento').val(rowData.nr_atendimento);
                 $('#txtProdutoOrdemDetalhamento').val(rowData.detalhamento);
 
+                // Populate KM field
+                $('#txtOrdemKM').val(rowData.km || '');
+
+                // Populate deslocamento field (convert from decimal to HH:MM if needed)
+                if (rowData.deslocamento) {
+                    var horas = Math.floor(rowData.deslocamento);
+                    var minutos = Math.round((rowData.deslocamento - horas) * 60);
+                    var deslocamentoFormatado = ('0' + horas).slice(-2) + ':' + ('0' + minutos).slice(-2);
+                    $('#txtOrdemDeslocamento').val(deslocamentoFormatado);
+                } else {
+                    $('#txtOrdemDeslocamento').val('');
+                }
+
+                // Check presencial if km or deslocamento are present
+                if (rowData.km || rowData.deslocamento) {
+                    $('#chkOrdemPresencial').prop('checked', true);
+                } else {
+                    $('#chkOrdemPresencial').prop('checked', false);
+                }
+
                 // Trigger para calcular totalizador (para admin)
                 setTimeout(function() {
                     $('#txtOrdemPrecoProduto').trigger('change');
@@ -432,6 +452,26 @@ $(document).ready(function() {
                 $('#txtOrdemProjeto').val(rowData.projeto);
                 $('#txtOrdemNrAtendimento').val(rowData.nr_atendimento);
                 $('#txtProdutoOrdemDetalhamento').val(rowData.detalhamento);
+
+                // Populate KM field
+                $('#txtOrdemKM').val(rowData.km || '');
+
+                // Populate deslocamento field (convert from decimal to HH:MM if needed)
+                if (rowData.deslocamento) {
+                    var horas = Math.floor(rowData.deslocamento);
+                    var minutos = Math.round((rowData.deslocamento - horas) * 60);
+                    var deslocamentoFormatado = ('0' + horas).slice(-2) + ':' + ('0' + minutos).slice(-2);
+                    $('#txtOrdemDeslocamento').val(deslocamentoFormatado);
+                } else {
+                    $('#txtOrdemDeslocamento').val('');
+                }
+
+                // Check presencial if km or deslocamento are present
+                if (rowData.km || rowData.deslocamento) {
+                    $('#chkOrdemPresencial').prop('checked', true);
+                } else {
+                    $('#chkOrdemPresencial').prop('checked', false);
+                }
 
                 // Trigger para calcular totalizador (para admin)
                 setTimeout(function() {

@@ -146,11 +146,11 @@ use Illuminate\Support\Facades\Auth;
                                     <span class="input-group-text"><label for="chkOrdemPresencial">Presencial</label></span>
                                     <div class="input-group-text"><input class="form-check-input calculo-valor-total" type="checkbox" name="chkOrdemPresencial" id="chkOrdemPresencial" value="1"></div>
                                     <div class="form-floating">
-                                        <input type="text" id="txtOrdemKM" class="form-control money calculo-valor-total" placeholder="KM" disabled />
+                                        <input type="text" name="txtOrdemKM" id="txtOrdemKM" class="form-control money calculo-valor-total" placeholder="KM" />
                                         <label for="txtOrdemKM">KM</label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="text" name="txtOrdemDeslocamento" id="txtOrdemDeslocamento" class="form-control calculo-valor-total" placeholder="HH:MM" disabled />
+                                        <input type="text" name="txtOrdemDeslocamento" id="txtOrdemDeslocamento" class="form-control calculo-valor-total" placeholder="HH:MM" />
                                         <label for="txtOrdemDeslocamento">Deslocamento (HH:MM)</label>
                                     </div>
                                 </div>

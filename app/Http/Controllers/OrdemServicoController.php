@@ -53,7 +53,10 @@ class OrdemServicoController extends Controller
             'projeto_id'                    => 'nullable|numeric|min:0',
             'txtOrdemNrAtendimento'         => 'max:255',
             'txtOrdemPrecoProduto'          => 'max:255',
-            'txtOrdemValorTotal'            => 'max:255'
+            'txtOrdemValorTotal'            => 'max:255',
+            'txtOrdemKM'                    => 'nullable|numeric|min:0',
+            'txtOrdemDeslocamento'          => 'nullable|string|max:255',
+            'chkOrdemPresencial'            => 'nullable'
         ]);
 
         $ordem = OrdemServico::find($id);
@@ -80,16 +83,16 @@ class OrdemServicoController extends Controller
         $consultor = \App\Models\User::find($validatedData['txtOrdemConsultorId']);
         $cliente = \App\Models\Cliente::find($validatedData['slcOrdemClienteId']);
 
-        // Calcular valor do deslocamento: km do cliente * valor_km do consultor
-        $valor_deslocamento = 0;
-        if ($cliente && $cliente->km && $consultor && $consultor->valor_km) {
-            $valor_deslocamento = floatval($cliente->km) * floatval($consultor->valor_km);
-        }
-
-        // Atualizar o campo deslocamento do cliente
-        if ($cliente && $valor_deslocamento > 0) {
-            $cliente->deslocamento = $valor_deslocamento;
-            $cliente->save();
+        // Converter deslocamento de HH:MM para decimal (horas)
+        $deslocamento_decimal = 0;
+        if (isset($validatedData['txtOrdemDeslocamento']) && !empty($validatedData['txtOrdemDeslocamento'])) {
+            $deslocamento_str = $validatedData['txtOrdemDeslocamento'];
+            if (strpos($deslocamento_str, ':') !== false) {
+                list($horas, $minutos) = explode(':', $deslocamento_str);
+                $deslocamento_decimal = floatval($horas) + (floatval($minutos) / 60);
+            } else {
+                $deslocamento_decimal = floatval($deslocamento_str);
+            }
         }
 
         $mappedData = [
@@ -110,7 +113,9 @@ class OrdemServicoController extends Controller
             'projeto_id'            => isset($validatedData['projeto_id']) ? $validatedData['projeto_id'] : null,
             'nr_atendimento'        => $validatedData['txtOrdemNrAtendimento'],
             'preco_produto'         => $validatedData['txtOrdemPrecoProduto'],
-            'valor_total'           => $validatedData['txtOrdemValorTotal']
+            'valor_total'           => $validatedData['txtOrdemValorTotal'],
+            'km'                    => isset($validatedData['txtOrdemKM']) ? $validatedData['txtOrdemKM'] : null,
+            'deslocamento'          => $deslocamento_decimal > 0 ? $deslocamento_decimal : null
         ];
 
         if ($ordem) {
