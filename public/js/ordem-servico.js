@@ -692,9 +692,9 @@ $(document).ready(function() {
                     let valorKM = 0;
                     let valorDeslocamento = 0;
 
-                    // Admin: valor serviço = horas × valor_hora_CLIENTE (from cliente.valor_hora)
+                    // Admin: valor serviço = horas × preco_produto (from tabela de preços do cliente)
                     if (userRole === 'admin') {
-                        valorServico = horas * dados.valor_hora_cliente;
+                        valorServico = horas * dados.preco_produto;
                     }
                     // Consultor e Superadmin: valor serviço = horas × valor_hora_consultor
                     else if (['consultor', 'superadmin'].includes(userRole)) {
@@ -711,8 +711,8 @@ $(document).ready(function() {
                     $('#totalValorServico').text(formatarMoeda(valorServico));
                     $('#totalDespesas').text(formatarMoeda(despesas));
 
-                    // Exibir valor/hora consultor
-                    $('#valorHoraConsultor').text(formatarMoeda(dados.valor_hora_consultor));
+                    // Exibir preco_produto para admin (valor da hora da tabela de preços)
+                    $('#valorHoraConsultor').text(formatarMoeda(dados.preco_produto));
                     $('#valorKMConsultor').text(formatarMoeda(dados.valor_km_consultor));
 
                     // Mostrar/ocultar linhas de KM e Deslocamento
