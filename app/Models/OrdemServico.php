@@ -42,6 +42,7 @@ class OrdemServico extends Model
         // Campos de deslocamento
         'km',
         'deslocamento',
+        'is_presencial',
         'observacao',
         'descricao',
 

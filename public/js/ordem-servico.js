@@ -414,8 +414,8 @@ $(document).ready(function() {
                     $('#txtOrdemDeslocamento').val('');
                 }
 
-                // Check presencial if km or deslocamento are present
-                if (rowData.km || rowData.deslocamento) {
+                // Check presencial checkbox based on saved is_presencial value
+                if (rowData.is_presencial) {
                     $('#chkOrdemPresencial').prop('checked', true);
                 } else {
                     $('#chkOrdemPresencial').prop('checked', false);
@@ -464,8 +464,8 @@ $(document).ready(function() {
                     $('#txtOrdemDeslocamento').val('');
                 }
 
-                // Check presencial if km or deslocamento are present
-                if (rowData.km || rowData.deslocamento) {
+                // Check presencial checkbox based on saved is_presencial value
+                if (rowData.is_presencial) {
                     $('#chkOrdemPresencial').prop('checked', true);
                 } else {
                     $('#chkOrdemPresencial').prop('checked', false);

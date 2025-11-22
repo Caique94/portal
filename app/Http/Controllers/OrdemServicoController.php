@@ -121,7 +121,8 @@ class OrdemServicoController extends Controller
             'preco_produto'         => $validatedData['txtOrdemPrecoProduto'],
             'valor_total'           => $validatedData['txtOrdemValorTotal'],
             'km'                    => isset($validatedData['txtOrdemKM']) ? $validatedData['txtOrdemKM'] : null,
-            'deslocamento'          => $deslocamento_decimal > 0 ? $deslocamento_decimal : null
+            'deslocamento'          => $deslocamento_decimal > 0 ? $deslocamento_decimal : null,
+            'is_presencial'         => isset($validatedData['chkOrdemPresencial']) && $validatedData['chkOrdemPresencial'] ? 1 : 0
         ];
 
         if ($ordem) {
