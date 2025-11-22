@@ -88,13 +88,17 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="form-floating mb-3 col-md-8">
+                            <div class="form-floating mb-3 col-md-6">
                                 <select name="slcClienteTabelaPrecos" id="slcClienteTabelaPrecos" class="form-select" required></select>
                                 <label for="slcClienteTabelaPrecos">Tabela de Pre&ccedil;os</label>
                             </div>
                             <div class="form-floating mb-3 col-md-2">
                                 <input type="text" name="txtClienteKm" id="txtClienteKm" class="form-control mask-km" placeholder="KM" data-bs-toggle="tooltip" data-bs-title="Quantidade de KMs de deslocamento at&eacute; o cliente" data-bs-trigger="hover" data-bs-placement="top" />
                                 <label for="txtClienteKm">KM</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-2">
+                                <input type="text" name="txtClienteValorHora" id="txtClienteValorHora" class="form-control mask-moeda" placeholder="Valor Hora" data-bs-toggle="tooltip" data-bs-title="Valor da hora do cliente para c&aacute;lculo do totalizador" data-bs-trigger="hover" data-bs-placement="top" />
+                                <label for="txtClienteValorHora">Valor Hora</label>
                             </div>
                             <div class="form-floating mb-3 col-md-2">
                                 <input type="text" name="txtClienteDeslocamento" id="txtClienteDeslocamento" class="form-control mask-deslocamento" placeholder="Deslocamento" data-bs-toggle="tooltip" data-bs-title="Quantidade de KMs de deslocamento at&eacute; o cliente" data-bs-trigger="hover" data-bs-placement="top" />

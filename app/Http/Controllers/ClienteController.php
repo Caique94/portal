@@ -34,6 +34,7 @@ class ClienteController extends Controller
             'txtClienteCidade'          => 'nullable|string|max:255',
             'txtClienteEstado'          => 'nullable|string|max:255',
             'txtClienteKm'              => 'nullable|string|max:255',
+            'txtClienteValorHora'       => 'nullable|numeric|min:0',
             'txtClienteDeslocamento'    => 'nullable|string|max:255',
             'slcClienteTabelaPrecos'    => 'required|numeric|min:0'
         ]);
@@ -50,6 +51,7 @@ class ClienteController extends Controller
             'municipio'         => $validatedData['txtClienteCidade'] ?? null,
             'estado'            => $validatedData['txtClienteEstado'] ?? null,
             'km'                => $validatedData['txtClienteKm'] ?? null,
+            'valor_hora'        => $validatedData['txtClienteValorHora'] ?? null,
             'deslocamento'      => $validatedData['txtClienteDeslocamento'] ?? null,
             'tabela_preco_id'   => $validatedData['slcClienteTabelaPrecos']
         ];

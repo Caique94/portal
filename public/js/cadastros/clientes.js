@@ -112,8 +112,9 @@ $(function () {
     $('#txtClienteEndereco').val(r.endereco || '');
     $('#txtClienteMunicipio').val(r.municipio || '');
     $('#txtClienteEstado').val(r.estado || '');
-    $('#txtClienteKM').val(r.km || '');
+    $('#txtClienteKm').val(r.km || '');
     $('#txtClienteDeslocamento').val(r.deslocamento || '');
+    $('#txtClienteValorHora').val(r.valor_hora || '');
     if (r.tabela_preco_id) {
       $('#slcClienteTabelaPrecos').val(r.tabela_preco_id).trigger('change');
     } else {
@@ -146,8 +147,9 @@ $(function () {
     $('#txtClienteEndereco').val(r.endereco || '').prop('disabled', true);
     $('#txtClienteMunicipio').val(r.municipio || '').prop('disabled', true);
     $('#txtClienteEstado').val(r.estado || '').prop('disabled', true);
-    $('#txtClienteKM').val(r.km || '').prop('disabled', true);
+    $('#txtClienteKm').val(r.km || '').prop('disabled', true);
     $('#txtClienteDeslocamento').val(r.deslocamento || '').prop('disabled', true);
+    $('#txtClienteValorHora').val(r.valor_hora || '').prop('disabled', true);
     $('#slcClienteTabelaPrecos').val(r.tabela_preco_id || null).trigger('change').prop('disabled', true);
 
     // Carregar contatos para o select e desabilitar
