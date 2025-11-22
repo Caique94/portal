@@ -406,9 +406,9 @@ $(document).ready(function() {
                 $('#txtOrdemKM').val(rowData.km || '');
 
                 // Populate deslocamento field (display as decimal with comma)
-                if (rowData.deslocamento) {
+                if (rowData.deslocamento && parseFloat(rowData.deslocamento) > 0) {
                     // Formata como decimal com vírgula (ex: 1,5 horas)
-                    var deslocamentoFormatado = rowData.deslocamento.toFixed(2).replace('.', ',');
+                    var deslocamentoFormatado = parseFloat(rowData.deslocamento).toFixed(2).replace('.', ',');
                     $('#txtOrdemDeslocamento').val(deslocamentoFormatado);
                 } else {
                     $('#txtOrdemDeslocamento').val('');
@@ -456,9 +456,9 @@ $(document).ready(function() {
                 $('#txtOrdemKM').val(rowData.km || '');
 
                 // Populate deslocamento field (display as decimal with comma)
-                if (rowData.deslocamento) {
+                if (rowData.deslocamento && parseFloat(rowData.deslocamento) > 0) {
                     // Formata como decimal com vírgula (ex: 1,5 horas)
-                    var deslocamentoFormatado = rowData.deslocamento.toFixed(2).replace('.', ',');
+                    var deslocamentoFormatado = parseFloat(rowData.deslocamento).toFixed(2).replace('.', ',');
                     $('#txtOrdemDeslocamento').val(deslocamentoFormatado);
                 } else {
                     $('#txtOrdemDeslocamento').val('');
