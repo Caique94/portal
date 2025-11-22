@@ -782,7 +782,6 @@ class OrdemServicoController extends Controller
                     'consultor_nome' => $consultor->name,
                     'valor_hora_consultor' => floatval($consultor->valor_hora ?? 0),
                     'valor_km_consultor' => floatval($consultor->valor_km ?? 0),
-                    'valor_desloc_consultor' => floatval($consultor->valor_desloc ?? 0),
                     'valor_hora_cliente' => floatval($cliente->valor_hora ?? 0),
                     'preco_produto' => floatval($os->preco_produto ?? 0),
                     'papel_user_atual' => $user->papel,
