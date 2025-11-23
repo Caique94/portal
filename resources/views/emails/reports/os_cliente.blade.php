@@ -6,7 +6,6 @@
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #ffffff; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }
-        .logo-section { text-align: center; padding: 30px 20px 20px; background-color: #ffffff; }
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff !important; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
         .info-box { background: #ffffff; padding: 15px; border-left: 4px solid #667eea; margin: 15px 0; color: #333333; }
@@ -20,7 +19,6 @@
         @media (prefers-color-scheme: dark) {
             body { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
             .container { background-color: #1a1a1a !important; }
-            .logo-section { background-color: #2d2d2d !important; }
             .content { background: #2d2d2d !important; }
             .info-box { background: #3d3d3d !important; color: #e0e0e0 !important; border-left-color: #667eea !important; }
             .info-box strong { color: #8b9dff !important; }
@@ -32,10 +30,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo-section">
-            <img src="{{ asset('images/logo-personalitec.png') }}" alt="Personalitec Soluções" style="max-width: 220px; height: auto;">
-        </div>
-
         <div class="header">
             <h1>Ordem de Serviço</h1>
             <p style="font-size: 18px; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 10px;">OS Nº {{ $numero_os }}</p>
