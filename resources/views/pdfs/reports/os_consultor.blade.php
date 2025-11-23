@@ -94,10 +94,6 @@
             <div class="info-label">Quantidade Total (horas):</div>
             <div class="info-value">{{ $qtde_total ?? '-' }}</div>
         </div>
-        <div class="info-row">
-            <div class="info-label">Valor Total:</div>
-            <div class="info-value">R$ {{ number_format((float)$valor_total, 2, ',', '.') }}</div>
-        </div>
     </div>
 
     @if($detalhamento)
