@@ -445,19 +445,6 @@
     <p class="kpi-label">Faturado (Mês)</p>
     <p class="kpi-value">R$ {{ number_format($valor_faturado_mes ?? 0, 2, ',', '.') }}</p>
   </div>
-
-  <div class="kpi-card">
-    <div style="float: right; font-size: 32px; opacity: 0.1;">
-      <i class="bi bi-graph-up"></i>
-    </div>
-    <p class="kpi-label">Taxa Conclusão</p>
-    @php
-      $totalOS = $total_meu ?? 0;
-      $abertasOS = $abertas_meu ?? 0;
-      $taxaConc = $totalOS > 0 ? round((($totalOS - $abertasOS) / $totalOS) * 100) : 0;
-    @endphp
-    <p class="kpi-value">{{ $taxaConc }}%</p>
-  </div>
 </div>
 
 <!-- Content -->
