@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\ConsultorOSExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\OrdemServico;
+use App\Services\ConsultorTotalizadorService;
 
 class ConsultorHomeController extends Controller
 {
@@ -54,31 +56,34 @@ class ConsultorHomeController extends Controller
         $inicioMes = now()->startOfMonth()->format('Y-m-d 00:00:00');
         $fimMes    = now()->endOfMonth()->format('Y-m-d 23:59:59');
 
-        // Valor faturado no mês (apenas do consultor)
-        $valor_faturado_mes = DB::table('ordem_servico')
-            ->where('consultor_id', $uid)
+        // Valor faturado no mês (apenas do consultor) - usando perspectiva do consultor
+        $oresOrdensFaturadas = OrdemServico::where('consultor_id', $uid)
             ->where('status', 5)
             ->whereBetween('created_at', [$inicioMes, $fimMes])
-            ->sum(DB::raw("COALESCE(NULLIF(valor_total,'')::numeric, 0)"));
+            ->get();
 
-        // Últimas 10 OS do consultor (apenas até Faturada)
-        $ultimas = DB::table('ordem_servico as os')
-            ->leftJoin('cliente as c', 'c.id', '=', 'os.cliente_id')
-            ->where('os.consultor_id', $uid)
-            ->where('os.status', '<=', $this->statusFinal)
-            ->orderByDesc('os.id')
+        $valor_faturado_mes = 0;
+        foreach ($oresOrdensFaturadas as $os) {
+            $valor_faturado_mes += ConsultorTotalizadorService::calculateConsultantTotal($os);
+        }
+
+        // Últimas 10 OS do consultor (apenas até Faturada) - usando perspectiva do consultor
+        $ultimasOrdens = OrdemServico::where('consultor_id', $uid)
+            ->where('status', '<=', $this->statusFinal)
+            ->orderByDesc('id')
             ->limit(10)
-            ->get([
-                'os.id',
-                'os.created_at as data',
-                'os.status',
-                DB::raw("COALESCE(NULLIF(os.valor_total,'')::numeric,0) as valor_total"),
-                DB::raw("COALESCE(c.nome, c.nome_fantasia) as cliente"),
-            ])
-            ->map(function ($r) {
-                $r->status_txt = $this->getDisplayStatus($r->status);
-                return $r;
-            });
+            ->get();
+
+        $ultimas = $ultimasOrdens->map(function ($os) {
+            return (object)[
+                'id' => $os->id,
+                'data' => $os->created_at,
+                'status' => $os->status,
+                'status_txt' => $this->getDisplayStatus($os->status),
+                'valor_total' => ConsultorTotalizadorService::calculateConsultantTotal($os),
+                'cliente' => $os->cliente ? ($os->cliente->nome ?? $os->cliente->nome_fantasia) : '-'
+            ];
+        });
 
         // Resumo por status (apenas até Faturada)
         // Get OS count by status, consolidating 5, 6, 7 as "Faturada"
@@ -115,7 +120,7 @@ class ConsultorHomeController extends Controller
     }
 
     /**
-     * Exportar relatório de OS para Excel com filtros
+     * Exportar relatório de OS para Excel com filtros - usando perspectiva do consultor
      */
     public function exportExcel(Request $request)
     {
@@ -125,42 +130,34 @@ class ConsultorHomeController extends Controller
             $dataFim = $request->input('data_fim');
             $clienteId = $request->input('cliente_id');
 
-            // Query base
-            $query = DB::table('ordem_servico as os')
-                ->leftJoin('cliente as c', 'c.id', '=', 'os.cliente_id')
-                ->where('os.consultor_id', $uid)
-                ->where('os.status', '<=', $this->statusFinal);
+            // Query base usando OrdemServico model
+            $query = OrdemServico::where('consultor_id', $uid)
+                ->where('status', '<=', $this->statusFinal);
 
             // Aplicar filtros
             if ($dataInicio) {
-                $query->whereDate('os.created_at', '>=', $dataInicio);
+                $query->whereDate('created_at', '>=', $dataInicio);
             }
             if ($dataFim) {
-                $query->whereDate('os.created_at', '<=', $dataFim);
+                $query->whereDate('created_at', '<=', $dataFim);
             }
             if ($clienteId) {
-                $query->where('os.cliente_id', $clienteId);
+                $query->where('cliente_id', $clienteId);
             }
 
-            $dados = $query->orderByDesc('os.id')
-                ->get([
-                    'os.id',
-                    'os.created_at as data',
-                    'os.status',
-                    DB::raw("COALESCE(NULLIF(os.valor_total,'')::numeric,0) as valor_total"),
-                    DB::raw("COALESCE(c.nome, c.nome_fantasia) as cliente"),
-                ]);
+            $dados = $query->orderByDesc('id')->get();
 
             // Gerar Excel com separador de ponto-e-vírgula (compatível com Excel em PT-BR)
             $csv = "ID;Data;Cliente;Status;Valor\n";
             $totalValor = 0;
 
             foreach ($dados as $item) {
-                $valor = (float)($item->valor_total ?? 0);
+                // Usar consultorTotalizador para calcular o valor na perspectiva do consultor
+                $valor = ConsultorTotalizadorService::calculateConsultantTotal($item);
                 $totalValor += $valor;
-                $data = \Carbon\Carbon::parse($item->data)->format('d/m/Y');
+                $data = $item->created_at->format('d/m/Y');
                 $status = $this->getDisplayStatus($item->status);
-                $cliente = $item->cliente ?? '-';
+                $cliente = $item->cliente ? ($item->cliente->nome ?? $item->cliente->nome_fantasia) : '-';
                 $valorFormatado = 'R$ ' . number_format($valor, 2, ',', '.');
 
                 // Escapar valores com ponto-e-vírgula
@@ -187,7 +184,7 @@ class ConsultorHomeController extends Controller
     }
 
     /**
-     * Exportar relatório de OS para PDF com filtros
+     * Exportar relatório de OS para PDF com filtros - usando perspectiva do consultor
      */
     public function exportPDF(Request $request)
     {
@@ -197,34 +194,33 @@ class ConsultorHomeController extends Controller
             $dataFim = $request->input('data_fim');
             $clienteId = $request->input('cliente_id');
 
-            $query = DB::table('ordem_servico as os')
-                ->leftJoin('cliente as c', 'c.id', '=', 'os.cliente_id')
-                ->where('os.consultor_id', $uid)
-                ->where('os.status', '<=', $this->statusFinal);
+            $query = OrdemServico::where('consultor_id', $uid)
+                ->where('status', '<=', $this->statusFinal);
 
             // Aplicar filtros
             if ($dataInicio) {
-                $query->whereDate('os.created_at', '>=', $dataInicio);
+                $query->whereDate('created_at', '>=', $dataInicio);
             }
             if ($dataFim) {
-                $query->whereDate('os.created_at', '<=', $dataFim);
+                $query->whereDate('created_at', '<=', $dataFim);
             }
             if ($clienteId) {
-                $query->where('os.cliente_id', $clienteId);
+                $query->where('cliente_id', $clienteId);
             }
 
-            $dados = $query->orderByDesc('os.id')
-                ->get([
-                    'os.id',
-                    'os.created_at as data',
-                    'os.status',
-                    DB::raw("COALESCE(NULLIF(os.valor_total,'')::numeric,0) as valor_total"),
-                    DB::raw("COALESCE(c.nome, c.nome_fantasia) as cliente"),
-                ])
-                ->map(function ($r) {
-                    $r->status_txt = $this->getDisplayStatus($r->status);
-                    return $r;
-                });
+            $ordensServico = $query->orderByDesc('id')->get();
+
+            // Mapear dados para compatibilidade com template PDF
+            $dados = $ordensServico->map(function ($os) {
+                return (object)[
+                    'id' => $os->id,
+                    'data' => $os->created_at,
+                    'status' => $os->status,
+                    'status_txt' => $this->getDisplayStatus($os->status),
+                    'valor_total' => ConsultorTotalizadorService::calculateConsultantTotal($os),
+                    'cliente' => $os->cliente ? ($os->cliente->nome ?? $os->cliente->nome_fantasia) : '-'
+                ];
+            });
 
             $pdf = \PDF::loadView('consultor.relatorio_pdf', [
                 'dados' => $dados,
