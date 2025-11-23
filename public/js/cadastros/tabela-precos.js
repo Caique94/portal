@@ -165,8 +165,18 @@ $(document).ready(function() {
 
         $('#modalTabelaPrecosLabel').text('Editar Tabela de Preços');
         $('#txtTabelaPrecoDescricao').val(rowData.descricao);
-        $('#txtTabelaPrecoDataInicio').val(rowData.data_inicio);
-        $('#txtTabelaPrecoDataVencimento').val(rowData.data_vencimento);
+
+        // Ensure dates are in YYYY-MM-DD format for input[type="date"]
+        if (rowData.data_inicio) {
+            var dataInicio = rowData.data_inicio.split('T')[0]; // Remove time portion if present
+            $('#txtTabelaPrecoDataInicio').val(dataInicio);
+        }
+
+        if (rowData.data_vencimento) {
+            var dataVencimento = rowData.data_vencimento.split('T')[0]; // Remove time portion if present
+            $('#txtTabelaPrecoDataVencimento').val(dataVencimento);
+        }
+
         $('#txtTabelaPrecoId').val(rowData.id);
 
         $('#modalTabelaPrecos').modal('show');
