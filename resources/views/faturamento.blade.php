@@ -182,4 +182,62 @@ use Illuminate\Support\Facades\Auth;
     </div>
     <!-- ===== FIM MODAL FATURAMENTO ===== -->
 
+    <!-- ===== MODAL: Reenviar Email de OS ===== -->
+    <div class="modal fade" id="modalReenviarEmailOS" tabindex="-1" data-bs-backdrop="static" aria-labelledby="modalReenviarEmailOSLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalReenviarEmailOSLabel">
+                        <i class="bi bi-envelope"></i> Reenviar Email de OS
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="txtOSIdReenvio" />
+
+                    <p class="text-muted mb-4">
+                        Selecione para quem você deseja reenviar o email da Ordem de Serviço:
+                    </p>
+
+                    <div class="btn-group-vertical w-100" role="group">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="opcaoReenvio" id="opcaoConsultor" value="consultor" />
+                            <label class="form-check-label w-100" for="opcaoConsultor">
+                                <strong><i class="bi bi-person"></i> Apenas para o Consultor</strong>
+                                <small class="d-block text-muted">Envia apenas para o consultor responsável pela OS</small>
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="opcaoReenvio" id="opcaoCliente" value="cliente" />
+                            <label class="form-check-label w-100" for="opcaoCliente">
+                                <strong><i class="bi bi-building"></i> Apenas para o Cliente</strong>
+                                <small class="d-block text-muted">Envia apenas para o cliente contato da OS</small>
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="opcaoReenvio" id="opcaoAmbos" value="ambos" checked />
+                            <label class="form-check-label w-100" for="opcaoAmbos">
+                                <strong><i class="bi bi-people"></i> Para Consultor e Cliente</strong>
+                                <small class="d-block text-muted">Envia para ambos (consultor e cliente)</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="divAlertaReenvio" class="alert alert-info mt-4 d-none" role="alert">
+                        <small id="textoAlertaReenvio"></small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnReenviarEmail">
+                        <i class="bi bi-send"></i> Reenviar Email
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ===== FIM MODAL REENVIAR EMAIL ===== -->
+
 @endsection

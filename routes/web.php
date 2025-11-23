@@ -210,6 +210,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/os/{id}/aprovar', [OrdemServicoController::class, 'approve']);
     Route::post('/os/{id}/contestar', [OrdemServicoController::class, 'contest']);
     Route::post('/os/{id}/faturar', [OrdemServicoController::class, 'bill']);
+    Route::post('/os/{id}/reenviar-email', [OrdemServicoController::class, 'resendEmail']);
     Route::get('/os/aguardando-rps', [OrdemServicoController::class, 'listForRps']);
     Route::get('/os/{id}/auditoria', [OrdemServicoController::class, 'getAuditTrail']);
     Route::get('/os/{id}/permissoes', [OrdemServicoController::class, 'getPermissions']);

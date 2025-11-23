@@ -804,4 +804,58 @@ class OrdemServicoController extends Controller
         }
     }
 
+    /**
+     * Resend report emails for an order
+     */
+    public function resendEmail(Request $request, $id)
+    {
+        try {
+            $os = OrdemServico::findOrFail($id);
+
+            // Validar permissão
+            $permissionService = new PermissionService();
+            if (!Auth::user()->hasRole(['admin', 'financeiro'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Você não tem permissão para reenviar emails.'
+                ], 403);
+            }
+
+            // Validar dados de entrada
+            $validated = $request->validate([
+                'recipient' => 'required|in:consultor,cliente,ambos'
+            ]);
+
+            // Executar reenvio
+            $action = new \App\Actions\ResendReportEmailAction(new \App\Services\ReportEmailService());
+            $result = $action->execute($os, $validated['recipient']);
+
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Email(s) reenviado(s) com sucesso',
+                    'result' => $result
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao reenviar email(s)',
+                    'result' => $result
+                ], 400);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao reenviar email de OS', [
+                'os_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao processar reenvio: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

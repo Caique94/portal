@@ -937,7 +937,7 @@ $(document).ready(function() {
             data: null,
             className: 'dt-center noVis',
             orderable: false,
-            width: '80px',
+            width: '100px',
             render: function(data, type, row) {
                 var html = '';
 
@@ -947,6 +947,13 @@ $(document).ready(function() {
                 html += '</button>';
                 html += '<ul class="dropdown-menu">';
                 html += '<li><a class="dropdown-item" href="javascript:void(0);">Visualizar</a></li>';
+
+                // Mostrar opção de Reenviar Email apenas para status 5, 6 e 7 (Faturado, Aguardando RPS, RPS Emitida)
+                if (row.status >= 5) {
+                    html += '<li><hr class="dropdown-divider"></li>';
+                    html += '<li><a class="dropdown-item btn-reenviar-email" href="javascript:void(0);" data-os-id="' + row.id + '"><i class="bi bi-envelope-arrow-up"></i> Reenviar Email</a></li>';
+                }
+
                 html += '</ul>';
                 html += '</div>';
 
@@ -1220,6 +1227,164 @@ $(document).ready(function() {
             });
 
         }
+    });
+
+    // ========== REENVIAR EMAIL DE OS ==========
+    let acaoReenvio = {
+        osId: null,
+        modalElement: null,
+
+        init: function() {
+            this.modalElement = new bootstrap.Modal(document.getElementById('modalReenviarEmailOS'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            // Evento de clique no botão de reenvio
+            $(document).on('click', '.btn-reenviar-email', function(e) {
+                e.preventDefault();
+                let osId = $(this).data('os-id');
+                acaoReenvio.abrirModal(osId);
+            });
+
+            // Evento do botão Reenviar no modal
+            $('#btnReenviarEmail').on('click', function() {
+                acaoReenvio.reenviarEmail();
+            });
+
+            // Atualizar alerta conforme opção selecionada
+            $('input[name="opcaoReenvio"]').on('change', function() {
+                acaoReenvio.atualizarAlerta();
+            });
+        },
+
+        abrirModal: function(osId) {
+            this.osId = osId;
+            $('#txtOSIdReenvio').val(osId);
+
+            // Resetar seleção e alerta
+            $('#opcaoAmbos').prop('checked', true);
+            this.atualizarAlerta();
+
+            this.modalElement.show();
+        },
+
+        atualizarAlerta: function() {
+            let opcao = $('input[name="opcaoReenvio"]:checked').val();
+            let divAlerta = $('#divAlertaReenvio');
+            let textoAlerta = '';
+
+            switch(opcao) {
+                case 'consultor':
+                    textoAlerta = 'O email será reenviado apenas para o <strong>Consultor</strong> responsável pela Ordem de Serviço.';
+                    break;
+                case 'cliente':
+                    textoAlerta = 'O email será reenviado apenas para o <strong>Cliente</strong> (contato principal).';
+                    break;
+                case 'ambos':
+                    textoAlerta = 'O email será reenviado para <strong>Consultor e Cliente</strong>.';
+                    break;
+            }
+
+            $('#textoAlertaReenvio').html(textoAlerta);
+            divAlerta.removeClass('d-none');
+        },
+
+        reenviarEmail: function() {
+            let osId = $('#txtOSIdReenvio').val();
+            let opcao = $('input[name="opcaoReenvio"]:checked').val();
+
+            if (!osId || !opcao) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Por favor, selecione uma opção'
+                });
+                return;
+            }
+
+            // Desabilitar botão durante requisição
+            let btnReenviar = $('#btnReenviarEmail');
+            let textoBtnOriginal = btnReenviar.html();
+            btnReenviar.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Enviando...');
+
+            $.ajax({
+                type: 'POST',
+                url: `/os/${osId}/reenviar-email`,
+                data: {
+                    recipient: opcao,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.message
+                        });
+
+                        // Mostrar detalhes do reenvio
+                        if (response.result && response.result.details) {
+                            let detalhes = response.result.details.map(d => {
+                                return d.recipient + ': ' + (d.status === 'sent' ? '✓ Enviado' : '✗ Erro: ' + d.error);
+                            }).join('\n');
+
+                            console.log('Detalhes do reenvio:\n' + detalhes);
+                        }
+
+                        // Fechar modal
+                        acaoReenvio.modalElement.hide();
+
+                        // Recarregar tabela se existir
+                        if ($.fn.DataTable.isDataTable('#tblFaturamento')) {
+                            $('#tblFaturamento').DataTable().ajax.reload();
+                        }
+                    } else {
+                        Toast.fire({
+                            icon: 'error',
+                            title: response.message || 'Erro ao reenviar email'
+                        });
+
+                        // Mostrar detalhes de erros
+                        if (response.result && response.result.messages) {
+                            console.error('Erros ao reenviar:', response.result.messages);
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    let errorMsg = 'Erro ao processar reenvio';
+
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.errors) {
+                            let errorsHtml = '';
+                            $.each(xhr.responseJSON.errors, function(key, value) {
+                                $.each(value, function(index, erro) {
+                                    errorsHtml += errorsHtml == '' ? erro : ('<br>' + erro);
+                                });
+                            });
+                            errorMsg = errorsHtml;
+                        } else if (xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                    }
+
+                    Toast.fire({
+                        icon: 'error',
+                        title: errorMsg
+                    });
+
+                    console.error('Erro AJAX:', {status, error, response: xhr.responseJSON});
+                },
+                complete: function() {
+                    // Restaurar botão
+                    btnReenviar.prop('disabled', false).html(textoBtnOriginal);
+                }
+            });
+        }
+    };
+
+    // Inicializar quando o documento estiver pronto
+    $(document).ready(function() {
+        acaoReenvio.init();
     });
 
 });
