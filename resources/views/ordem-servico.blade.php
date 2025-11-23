@@ -185,11 +185,11 @@ use Illuminate\Support\Facades\Auth;
                                                 <table class="table table-sm">
                                                     <tbody>
                                                         <tr>
-                                                            <td><strong>Valor Hora Consultor:</strong></td>
+                                                            <td><strong>Valor Hora Cliente:</strong></td>
                                                             <td class="text-end" id="valorHoraConsultor">R$ 0,00</td>
                                                         </tr>
                                                         <tr>
-                                                            <td><strong>Valor KM Consultor:</strong></td>
+                                                            <td><strong>Valor KM Cliente:</strong></td>
                                                             <td class="text-end" id="valorKMConsultor">R$ 0,00</td>
                                                         </tr>
                                                         <tr>
