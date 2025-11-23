@@ -183,6 +183,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/listar-tabelas-precos', [TabelaPrecoController::class, 'list']);
     Route::get('/listar-tabelas-precos-ativos', [TabelaPrecoController::class, 'active_list']);
     Route::post('/salvar-tabela-precos', [TabelaPrecoController::class, 'store']);
+    Route::post('/editar-tabela-precos/{id}', [TabelaPrecoController::class, 'update']);
     Route::get('/toggle-tabela-precos/{id}', [TabelaPrecoController::class, 'toggle']);
     Route::delete('/excluir-tabela-precos/{id}', [TabelaPrecoController::class, 'delete']);
 

@@ -96,18 +96,6 @@
         </div>
     </div>
 
-    <!-- Exibir valor total do totalizador do consultor -->
-    @if($totalizador)
-    <div class="section" style="background: #f0f4ff; border-left: 4px solid #0d6efd; padding: 15px; margin: 20px 0;">
-        <div class="info-row">
-            <div class="info-label" style="font-weight: bold;">VALOR TOTAL (Consultor):</div>
-            <div class="info-value" style="text-align: right; font-weight: bold; font-size: 14px; color: #0d6efd;">
-                R$ {{ number_format($totalizador['total_geral'], 2, ',', '.') }}
-            </div>
-        </div>
-    </div>
-    @endif
-
     @if($detalhamento)
     <div class="section">
         <div class="section-title">Detalhamento</div>

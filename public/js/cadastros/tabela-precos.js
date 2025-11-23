@@ -11,6 +11,28 @@ $(document).ready(function() {
             title: 'Descri&ccedil;&atilde;o',
             data: 'descricao',
         },{
+            title: 'Data de In&iacute;cio',
+            data: 'data_inicio',
+            className: 'dt-center',
+            width: '120px',
+            render: function(data, type, row) {
+                if (!data) return '-';
+                var data_inicio = new Date(data);
+                var html = ('0' + data_inicio.getDate()).slice(-2) + '/' + ('0' + (data_inicio.getMonth() + 1)).slice(-2) + '/' + data_inicio.getFullYear();
+                return html;
+            }
+        },{
+            title: 'Data de Vencimento',
+            data: 'data_vencimento',
+            className: 'dt-center',
+            width: '120px',
+            render: function(data, type, row) {
+                if (!data) return '-';
+                var data_vencimento = new Date(data);
+                var html = ('0' + data_vencimento.getDate()).slice(-2) + '/' + ('0' + (data_vencimento.getMonth() + 1)).slice(-2) + '/' + data_vencimento.getFullYear();
+                return html;
+            }
+        },{
             title: 'Criado Em',
             data: 'created_at',
             className: 'dt-center',
@@ -33,6 +55,20 @@ $(document).ready(function() {
                 html += '<input type="checkbox" role="switch" id="chkTabelaPrecoAtivo' + row.id + '" class="form-check-input toggle-tabela-precos" value="1" ' + (row.ativo == '1' ? 'checked' : '') + ' />';
                 html += '</div>';
                 html += '</div>';
+
+                return html;
+            }
+        },{
+            title: '',
+            data: null,
+            className: 'dt-center',
+            orderable: false,
+            width: '50px',
+            render: function(data, type, row) {
+                var html = '';
+                html += '<button class="btn btn-sm btn-outline-warning border-0 editar-tabela-precos" data-bs-toggle="tooltip" data-bs-title="Editar" data-bs-trigger="hover" data-bs-placement="left">';
+                html += '<i class="bi bi-pencil-fill"></i>';
+                html += '</button>';
 
                 return html;
             }
@@ -116,10 +152,30 @@ $(document).ready(function() {
 
     $('.btn-adicionar-tabela-precos').on('click', function() {
         $('#modalTabelaPrecos').modal('show');
+        $('#modalTabelaPrecosLabel').text('Adicionar Tabela de Preços');
+        $('#txtTabelaPrecoDescricao').val('');
+        $('#txtTabelaPrecoDataInicio').val('');
+        $('#txtTabelaPrecoDataVencimento').val('');
+        $('#txtTabelaPrecoId').val('');
+    });
+
+    $(document).on('click', '.editar-tabela-precos', function() {
+        var row = $(this).closest('tr');
+        var rowData = tblTabelasPrecos.row(row).data();
+
+        $('#modalTabelaPrecosLabel').text('Editar Tabela de Preços');
+        $('#txtTabelaPrecoDescricao').val(rowData.descricao);
+        $('#txtTabelaPrecoDataInicio').val(rowData.data_inicio);
+        $('#txtTabelaPrecoDataVencimento').val(rowData.data_vencimento);
+        $('#txtTabelaPrecoId').val(rowData.id);
+
+        $('#modalTabelaPrecos').modal('show');
     });
 
     $('#modalTabelaPrecos').on('hidden.bs.modal', function() {
         $('#modalTabelaPrecos input[type="text"]').val('');
+        $('#modalTabelaPrecos input[type="date"]').val('');
+        $('#txtTabelaPrecoId').val('');
     });
 
     $('.btn-salvar-tabela-precos').on('click', function() {
@@ -127,9 +183,15 @@ $(document).ready(function() {
 
         if (validateFormRequired(form)) {
             var formData = form.serialize();
+            var tabelaPrecoId = $('#txtTabelaPrecoId').val();
+            var url = '/salvar-tabela-precos';
+
+            if (tabelaPrecoId) {
+                url = '/editar-tabela-precos/' + tabelaPrecoId;
+            }
 
             $.ajax({
-                url: '/salvar-tabela-precos',
+                url: url,
                 type: 'POST',
                 data: formData,
                 success: function(response) {
@@ -198,7 +260,14 @@ $(document).ready(function() {
             title: 'Pre&ccedil;o',
             data: 'preco',
             className: 'dt-head-center dt-body-right',
-            width: '120px'
+            width: '120px',
+            render: function(data, type, row) {
+                if (!data) return '-';
+                // Convert string to number and format as currency
+                var preco = parseFloat(data);
+                if (isNaN(preco)) return data;
+                return 'R$ ' + preco.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
         },{
             title: 'Ativo',
             className: 'dt-center',
@@ -274,7 +343,8 @@ $(document).ready(function() {
         var rowData = tblTabelasPrecos.row(row).data();
 
         $('#modalProdutoTabelaLabel').text(rowData.descricao + ' - Adicionar Produto');
-        $('#txtProdutoTabelaTabelaPrecoId').val(rowData.id)
+        $('#txtProdutoTabelaTabelaPrecoId').val(rowData.id);
+        $('#txtProdutoTabelaPreco').val('');
 
         $('#modalProdutoTabela').modal('show');
     });
@@ -283,7 +353,15 @@ $(document).ready(function() {
         const form = $('#formProdutoTabela');
 
         if (validateFormRequired(form)) {
+            // Convert masked price to decimal format
+            var precoMascarado = $('#txtProdutoTabelaPreco').val();
+            var precoDecimal = precoMascarado.replace(/\./g, '').replace(',', '.');
+            $('#txtProdutoTabelaPreco').val(precoDecimal);
+
             var formData = form.serialize();
+
+            // Restore masked value to field after serialization
+            $('#txtProdutoTabelaPreco').val(precoMascarado);
             
             $.ajax({
                 url: '/salvar-produto-tabela',
@@ -327,6 +405,11 @@ $(document).ready(function() {
     $('#modalProdutoTabela').on('hidden.bs.modal', function() {
         $('#modalProdutoTabela input[type="text"]').val('');
         $('#modalProdutoTabela select').val('').trigger('change');
+    });
+
+    // Apply money mask when modal is shown
+    $('#modalProdutoTabela').on('shown.bs.modal', function() {
+        $('#txtProdutoTabelaPreco').mask("#.##0,00", {reverse: true});
     });
 
     let lista_produtos = $('#slcProdutoTabelaProdutoId').select2({

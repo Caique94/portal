@@ -11,11 +11,15 @@ class TabelaPrecoController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'txtTabelaPrecoDescricao'   => 'required|string|max:255'
+            'txtTabelaPrecoDescricao'   => 'required|string|max:255',
+            'txtTabelaPrecoDataInicio'  => 'required|date',
+            'txtTabelaPrecoDataVencimento' => 'required|date|after:txtTabelaPrecoDataInicio'
         ]);
 
         $mappedData = [
-            'descricao' => $validatedData['txtTabelaPrecoDescricao']
+            'descricao' => $validatedData['txtTabelaPrecoDescricao'],
+            'data_inicio' => $validatedData['txtTabelaPrecoDataInicio'],
+            'data_vencimento' => $validatedData['txtTabelaPrecoDataVencimento']
         ];
 
         $tabela = TabelaPreco::create($mappedData);
@@ -24,6 +28,34 @@ class TabelaPrecoController extends Controller
             'message'   => 'Tabela de preços criada com sucesso',
             'data'      => $tabela
         ], 201);
+    }
+
+    public function update(Request $request, string $id)
+    {
+        $validatedData = $request->validate([
+            'txtTabelaPrecoDescricao'   => 'required|string|max:255',
+            'txtTabelaPrecoDataInicio'  => 'required|date',
+            'txtTabelaPrecoDataVencimento' => 'required|date|after:txtTabelaPrecoDataInicio'
+        ]);
+
+        $tabela = TabelaPreco::find($id);
+
+        if (!$tabela) {
+            return response()->json([
+                'message'   => 'Tabela de preços não encontrada'
+            ], 404);
+        }
+
+        $tabela->update([
+            'descricao' => $validatedData['txtTabelaPrecoDescricao'],
+            'data_inicio' => $validatedData['txtTabelaPrecoDataInicio'],
+            'data_vencimento' => $validatedData['txtTabelaPrecoDataVencimento']
+        ]);
+
+        return response()->json([
+            'message'   => 'Tabela de preços atualizada com sucesso',
+            'data'      => $tabela
+        ], 200);
     }
 
     public function list(Request $request)
@@ -46,7 +78,12 @@ class TabelaPrecoController extends Controller
 
     public function active_list(Request $request)
     {
-        $data = TabelaPreco::where('ativo', true)->orderBy('descricao', 'asc')->get();
+        $hoje = now()->format('Y-m-d');
+        $data = TabelaPreco::where('ativo', true)
+            ->where('data_inicio', '<=', $hoje)
+            ->where('data_vencimento', '>=', $hoje)
+            ->orderBy('descricao', 'asc')
+            ->get();
         return response()->json($data);
     }
 

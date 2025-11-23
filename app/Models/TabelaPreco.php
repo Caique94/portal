@@ -14,6 +14,8 @@ class TabelaPreco extends Model
 
     protected $fillable = [
         'descricao',
+        'data_inicio',
+        'data_vencimento',
         'ativo'
     ];
 

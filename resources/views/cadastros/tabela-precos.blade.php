@@ -44,10 +44,19 @@
                 </div>
                 <div class="modal-body">
                     <form id="formTabelaPrecos" action="#" method="post">
+                        <input type="hidden" name="txtTabelaPrecoId" id="txtTabelaPrecoId" />
                         <div class="row">
                             <div class="form-floating mb-3 col-md-12">
                                 <input type="text" name="txtTabelaPrecoDescricao" id="txtTabelaPrecoDescricao" class="form-control" placeholder="Descri&ccedil;&atilde;o" required />
                                 <label for="txtTabelaPrecoDescricao">Descri&ccedil;&atilde;o</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-6">
+                                <input type="date" name="txtTabelaPrecoDataInicio" id="txtTabelaPrecoDataInicio" class="form-control" required />
+                                <label for="txtTabelaPrecoDataInicio">Data de In&iacute;cio</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-6">
+                                <input type="date" name="txtTabelaPrecoDataVencimento" id="txtTabelaPrecoDataVencimento" class="form-control" required />
+                                <label for="txtTabelaPrecoDataVencimento">Data de Vencimento</label>
                             </div>
                         </div>
                     </form>
@@ -98,8 +107,8 @@
                                 <label for="slcProdutoTabelaProdutoId">Produto</label>
                             </div>
                             <div class="form-floating mb-3 col-md-3">
-                                <input type="text" name="txtProdutoTabelaPreco" id="txtProdutoTabelaPreco" class="form-control money" placeholder="Pre&ccedil;o" required />
-                                <label for="txtProdutoTabelaPreco">Pre&ccedil;o</label>
+                                <input type="text" name="txtProdutoTabelaPreco" id="txtProdutoTabelaPreco" class="form-control money" placeholder="0,00" maxlength="18" required />
+                                <label for="txtProdutoTabelaPreco">Pre&ccedil;o (R$)</label>
                             </div>
                         </div>
                     </form>
