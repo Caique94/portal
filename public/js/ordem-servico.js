@@ -19,9 +19,9 @@ $(document).ready(function() {
             targets: [2],
             visible: false
         }, {
-            // Hide "Valor" column for non-admin users
+            // Show "Valor" column for admin and consultant users (showing consultant perspective for consultants)
             targets: [5],
-            visible: papel == 'admin' ? true : false
+            visible: papel == 'admin' || papel == 'consultor' ? true : false
         }],
         columns: [{
             title: 'Codigo',
@@ -65,7 +65,12 @@ $(document).ready(function() {
             data: 'valor_total',
             className: 'dt-head-center dt-body-right',
             width: '120px',
-            visible: papel == 'admin' ? true : false
+            visible: papel == 'admin' || papel == 'consultor' ? true : false,
+            render: function(data, type, row) {
+                if (!data) return 'R$ 0,00';
+                var valor = parseFloat(data);
+                return 'R$ ' + valor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
         },{
             title: 'Status',
             data: 'status',

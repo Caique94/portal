@@ -10,6 +10,7 @@ use App\Services\StateMachine;
 use App\Services\OSValidation;
 use App\Services\AuditService;
 use App\Services\PermissionService;
+use App\Services\ConsultorTotalizadorService;
 use App\Events\OSCreated;
 use App\Events\OSApproved;
 use App\Events\OSRejected;
@@ -199,7 +200,7 @@ class OrdemServicoController extends Controller
                 break;
         }
 
-        // Apply display status transformation for consultores
+        // Apply display status transformation for consultores and calculate consultant values
         if ($papel === 'consultor' && $data) {
             $data = $data->map(function ($item) {
                 // For consultores, if status is 6 or 7 (Aguardando RPS or RPS Emitida),
@@ -209,6 +210,10 @@ class OrdemServicoController extends Controller
                 } else {
                     $item->display_status = $item->status;
                 }
+
+                // Calculate consultant perspective value instead of client billing value
+                $item->valor_total = ConsultorTotalizadorService::calculateConsultantTotal($item);
+
                 return $item;
             });
         }
