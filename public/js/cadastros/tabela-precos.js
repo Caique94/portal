@@ -161,18 +161,32 @@ $(document).ready(function() {
         var row = $(this).closest('tr');
         var rowData = tblTabelasPrecos.row(row).data();
 
+        console.log('Row data:', rowData);
+
         $('#modalTabelaPrecosLabel').text('Editar Tabela de Preços');
         $('#txtTabelaPrecoDescricao').val(rowData.descricao);
 
         // Ensure dates are in YYYY-MM-DD format for input[type="date"]
         if (rowData.data_inicio) {
-            var dataInicio = rowData.data_inicio.split('T')[0]; // Remove time portion if present
+            var dataInicio = rowData.data_inicio;
+            // Handle both ISO format (2025-11-20) and ISO datetime format (2025-11-20T00:00:00)
+            if (dataInicio.includes('T')) {
+                dataInicio = dataInicio.split('T')[0];
+            }
+            console.log('Setting data_inicio to:', dataInicio);
             $('#txtTabelaPrecoDataInicio').val(dataInicio);
         }
 
         if (rowData.data_vencimento) {
-            var dataVencimento = rowData.data_vencimento.split('T')[0]; // Remove time portion if present
+            var dataVencimento = rowData.data_vencimento;
+            // Handle both ISO format (2025-11-20) and ISO datetime format (2025-11-20T00:00:00)
+            if (dataVencimento.includes('T')) {
+                dataVencimento = dataVencimento.split('T')[0];
+            }
+            console.log('Setting data_vencimento to:', dataVencimento);
             $('#txtTabelaPrecoDataVencimento').val(dataVencimento);
+        } else {
+            console.log('data_vencimento is empty or null:', rowData.data_vencimento);
         }
 
         $('#txtTabelaPrecoId').val(rowData.id);
