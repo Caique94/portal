@@ -813,8 +813,8 @@ class OrdemServicoController extends Controller
             $os = OrdemServico::findOrFail($id);
 
             // Validar permissão
-            $permissionService = new PermissionService();
-            if (!Auth::user()->hasRole(['admin', 'financeiro'])) {
+            $user = Auth::user();
+            if (!$user || !in_array($user->papel, ['admin', 'financeiro'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Você não tem permissão para reenviar emails.'
