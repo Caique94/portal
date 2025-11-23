@@ -44,6 +44,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="formTabelaPrecos" action="#" method="post">
+                        @csrf
                         <input type="hidden" name="txtTabelaPrecoId" id="txtTabelaPrecoId" />
                         <div class="row">
                             <div class="form-floating mb-3 col-md-12">
