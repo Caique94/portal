@@ -93,11 +93,67 @@
     </div>
     @endif
 
+    @if($totalizador)
+    <div class="section">
+        <div class="section-title">Totalizador</div>
+        <table>
+            <tbody>
+                <tr>
+                    <td style="width: 50%;">{{ $totalizador['valor_hora_label'] }}:</td>
+                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_hora'], 2, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Horas:</td>
+                    <td style="text-align: right;">{{ number_format($totalizador['horas'], 2, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Valor Horas:</td>
+                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_horas'], 2, ',', '.') }}</td>
+                </tr>
+                @if($totalizador['km'] > 0 && $totalizador['is_presencial'])
+                <tr>
+                    <td>{{ $totalizador['valor_km_label'] }}:</td>
+                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_km'], 2, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>KM:</td>
+                    <td style="text-align: right;">{{ number_format($totalizador['km'], 2, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Valor KM:</td>
+                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_km_total'], 2, ',', '.') }}</td>
+                </tr>
+                @endif
+                @if($totalizador['deslocamento'] > 0 && $totalizador['is_presencial'])
+                <tr>
+                    <td>Deslocamento (horas):</td>
+                    <td style="text-align: right;">{{ number_format($totalizador['deslocamento'], 2, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Valor Deslocamento:</td>
+                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_deslocamento'], 2, ',', '.') }}</td>
+                </tr>
+                @endif
+                @if($totalizador['despesas'] > 0)
+                <tr>
+                    <td>Despesas:</td>
+                    <td style="text-align: right;">R$ {{ number_format($totalizador['despesas'], 2, ',', '.') }}</td>
+                </tr>
+                @endif
+                <tr style="background-color: #e8eef7; font-weight: bold;">
+                    <td>TOTAL GERAL:</td>
+                    <td style="text-align: right;">R$ {{ number_format($totalizador['total_geral'], 2, ',', '.') }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    @endif
+
     <div class="highlight-box">
         <div class="info-row">
             <div class="info-label" style="font-size: 16px;">VALOR TOTAL:</div>
             <div class="info-value" style="font-size: 18px; font-weight: bold; color: #667eea;">
-                R$ {{ number_format((float)$valor_total, 2, ',', '.') }}
+                R$ {{ number_format($totalizador['total_geral'] ?? $valor_total, 2, ',', '.') }}
             </div>
         </div>
     </div>
