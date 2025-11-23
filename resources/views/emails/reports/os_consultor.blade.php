@@ -30,8 +30,64 @@
                 <strong>Cliente:</strong> {{ $os->cliente->nome }}<br>
                 <strong>Assunto:</strong> {{ $os->assunto ?? '-' }}<br>
                 <strong>Data de Emissão:</strong> {{ \Carbon\Carbon::parse($os->data_emissao)->format('d/m/Y') }}<br>
-                <strong>Valor Total:</strong> R$ {{ number_format((float)$os->valor_total, 2, ',', '.') }}
+                <strong>Valor Total:</strong> R$ {{ number_format($totalizador['total_geral'] ?? $os->valor_total, 2, ',', '.') }}
             </div>
+
+            @if($totalizador)
+            <div class="info-box">
+                <strong>Totalizador:</strong><br><br>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td><strong>{{ $totalizador['valor_hora_label'] }}:</strong></td>
+                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_hora'], 2, ',', '.') }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td><strong>Horas:</strong></td>
+                            <td style="text-align: right;">{{ number_format($totalizador['horas'], 2, ',', '.') }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td><strong>Valor Horas:</strong></td>
+                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_horas'], 2, ',', '.') }}</td>
+                        </tr>
+                        @if($totalizador['km'] > 0 && $totalizador['is_presencial'] ?? false)
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td><strong>{{ $totalizador['valor_km_label'] }}:</strong></td>
+                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_km'], 2, ',', '.') }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td><strong>KM:</strong></td>
+                            <td style="text-align: right;">{{ number_format($totalizador['km'], 2, ',', '.') }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td><strong>Valor KM:</strong></td>
+                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_km_total'], 2, ',', '.') }}</td>
+                        </tr>
+                        @endif
+                        @if($totalizador['deslocamento'] > 0 && $totalizador['is_presencial'] ?? false)
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td><strong>Deslocamento (horas):</strong></td>
+                            <td style="text-align: right;">{{ number_format($totalizador['deslocamento'], 2, ',', '.') }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td><strong>Valor Deslocamento:</strong></td>
+                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_deslocamento'], 2, ',', '.') }}</td>
+                        </tr>
+                        @endif
+                        @if($totalizador['despesas'] > 0)
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td><strong>Despesas:</strong></td>
+                            <td style="text-align: right;">R$ {{ number_format($totalizador['despesas'], 2, ',', '.') }}</td>
+                        </tr>
+                        @endif
+                        <tr style="background-color: #f0f0f0;">
+                            <td><strong style="font-size: 14px;">TOTAL GERAL:</strong></td>
+                            <td style="text-align: right; font-weight: bold; font-size: 14px;">R$ {{ number_format($totalizador['total_geral'], 2, ',', '.') }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            @endif
 
             <p>O relatório detalhado está em anexo neste e-mail.</p>
 
