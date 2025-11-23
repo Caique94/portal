@@ -3,9 +3,7 @@ $(document).ready(function() {
     let tblTabelasPrecos = $('#tblTabelasPrecos').DataTable({
         ajax: {
             url: '/listar-tabelas-precos',
-            dataSrc: function(json) {
-                return json;
-            }
+            dataSrc: 'data'
         },
         columns: [{
             title: 'Descri&ccedil;&atilde;o',

@@ -61,7 +61,9 @@ class TabelaPrecoController extends Controller
     public function list(Request $request)
     {
         $data = TabelaPreco::all();
-        return response()->json($data);
+        return response()->json([
+            'data' => $data
+        ]);
     }
 
     public function toggle(Request $request, string $id)
