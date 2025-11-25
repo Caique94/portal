@@ -60,9 +60,9 @@
                                 <th style="padding: 14px 10px; text-align: center; font-weight: 700; color: #666; font-size: 13px;">TOTAL<br>HORAS</th>
                             </tr>
                             <tr style="background-color: #ffffff;">
-                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">--:--</td>
-                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">--:--</td>
-                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">0:00</td>
+                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">{{ $os->hora_inicio ?? '--:--' }}</td>
+                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">{{ $os->hora_final ?? '--:--' }}</td>
+                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">{{ $os->hora_desconto ?? '0:00' }}</td>
                                 <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">{{ number_format($totalizador['deslocamento'] ?? 0, 2, ',', '.') }}</td>
                                 <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #3B93E3;">{{ number_format($totalizador['horas'] ?? 0, 2, ',', '.') }}</td>
                             </tr>
