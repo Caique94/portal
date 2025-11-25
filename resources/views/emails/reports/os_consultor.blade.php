@@ -28,7 +28,7 @@
         <!-- MAIN CONTENT -->
         <div style="padding: 30px;">
             <!-- INFO SECTION - TWO COLUMNS -->
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
                 <tr>
                     <td style="width: 50%; padding-right: 25px; vertical-align: top;">
                         <div style="background-color: #f5f7f9; border: 1px solid #dce4ef; border-radius: 8px; padding: 20px;">

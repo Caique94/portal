@@ -26,7 +26,7 @@
         </div>
 
         <!-- MAIN CONTENT -->
-        <div style="padding: 25px;">
+        <div style="padding: 30px;">
             <!-- INFO SECTION - TWO COLUMNS -->
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
                 <tr>
