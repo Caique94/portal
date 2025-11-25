@@ -55,6 +55,7 @@
   <article class="paper">
     <header class="header">
       <div class="logo-brand">
+        <img src="{{ asset('images/logo-personalitec.png') }}" alt="Personalitec" class="logo-img">
         <div class="tag">Personalitec<br><span class="tag-sub">Sua visão, nossa tecnologia</span></div>
       </div>
       <div class="title">ORDEM DE ATENDIMENTO</div>
