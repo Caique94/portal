@@ -19,7 +19,7 @@
             <div style="flex: 1; text-align: center; font-size: 28px; font-weight: 700; letter-spacing: 1.5px;">
                 ORDEM DE ATENDIMENTO
             </div>
-            <div style="background-color: rgba(31, 95, 161, 0.95); padding: 12px 18px; border-radius: 6px; text-align: center; flex: 0 0 auto; min-width: 110px;">
+            <div style="background-color: rgba(31, 95, 161, 0.95); padding: 12px 18px; border-radius: 6px; text-align: center;">
                 <div style="font-size: 9px; opacity: 0.8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Número</div>
                 <div style="font-size: 18px; font-weight: 700; letter-spacing: 0.5px;">{{ str_pad($os->id, 6, '0', STR_PAD_LEFT) }}</div>
             </div>
