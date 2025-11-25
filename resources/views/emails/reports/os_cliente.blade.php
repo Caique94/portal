@@ -8,15 +8,15 @@
 <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, Arial, sans-serif; background-color: #f5f7f9; line-height: 1.5;">
     <div style="max-width: 900px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
         <!-- HEADER -->
-        <div style="background: linear-gradient(90deg, #2f88d8 0%, #4fa1e6 100%); color: #ffffff; padding: 25px 30px; display: flex; align-items: center; justify-content: flex-start; gap: 30px; position: relative;">
-            <div style="display: flex; align-items: center; gap: 15px;">
+        <div style="background: linear-gradient(90deg, #2f88d8 0%, #4fa1e6 100%); color: #ffffff; padding: 25px 30px; display: flex; align-items: center; justify-content: center; gap: 30px; position: relative;">
+            <div style="display: flex; align-items: center; gap: 15px; position: absolute; left: 30px;">
                 <img src="{{ asset('images/logo-personalitec.png') }}" alt="Personalitec" style="height: 55px; width: auto; display: block;">
                 <div style="font-size: 13px; font-weight: 600; line-height: 1.4;">
                     Personalitec<br>
                     <span style="font-size: 11px; opacity: 0.85; font-weight: 400;">Sua visão, nossa tecnologia</span>
                 </div>
             </div>
-            <div style="flex: 1; text-align: center; font-size: 32px; font-weight: 700; letter-spacing: 2px;">
+            <div style="text-align: center; font-size: 32px; font-weight: 700; letter-spacing: 2px;">
                 ORDEM DE ATENDIMENTO
             </div>
             <div style="background-color: rgba(31, 95, 161, 0.95); padding: 14px 20px; border-radius: 6px; text-align: center; position: absolute; right: 30px; top: 50%; transform: translateY(-50%);">
