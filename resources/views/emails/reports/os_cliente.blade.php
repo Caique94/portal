@@ -51,20 +51,20 @@
                         </div>
                     </td>
                     <td style="width: 50%; padding-left: 25px; vertical-align: top;">
-                        <table style="width: 100%; border: 1px solid #dce4ef; border-radius: 8px; overflow: hidden; border-collapse: collapse;">
-                            <tr style="background-color: #f7f9fc;">
-                                <th style="padding: 12px 8px; text-align: center; font-weight: 700; color: #555; font-size: 12px; border-right: 1px solid #dce4ef;">HORA<br>INICIO</th>
-                                <th style="padding: 12px 8px; text-align: center; font-weight: 700; color: #555; font-size: 12px; border-right: 1px solid #dce4ef;">HORA<br>FIM</th>
-                                <th style="padding: 12px 8px; text-align: center; font-weight: 700; color: #555; font-size: 12px; border-right: 1px solid #dce4ef;">DESCONTO</th>
-                                <th style="padding: 12px 8px; text-align: center; font-weight: 700; color: #555; font-size: 12px; border-right: 1px solid #dce4ef;">TRASLADO</th>
-                                <th style="padding: 12px 8px; text-align: center; font-weight: 700; color: #555; font-size: 12px;">TOTAL<br>HORAS</th>
+                        <table style="width: 100%; border: 1px solid #d4dce8; border-radius: 6px; overflow: hidden; border-collapse: collapse;">
+                            <tr style="background-color: #f5f7fa;">
+                                <th style="padding: 14px 10px; text-align: center; font-weight: 700; color: #666; font-size: 13px; border-right: 1px solid #d4dce8;">HORA<br>INICIO</th>
+                                <th style="padding: 14px 10px; text-align: center; font-weight: 700; color: #666; font-size: 13px; border-right: 1px solid #d4dce8;">HORA<br>FIM</th>
+                                <th style="padding: 14px 10px; text-align: center; font-weight: 700; color: #666; font-size: 13px; border-right: 1px solid #d4dce8;">DESCONTO</th>
+                                <th style="padding: 14px 10px; text-align: center; font-weight: 700; color: #666; font-size: 13px; border-right: 1px solid #d4dce8;">TRASLADO</th>
+                                <th style="padding: 14px 10px; text-align: center; font-weight: 700; color: #666; font-size: 13px;">TOTAL<br>HORAS</th>
                             </tr>
                             <tr style="background-color: #ffffff;">
-                                <td style="padding: 13px 8px; text-align: center; font-weight: 700; font-size: 13px; color: #222; border-right: 1px solid #eee;">--:--</td>
-                                <td style="padding: 13px 8px; text-align: center; font-weight: 700; font-size: 13px; color: #222; border-right: 1px solid #eee;">--:--</td>
-                                <td style="padding: 13px 8px; text-align: center; font-weight: 700; font-size: 13px; color: #222; border-right: 1px solid #eee;">0:00</td>
-                                <td style="padding: 13px 8px; text-align: center; font-weight: 700; font-size: 13px; color: #222; border-right: 1px solid #eee;">{{ number_format($totalizador['deslocamento'] ?? 0, 2, ',', '.') }}</td>
-                                <td style="padding: 13px 8px; text-align: center; font-weight: 700; font-size: 13px; color: #2563eb;">{{ number_format($totalizador['horas'] ?? 0, 2, ',', '.') }}</td>
+                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">--:--</td>
+                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">--:--</td>
+                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">0:00</td>
+                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #333; border-right: 1px solid #d4dce8;">{{ number_format($totalizador['deslocamento'] ?? 0, 2, ',', '.') }}</td>
+                                <td style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 14px; color: #3B93E3;">{{ number_format($totalizador['horas'] ?? 0, 2, ',', '.') }}</td>
                             </tr>
                         </table>
                     </td>
@@ -72,35 +72,35 @@
             </table>
 
             <!-- DETALHAMENTO -->
-            <div style="background-color: #2f88d8; color: #ffffff; padding: 14px 20px; font-weight: 700; font-size: 14px; margin-bottom: 0; border-radius: 8px 8px 0 0; letter-spacing: 0.5px;">DETALHAMENTO</div>
-            <div style="background-color: #fbfcfd; border: 1px solid #dce4ef; border-top: none; border-radius: 0 0 8px 8px; padding: 18px; margin-bottom: 30px; line-height: 1.8;">
-                <p style="margin: 10px 0; font-size: 14px; color: #333;"><strong style="color: #111; font-weight: 700;">Assunto:</strong> {{ $os->assunto ?? '-' }}</p>
-                <p style="margin: 10px 0; font-size: 14px; color: #333;"><strong style="color: #111; font-weight: 700;">Observações:</strong> {{ $os->observacao ?? 'Nenhuma observação adicionada' }}</p>
+            <div style="background-color: #3B93E3; color: #ffffff; padding: 12px 16px; font-weight: 700; font-size: 16px; margin-bottom: 0; border-radius: 6px 6px 0 0; letter-spacing: 0.5px; text-align: left;">DETALHAMENTO</div>
+            <div style="background-color: #fafbfc; border: 1px solid #d4dce8; border-top: none; border-radius: 0 0 6px 6px; padding: 20px; margin-bottom: 25px; line-height: 1.8;">
+                <p style="margin: 8px 0; font-size: 15px; color: #222;"><strong style="color: #111; font-weight: 700;">Assunto:</strong> {{ $os->assunto ?? '-' }}</p>
+                <p style="margin: 8px 0; font-size: 15px; color: #222;"><strong style="color: #111; font-weight: 700;">Observações:</strong> {{ $os->observacao ?? 'Nenhuma observação adicionada' }}</p>
             </div>
 
             <!-- RESUMO -->
-            <div style="background-color: #2f88d8; color: #ffffff; padding: 14px 18px; font-weight: 700; font-size: 14px; border-radius: 8px; display: inline-block; margin-bottom: 14px; letter-spacing: 0.5px;">RESUMO</div>
-            <table style="width: 100%; border: 1px solid #dce4ef; border-radius: 8px; margin-bottom: 30px; border-collapse: collapse; overflow: hidden;">
+            <div style="background-color: #3B93E3; color: #ffffff; padding: 12px 16px; font-weight: 700; font-size: 16px; border-radius: 6px; display: inline-block; margin-bottom: 16px; letter-spacing: 0.5px; text-align: left;">RESUMO</div>
+            <table style="width: 100%; border: 1px solid #d4dce8; border-radius: 6px; margin-bottom: 25px; border-collapse: collapse; overflow: hidden;">
                 <tr>
-                    <td style="width: 65%; padding: 16px; vertical-align: middle; border-right: 1px solid #dce4ef; background-color: #ffffff;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <td style="width: 60%; padding: 18px; vertical-align: middle; border-right: 1px solid #d4dce8; background-color: #ffffff;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                             <tr>
-                                <th style="background-color: #f7f9fc; border: 1px solid #dce4ef; padding: 10px; font-weight: 700; text-align: center; color: #555; font-size: 12px;">Chamado Personalitec</th>
-                                <th style="background-color: #f7f9fc; border: 1px solid #dce4ef; padding: 10px; font-weight: 700; text-align: center; color: #555; font-size: 12px;">{{ str_pad($os->id, 6, '0', STR_PAD_LEFT) }}</th>
-                                <th style="background-color: #f7f9fc; border: 1px solid #dce4ef; padding: 10px; font-weight: 700; text-align: center; color: #555; font-size: 12px;">Previsão Retorno</th>
-                                <th style="background-color: #f7f9fc; border: 1px solid #dce4ef; padding: 10px; font-weight: 700; text-align: center; color: #555; font-size: 12px;">{{ \Carbon\Carbon::parse($os->data_emissao)->addDays(1)->format('d/m/Y') }}</th>
+                                <th style="background-color: #f5f7fa; border: 1px solid #d4dce8; padding: 12px; font-weight: 700; text-align: center; color: #666; font-size: 13px;">Chamado Personalitec</th>
+                                <th style="background-color: #f5f7fa; border: 1px solid #d4dce8; padding: 12px; font-weight: 700; text-align: center; color: #666; font-size: 13px;">{{ str_pad($os->id, 6, '0', STR_PAD_LEFT) }}</th>
+                                <th style="background-color: #f5f7fa; border: 1px solid #d4dce8; padding: 12px; font-weight: 700; text-align: center; color: #666; font-size: 13px;">Previsão Retorno</th>
+                                <th style="background-color: #f5f7fa; border: 1px solid #d4dce8; padding: 12px; font-weight: 700; text-align: center; color: #666; font-size: 13px;">{{ \Carbon\Carbon::parse($os->data_emissao)->addDays(1)->format('d/m/Y') }}</th>
                             </tr>
                             <tr>
-                                <td style="border: 1px solid #dce4ef; padding: 12px; text-align: center; font-size: 13px; color: #333; background-color: #ffffff;">KM</td>
-                                <td style="border: 1px solid #dce4ef; padding: 12px; text-align: center; font-size: 13px; color: #333; background-color: #ffffff;">{{ $os->km ?? '0' }}</td>
-                                <td style="border: 1px solid #dce4ef; padding: 12px; text-align: center; font-weight: 700; color: #2f88d8; font-size: 13px; background-color: #ffffff;">TOTAL OS</td>
-                                <td style="border: 1px solid #dce4ef; padding: 12px; text-align: center; font-weight: 700; color: #2f88d8; font-size: 14px; background-color: #ffffff;">R$ {{ number_format($totalizador['total_geral'] ?? 0, 2, ',', '.') }}</td>
+                                <td style="border: 1px solid #d4dce8; padding: 14px; text-align: center; font-size: 14px; color: #333; background-color: #ffffff; font-weight: 600;">KM</td>
+                                <td style="border: 1px solid #d4dce8; padding: 14px; text-align: center; font-size: 14px; color: #333; background-color: #ffffff; font-weight: 600;">{{ $os->km ?? '0' }}</td>
+                                <td style="border: 1px solid #d4dce8; padding: 14px; text-align: center; font-weight: 700; color: #3B93E3; font-size: 14px; background-color: #ffffff;">TOTAL OS</td>
+                                <td style="border: 1px solid #d4dce8; padding: 14px; text-align: center; font-weight: 700; color: #3B93E3; font-size: 16px; background-color: #ffffff;">R$ {{ number_format($totalizador['total_geral'] ?? 0, 2, ',', '.') }}</td>
                             </tr>
                         </table>
                     </td>
-                    <td style="width: 35%; padding: 16px; text-align: center; vertical-align: middle; background-color: #fbfcfd;">
-                        <div style="font-weight: 700; color: #2f88d8; margin-bottom: 6px; font-size: 13px; letter-spacing: 0.3px;">Personalitec</div>
-                        <div style="font-size: 12px; color: #2f88d8; text-decoration: none; line-height: 1.5;">atendimento@personalitec.com.br</div>
+                    <td style="width: 40%; padding: 18px; text-align: center; vertical-align: middle; background-color: #fafbfc;">
+                        <div style="font-weight: 700; color: #3B93E3; margin-bottom: 8px; font-size: 14px; letter-spacing: 0.3px;">Personalitec</div>
+                        <div style="font-size: 13px; color: #3B93E3; text-decoration: none; line-height: 1.6;">atendimento@personalitec.com.br</div>
                     </td>
                 </tr>
             </table>
