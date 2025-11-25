@@ -8,7 +8,7 @@
 <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, Arial, sans-serif; background-color: #f5f7f9; line-height: 1.5;">
     <div style="max-width: 900px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
         <!-- HEADER -->
-        <div style="background: linear-gradient(90deg, #2f88d8 0%, #4fa1e6 100%); color: #ffffff; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; gap: 25px;">
+        <div style="background: linear-gradient(90deg, #2f88d8 0%, #4fa1e6 100%); color: #ffffff; padding: 25px 30px; display: flex; align-items: center; justify-content: flex-start; gap: 30px; position: relative;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <img src="{{ asset('images/logo-personalitec.png') }}" alt="Personalitec" style="height: 55px; width: auto; display: block;">
                 <div style="font-size: 13px; font-weight: 600; line-height: 1.4;">
@@ -19,7 +19,7 @@
             <div style="flex: 1; text-align: center; font-size: 32px; font-weight: 700; letter-spacing: 2px;">
                 ORDEM DE ATENDIMENTO
             </div>
-            <div style="background-color: rgba(31, 95, 161, 0.95); padding: 14px 20px; border-radius: 6px; text-align: center;">
+            <div style="background-color: rgba(31, 95, 161, 0.95); padding: 14px 20px; border-radius: 6px; text-align: center; position: absolute; right: 30px; top: 50%; transform: translateY(-50%);">
                 <div style="font-size: 10px; opacity: 0.8; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Número</div>
                 <div style="font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">{{ str_pad($os->id, 6, '0', STR_PAD_LEFT) }}</div>
             </div>
