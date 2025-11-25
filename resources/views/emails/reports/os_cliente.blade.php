@@ -1,172 +1,154 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #ffffff; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff !important; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
-        .info-box { background: #ffffff; padding: 15px; border-left: 4px solid #667eea; margin: 15px 0; color: #333333; }
-        .info-box strong { color: #667eea; }
-        .highlight { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff !important; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666666; }
-        .attachment-notice { background: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; }
-        .signature { margin-top: 35px; padding-top: 25px; border-top: 1px solid #e0e0e0; color: #333333; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ordem de Atendimento</title>
+  <style>
+    :root{
+      --blue:#2f88d8;--blue-dark:#1f5fa1;--bg:#f5f7f9;--card:#ffffff;--muted:#666;--text:#111;--radius:8px;
+    }
+    *{box-sizing:border-box}body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);padding:20px}
+    .paper{max-width:900px;margin:0 auto;background:var(--card);border-radius:var(--radius);overflow:hidden}
+    .header{display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(90deg,var(--blue),#4fa1e6);color:#fff}
+    .logo-brand{display:flex;align-items:center;gap:8px;flex:0}
+    .logo-img{height:48px;width:auto}
+    .tag{font-size:12px;line-height:1.3;font-weight:600}
+    .tag-sub{font-size:10px;opacity:0.9}
+    .title{flex:1;text-align:center;font-size:32px;font-weight:700;letter-spacing:1px}
+    .num-box{background:var(--blue-dark);padding:8px 14px;border-radius:6px;text-align:center}
+    .num-box small{display:block;font-size:11px;opacity:0.9}
+    .num-box strong{display:block;font-size:18px;font-weight:700}
+    .main{padding:16px}
+    .info-section{display:flex;gap:20px}
+    .col-left{flex:1}
+    .col-right{width:45%;min-width:380px}
+    .client-box{background:#f2f6fb;border:1px solid #d4e0ed;border-radius:6px;padding:12px;line-height:1.8}
+    .client-box .row{display:flex;gap:12px;margin:6px 0}
+    .client-box .label{font-weight:700;min-width:100px}
+    .times-table{background:#fff;border:1px solid #d4e0ed;border-radius:6px;overflow:hidden}
+    .times-table .th-row{display:grid;grid-template-columns:repeat(5,1fr);background:#f7f9fc;font-weight:700;color:var(--muted);padding:10px;border-bottom:2px solid #d4e0ed;text-align:center}
+    .times-table .td-row{display:grid;grid-template-columns:repeat(5,1fr);padding:12px;text-align:center;font-weight:700;border-bottom:1px solid #eee}
+    .section-title{background:var(--blue);color:#fff;padding:10px 16px;font-weight:700;font-size:14px;margin-top:16px;border-radius:4px}
+    .detail-box{background:#fbfcfd;border:1px solid #e8eef7;border-radius:6px;padding:12px;margin-top:8px;line-height:1.6}
+    .detail-box p{margin:6px 0}
+    .detail-box strong{color:var(--text)}
+    .resumo-section{margin-top:16px}
 
-        /* Suporte para temas escuros */
-        @media (prefers-color-scheme: dark) {
-            body { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
-            .container { background-color: #1a1a1a !important; }
-            .content { background: #2d2d2d !important; }
-            .info-box { background: #3d3d3d !important; color: #e0e0e0 !important; border-left-color: #667eea !important; }
-            .info-box strong { color: #8b9dff !important; }
-            .signature { color: #e0e0e0 !important; border-top-color: #4d4d4d !important; }
-            .footer { color: #999999 !important; }
-            .attachment-notice { background: #3d3510 !important; border-color: #ffc107 !important; color: #ffd966 !important; }
-        }
-    </style>
+    /* Ajuste do título RESUMO para limitar até o fim da tabela */
+    .resumo-header{
+      background:var(--blue);
+      color:#fff;
+      padding:10px 16px;
+      font-weight:700;
+      font-size:14px;
+      border-radius:4px;
+      display:inline-block;
+      width:max-content;
+      margin-bottom:8px;
+    }
+
+    .resumo-wrap{background:#fff;border:1px solid #d4e0ed;border-radius:6px;overflow:hidden}
+    .resumo-table{width:100%;border-collapse:collapse;font-size:13px}
+    .resumo-table th{background:#f7f9fc;border:1px solid #d4e0ed;padding:10px;font-weight:700;text-align:center;color:var(--muted)}
+    .resumo-table td{border:1px solid #d4e0ed;padding:10px;text-align:center}
+    .resumo-table .big{font-weight:700;color:var(--blue);font-size:15px}
+    .resumo-logo{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px;border-left:1px solid #d4e0ed}
+    .logo-wrap{text-align:center}
+    .logo-wrap img{height:50px;width:auto}
+    .contact-info{font-size:12px;margin-top:8px}
+
+    .footer{padding:12px 18px;border-top:1px solid #eee;text-align:center;font-size:11px;color:var(--muted)}
+
+    @media(max-width:800px){
+      .info-section{flex-direction:column}.col-right{width:100%;min-width:auto}.title{font-size:24px}
+      .resumo-logo{display:none}
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Ordem de Serviço</h1>
-            <p style="font-size: 18px; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 10px;">OS Nº {{ $numero_os }}</p>
+  <article class="paper">
+    <header class="header">
+      <div class="logo-brand">
+        <img src="{{ asset('images/logo-personalitec.png') }}" alt="Personalitec" class="logo-img">
+        <div class="tag">Personalitec<br><span class="tag-sub">Sua visão, nossa tecnologia</span></div>
+      </div>
+      <div class="title">ORDEM DE ATENDIMENTO</div>
+      <div class="num-box"><small>NÚMERO</small><strong>{{ str_pad($os->id, 6, '0', STR_PAD_LEFT) }}</strong></div>
+    </header>
+
+    <main class="main">
+      <div class="info-section">
+        <div class="col-left">
+          <div class="client-box">
+            <div class="row"><span class="label">Cliente:</span><span>{{ $os->cliente->nome }}</span></div>
+            <div class="row"><span class="label">Contato:</span><span>{{ $os->cliente->contato ?? '-' }}</span></div>
+            <div class="row"><span class="label">Emissão:</span><span>{{ \Carbon\Carbon::parse($os->data_emissao)->format('d/m/Y') }}</span></div>
+            <div class="row"><span class="label">Consultor:</span><span>{{ $os->consultor->name }}</span></div>
+          </div>
         </div>
 
-        <div class="content">
-            <p>Prezado(a) <strong>{{ $recipient_name ?? $os->cliente->nome }}</strong>,</p>
-
-            <p>Segue abaixo os detalhes da Ordem de Serviço <strong>#{{ $numero_os }}</strong> referente aos serviços prestados.</p>
-
-            <div class="info-box">
-                <strong style="color: #667eea; font-size: 16px;">Informações da Ordem de Serviço</strong><br><br>
-                <strong>Número da OS:</strong> {{ $numero_os }}<br>
-                <strong>Data de Emissão:</strong> {{ \Carbon\Carbon::parse($os->data_emissao)->format('d/m/Y') }}<br>
-                @if($os->approved_at)
-                <strong>Data de Aprovação:</strong> {{ \Carbon\Carbon::parse($os->approved_at)->format('d/m/Y H:i') }}<br>
-                @endif
-                @if($os->assunto)
-                <strong>Assunto:</strong> {{ $os->assunto }}<br>
-                @endif
-                @if($os->projeto)
-                <strong>Projeto:</strong> {{ $os->projeto }}<br>
-                @endif
+        <div class="col-right">
+          <div class="times-table">
+            <div class="th-row">
+              <div>HORA INICIO</div>
+              <div>HORA FIM</div>
+              <div>DESCONTO</div>
+              <div>TRASLADO</div>
+              <div>TOTAL HORAS</div>
             </div>
-
-            <div class="info-box">
-                <strong style="color: #667eea; font-size: 16px;">Cliente</strong><br><br>
-                @if($os->cliente->codigo)
-                <strong>Código:</strong> {{ $os->cliente->codigo }}<br>
-                @endif
-                <strong>Nome:</strong> {{ $os->cliente->nome }}
+            <div class="td-row">
+              <div>--:--</div>
+              <div>--:--</div>
+              <div>0:00</div>
+              <div>{{ number_format($totalizador['deslocamento'] ?? 0, 2, ',', '.') }}</div>
+              <div>{{ number_format($totalizador['horas'] ?? 0, 2, ',', '.') }}</div>
             </div>
-
-            <div class="info-box">
-                <strong style="color: #667eea; font-size: 16px;">Serviço Prestado</strong><br><br>
-                @if($os->produtoTabela && $os->produtoTabela->produto)
-                <strong>Descrição:</strong> {{ $os->produtoTabela->produto->descricao }}<br>
-                @endif
-                @if($os->qtde_total)
-                <strong>Quantidade (horas):</strong> {{ $os->qtde_total }}<br>
-                @endif
-                @if($os->cliente->km)
-                <strong>Quilometragem:</strong> {{ $os->cliente->km }} km<br>
-                @endif
-                @if($os->cliente->deslocamento)
-                <strong>Deslocamento:</strong> R$ {{ number_format((float)$os->cliente->deslocamento, 2, ',', '.') }}
-                @endif
-            </div>
-
-            @if($os->detalhamento)
-            <div class="info-box">
-                <strong style="color: #667eea; font-size: 16px;">Descrição dos Serviços</strong><br><br>
-                <div style="white-space: pre-wrap; line-height: 1.8;">{{ $os->detalhamento }}</div>
-            </div>
-            @endif
-
-            @if($totalizador)
-            <div class="info-box">
-                <strong style="color: #667eea; font-size: 16px;">Totalizador</strong><br><br>
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tbody>
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td><strong>{{ $totalizador['valor_hora_label'] }}:</strong></td>
-                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_hora'], 2, ',', '.') }}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td><strong>Horas:</strong></td>
-                            <td style="text-align: right;">{{ number_format($totalizador['horas'], 2, ',', '.') }}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td><strong>Valor Horas:</strong></td>
-                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_horas'], 2, ',', '.') }}</td>
-                        </tr>
-                        @if($totalizador['km'] > 0 && $totalizador['is_presencial'] ?? false)
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td><strong>{{ $totalizador['valor_km_label'] }}:</strong></td>
-                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_km'], 2, ',', '.') }}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td><strong>KM:</strong></td>
-                            <td style="text-align: right;">{{ number_format($totalizador['km'], 2, ',', '.') }}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td><strong>Valor KM:</strong></td>
-                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_km_total'], 2, ',', '.') }}</td>
-                        </tr>
-                        @endif
-                        @if($totalizador['deslocamento'] > 0 && $totalizador['is_presencial'] ?? false)
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td><strong>Deslocamento (horas):</strong></td>
-                            <td style="text-align: right;">{{ number_format($totalizador['deslocamento'], 2, ',', '.') }}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td><strong>Valor Deslocamento:</strong></td>
-                            <td style="text-align: right;">R$ {{ number_format($totalizador['valor_deslocamento'], 2, ',', '.') }}</td>
-                        </tr>
-                        @endif
-                        @if($totalizador['despesas'] > 0)
-                        <tr style="border-bottom: 1px solid #e0e0e0;">
-                            <td><strong>Despesas:</strong></td>
-                            <td style="text-align: right;">R$ {{ number_format($totalizador['despesas'], 2, ',', '.') }}</td>
-                        </tr>
-                        @endif
-                        <tr style="background-color: #f0f0f0;">
-                            <td><strong style="font-size: 16px;">TOTAL GERAL:</strong></td>
-                            <td style="text-align: right; font-weight: bold; font-size: 16px;">R$ {{ number_format($totalizador['total_geral'], 2, ',', '.') }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            @endif
-
-            <div class="highlight">
-                <h2 style="margin: 0; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">VALOR TOTAL</h2>
-                <p style="font-size: 36px; font-weight: bold; margin: 10px 0;">
-                    R$ {{ number_format($totalizador['total_geral'] ?? $os->valor_total, 2, ',', '.') }}
-                </p>
-            </div>
-
-            <div class="attachment-notice">
-                <strong style="display: block; margin-bottom: 5px;">📎 Documento Anexo</strong>
-                Uma versão em PDF desta ordem de serviço está anexada a este e-mail para seus registros.
-            </div>
-
-            <p style="color: #666;">Caso tenha alguma dúvida ou necessite de esclarecimentos adicionais, não hesite em entrar em contato conosco.</p>
-
-            <div class="signature">
-                <p><strong>Atenciosamente,</strong></p>
-                <p style="color: #667eea; font-weight: 600; font-size: 16px;">Equipe Personalitec Soluções</p>
-                <p style="font-size: 13px; color: #999; margin-top: 15px;"><em>Soluções personalizadas para o seu negócio</em></p>
-            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="footer">
-            <p style="font-weight: 600;">© {{ date('Y') }} Personalitec Soluções</p>
-            <p>Este é um e-mail automático. Por favor, não responda diretamente a esta mensagem.</p>
+      <div class="section-title">DETALHAMENTO</div>
+      <div class="detail-box">
+        <p><strong>Assunto:</strong> {{ $os->assunto ?? '-' }}</p>
+        <p><strong>Observações:</strong> {{ $os->observacao ?? 'Nenhuma observação adicionada' }}</p>
+      </div>
+
+      <div class="resumo-section">
+        <div class="resumo-header">RESUMO</div>
+        <div class="resumo-wrap">
+          <div style="display:flex;align-items:stretch">
+            <div style="flex:1">
+              <table class="resumo-table">
+                <tr>
+                  <th>Chamado Personalitec</th>
+                  <th>{{ str_pad($os->id, 6, '0', STR_PAD_LEFT) }}</th>
+                  <th>Previsão Retorno</th>
+                  <th>{{ \Carbon\Carbon::parse($os->data_emissao)->addDays(1)->format('d/m/Y') }}</th>
+                </tr>
+                <tr>
+                  <td>KM</td>
+                  <td>{{ $os->km ?? '0' }}</td>
+                  <td class="big">TOTAL OS</td>
+                  <td class="big">R$ {{ number_format($totalizador['total_geral'] ?? 0, 2, ',', '.') }}</td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="resumo-logo">
+              <div class="logo-wrap">
+                <div style="font-weight:700;color:var(--blue);margin-bottom:6px">Personalitec</div>
+                <div class="contact-info">atendimento@personalitec.com.br</div>
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>Este é um e-mail automático. Por favor, não responda.<br>© {{ date('Y') }} Personalitec Soluções. Todos os direitos reservados.</p>
+    </footer>
+  </article>
 </body>
 </html>
