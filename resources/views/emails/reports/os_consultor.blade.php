@@ -16,7 +16,7 @@
                     <span style="font-size: 11px; opacity: 0.85; font-weight: 400;">Sua visão, nossa tecnologia</span>
                 </div>
             </div>
-            <div style="text-align: center; font-size: 32px; font-weight: 700; letter-spacing: 2px;">
+            <div style="text-align: center; font-size: 20px; font-weight: 700; letter-spacing: 2px;">
                 ORDEM DE ATENDIMENTO
             </div>
             <div style="background-color: rgba(31, 95, 161, 0.95); padding: 14px 20px; border-radius: 6px; text-align: center; position: absolute; right: 30px; top: 50%; transform: translateY(-50%);">
@@ -72,7 +72,7 @@
             </table>
 
             <!-- DETALHAMENTO -->
-            <div style="background-color: #3B93E3; color: #ffffff; padding: 12px 16px; font-weight: 700; font-size: 16px; margin-bottom: 0; border-radius: 6px 6px 0 0; letter-spacing: 0.5px; text-align: left;">DETALHAMENTO</div>
+            <div style="background-color: #3B93E3; color: #ffffff; padding: 12px 16px; font-weight: 700; font-size: 16px; margin-bottom: 0; border-radius: 6px 6px 0 0; letter-spacing: 0.5px; text-align: center;">DETALHAMENTO</div>
             <div style="background-color: #fafbfc; border: 1px solid #d4dce8; border-top: none; border-radius: 0 0 6px 6px; padding: 20px; margin-bottom: 25px; line-height: 1.8;">
                 <p style="margin: 8px 0; font-size: 15px; color: #222;"><strong style="color: #111; font-weight: 700;">Assunto:</strong> {{ $os->assunto ?? '-' }}</p>
                 <p style="margin: 8px 0; font-size: 15px; color: #222;"><strong style="color: #111; font-weight: 700;">Observações:</strong> {{ $os->observacao ?? 'Nenhuma observação adicionada' }}</p>
