@@ -16,7 +16,7 @@
                     <span style="font-size: 11px; opacity: 0.85; font-weight: 400;">Sua visão, nossa tecnologia</span>
                 </div>
             </div>
-            <div style="text-align: center; font-size: 20px; font-weight: 700; letter-spacing: 2px;">
+            <div style="text-align: center; font-size: 36px; font-weight: 700; letter-spacing: 2px;">
                 ORDEM DE ATENDIMENTO
             </div>
             <div style="background-color: rgba(31, 95, 161, 0.95); padding: 14px 20px; border-radius: 6px; text-align: center; position: absolute; right: 30px; top: 50%; transform: translateY(-50%);">
