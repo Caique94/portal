@@ -143,6 +143,15 @@ class ReportMail extends Mailable
     {
         $attachments = [];
 
+        // Add logo as inline embedded image
+        $logoPath = public_path('images/logo-personalitec.png');
+        if (file_exists($logoPath)) {
+            $attachments[] = Attachment::fromPath($logoPath)
+                ->as('logo-personalitec.png')
+                ->withMime('image/png')
+                ->inline();
+        }
+
         if ($this->report->path) {
             $fullPath = Storage::disk('public')->path($this->report->path);
 

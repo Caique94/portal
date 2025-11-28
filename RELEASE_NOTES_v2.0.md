@@ -164,7 +164,7 @@ composer dump-autoload
 
 ### 3. Acessar Dashboard
 ```
-http://localhost:8001/login
+http://localhost :8001/login
 Email: admin@example.com
 Senha: 123
 Menu → Dashboard Gerencial → Filtros & Relatórios

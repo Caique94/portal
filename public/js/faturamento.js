@@ -946,7 +946,7 @@ $(document).ready(function() {
                 html += '<i class="bi bi-list"></i>';
                 html += '</button>';
                 html += '<ul class="dropdown-menu">';
-                html += '<li><a class="dropdown-item" href="javascript:void(0);">Visualizar</a></li>';
+                html += '<li><a class="dropdown-item exibir-modal-visualizacao" href="javascript:void(0);" data-os-id="' + row.id + '"><i class="bi bi-eye"></i> Visualizar</a></li>';
 
                 // Mostrar opção de Reenviar Email apenas para status 5, 6 e 7 (Faturado, Aguardando RPS, RPS Emitida)
                 if (row.status >= 5) {
@@ -1010,6 +1010,15 @@ $(document).ready(function() {
                         $(this).prop('checked', false);
                     }
                 });
+            });
+
+            // Event handler for Visualizar button
+            $('#tblFaturamento tbody').on('click', '.exibir-modal-visualizacao', function(e) {
+                e.preventDefault();
+                var osId = $(this).data('os-id');
+                if (osId) {
+                    window.location.href = '/ordem-servico#' + osId;
+                }
             });
         }
     });
