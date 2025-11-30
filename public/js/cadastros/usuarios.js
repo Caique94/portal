@@ -240,9 +240,27 @@ $(function () {
       if (key === 'txtUsuarioCPF' && value) {
         jsonData[key] = value.replace(/\D/g, '');
       }
+      // ✅ SANITIZAR CELULAR: remover máscara (deixar só números)
+      else if (key === 'txtUsuarioCelular' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
       // ✅ SANITIZAR CNPJ: remover máscara (deixar só números)
       else if (key === 'txtPJCNPJ' && value) {
         jsonData[key] = value.replace(/\D/g, '');
+      }
+      // ✅ SANITIZAR CEP: remover máscara
+      else if (key === 'txtPJCEP' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
+      // ✅ SANITIZAR TELEFONE PJ: remover máscara (deixar só números)
+      else if (key === 'txtPJTelefone' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
+      // ✅ SANITIZAR VALORES MONETÁRIOS: remover máscara
+      else if ((key === 'txtUsuarioValorHora' || key === 'txtUsuarioValorDesloc' ||
+                key === 'txtUsuarioValorKM' || key === 'txtUsuarioSalarioBase') && value) {
+        // Remove máscara de moeda: R$ 1.234,56 → 1234.56
+        jsonData[key] = value.replace(/[^\d,]/g, '').replace(',', '.');
       }
       // ✅ SANITIZAR CPF/CNPJ DO TITULAR: remover máscara
       else if (key === 'txtPagCpfCnpjTitular' && value) {
@@ -252,10 +270,6 @@ $(function () {
       else if (key === 'id') {
         const id = parseInt(value);
         jsonData[key] = !isNaN(id) && id > 0 ? id : null;
-      }
-      // ✅ SANITIZAR CEP: remover máscara
-      else if (key === 'txtPJCEP' && value) {
-        jsonData[key] = value.replace(/\D/g, '');
       }
       // Resto dos campos - deixar como estão
       else {
