@@ -140,10 +140,18 @@ $(function () {
       $('#txtUsuarioCelular').val(r.celular || '');
       $('#slcUsuarioPapel').val(r.papel || '');
       $('#txtUsuarioCPF').val(r.cgc || '');
-      $('#txtUsuarioValorHora').val(r.valor_hora || '');
-      $('#txtUsuarioValorDesloc').val(r.valor_desloc || '');
-      $('#txtUsuarioValorKM').val(r.valor_km || '');
-      $('#txtUsuarioSalarioBase').val(r.salario_base || '');
+
+      // Formata valores monetários: 150.00 → R$ 150,00
+      const formatMoneyValue = (value) => {
+        if (!value) return '';
+        const num = parseFloat(value);
+        return !isNaN(num) ? num.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}).replace('R$', '').trim() : '';
+      };
+
+      $('#txtUsuarioValorHora').val(formatMoneyValue(r.valor_hora)).trigger('input');
+      $('#txtUsuarioValorDesloc').val(formatMoneyValue(r.valor_desloc)).trigger('input');
+      $('#txtUsuarioValorKM').val(formatMoneyValue(r.valor_km)).trigger('input');
+      $('#txtUsuarioSalarioBase').val(formatMoneyValue(r.salario_base)).trigger('input');
 
       // desabilita todos os campos e o botão salvar
       $('#formUsuario input, #formUsuario select').prop('disabled', true);
@@ -170,10 +178,18 @@ $(function () {
       $('#txtUsuarioCelular').val(r.celular || '');
       $('#slcUsuarioPapel').val(r.papel || '');
       $('#txtUsuarioCPF').val(r.cgc || '');
-      $('#txtUsuarioValorHora').val(r.valor_hora || '');
-      $('#txtUsuarioValorDesloc').val(r.valor_desloc || '');
-      $('#txtUsuarioValorKM').val(r.valor_km || '');
-      $('#txtUsuarioSalarioBase').val(r.salario_base || '');
+
+      // Formata valores monetários: 150.00 → R$ 150,00
+      const formatMoneyValue = (value) => {
+        if (!value) return '';
+        const num = parseFloat(value);
+        return !isNaN(num) ? num.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}).replace('R$', '').trim() : '';
+      };
+
+      $('#txtUsuarioValorHora').val(formatMoneyValue(r.valor_hora)).trigger('input');
+      $('#txtUsuarioValorDesloc').val(formatMoneyValue(r.valor_desloc)).trigger('input');
+      $('#txtUsuarioValorKM').val(formatMoneyValue(r.valor_km)).trigger('input');
+      $('#txtUsuarioSalarioBase').val(formatMoneyValue(r.salario_base)).trigger('input');
 
       // habilita campos para edição
       $('#formUsuario input, #formUsuario select').prop('disabled', false);
