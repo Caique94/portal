@@ -189,7 +189,7 @@ class UserController extends Controller
             'slcUsuarioPapel'       => 'required|in:admin,consultor,financeiro',
             'txtUsuarioDataNasc'    => 'nullable|date_format:Y-m-d',
             'txtUsuarioCelular'     => 'nullable|string|max:20',
-            'txtUsuarioCPF'         => 'nullable|string|max:20|regex:/^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$/',
+            'txtUsuarioCPF'         => 'nullable|string|max:20',
             'txtUsuarioValorHora'   => 'nullable|numeric|min:0',
             'txtUsuarioValorDesloc' => 'nullable|numeric|min:0',
             'txtUsuarioValorKM'     => 'nullable|numeric|min:0',
@@ -241,7 +241,6 @@ class UserController extends Controller
             'slcUsuarioPapel.required' => 'O papel é obrigatório',
             'slcUsuarioPapel.in'       => 'O papel deve ser admin, consultor ou financeiro',
             'txtUsuarioDataNasc.date_format' => 'A data deve estar no formato YYYY-MM-DD',
-            'txtUsuarioCPF.regex'      => 'O CPF deve estar no formato XXX.XXX.XXX-XX ou conter 11 dígitos',
         ];
     }
 
@@ -259,6 +258,13 @@ class UserController extends Controller
 
         // Limpar CPF (remover máscara)
         $cpf = CpfHelper::clean($data['txtUsuarioCPF'] ?? null);
+
+        // Validar CPF se preenchido
+        if (!empty($cpf) && !CpfHelper::isValid($cpf)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'txtUsuarioCPF' => ['O CPF é inválido']
+            ]);
+        }
 
         $user = User::create([
             'name'     => $data['txtUsuarioNome'],
@@ -294,6 +300,13 @@ class UserController extends Controller
 
         // Limpar CPF (remover máscara)
         $cpf = !empty($data['txtUsuarioCPF']) ? CpfHelper::clean($data['txtUsuarioCPF']) : $user->cgc;
+
+        // Validar CPF se preenchido e diferente do anterior
+        if (!empty($data['txtUsuarioCPF']) && !empty($cpf) && !CpfHelper::isValid($cpf)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'txtUsuarioCPF' => ['O CPF é inválido']
+            ]);
+        }
 
         $user->update([
             'name'     => $data['txtUsuarioNome'],
