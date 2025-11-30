@@ -1,0 +1,174 @@
+╔════════════════════════════════════════════════════════════════════╗
+║          TESTE RÁPIDO - CAMPOS MONETÁRIOS (5 MINUTOS)              ║
+╚════════════════════════════════════════════════════════════════════╝
+
+📍 OBJETIVO: Validar que campos monetários funcionam corretamente
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 PASSO 1: CRIAR USUÁRIO COM VALORES MONETÁRIOS
+─────────────────────────────────────────────────
+
+1. Abrir: http://localhost:8000/cadastros/usuarios
+2. Clicar em "Adicionar"
+3. Preencher:
+   ✓ Nome:              João Silva
+   ✓ Data Nasc:         1990-01-15
+   ✓ Email:             joao@example.com
+   ✓ Celular:           (11) 98765-4321
+   ✓ Papel:             Consultor
+   ✓ CPF:               12345678909
+
+   ✓ Valor Hora:        150,00
+   ✓ Valor Desloc.:     50,50
+   ✓ Valor KM:          3,50
+   ✓ Salário Base:      3.500,00
+
+4. Clicar "Salvar"
+
+RESULTADO ESPERADO:
+  ✅ Mensagem: "Usuário criado com sucesso"
+  ✅ Modal fecha
+  ✅ Tabela atualiza
+
+RESULTADO OBTIDO:
+  ☐ Passou    ☐ Falhou
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 PASSO 2: VERIFICAR DADOS NA TABELA
+─────────────────────────────────────
+
+Na tabela de usuários, procurar pela linha do "João Silva"
+
+RESULTADO ESPERADO:
+  ✅ Nome: João Silva aparece
+  ✅ Email: joao@example.com aparece
+  ✅ CPF: 123.456.789-09 aparece (formatado)
+
+RESULTADO OBTIDO:
+  ☐ Passou    ☐ Falhou
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✏️ PASSO 3: EDITAR E VERIFICAR FORMATAÇÃO
+──────────────────────────────────────────
+
+1. Na tabela, clicar em "Editar" (ícone lápis) da linha do João Silva
+2. Modal abre com "Editar Usuário"
+3. Verificar campos monetários
+
+RESULTADO ESPERADO (⚠️ CRÍTICO):
+  ✅ Valor Hora:        150,00        (COM VÍRGULA - NÃO "150.00")
+  ✅ Valor Desloc.:     50,50         (COM VÍRGULA - NÃO "50.5")
+  ✅ Valor KM:          3,50          (COM VÍRGULA - NÃO "3.5")
+  ✅ Salário Base:      3.500,00      (COM PONTO - NÃO "3500.00")
+
+⚠️ SE VIRE: "150.00" em vez de "150,00" → ERRO! trigger('input') falhou
+
+RESULTADO OBTIDO:
+  ☐ Passou    ☐ Falhou
+
+  Se falhou, verificar console (F12):
+  $ $('.money').mask('...') — Deve retornar função válida
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💾 PASSO 4: MODIFICAR E SALVAR
+───────────────────────────────
+
+1. Alterar "Valor Hora" de 150,00 para 200,00
+2. Alterar "Valor Desloc." de 50,50 para 75,25
+3. Clicar "Salvar"
+
+RESULTADO ESPERADO:
+  ✅ Mensagem: "Usuário atualizado com sucesso"
+  ✅ Modal fecha
+  ✅ Tabela atualiza
+
+RESULTADO OBTIDO:
+  ☐ Passou    ☐ Falhou
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 PASSO 5: REABRIRCAO PARA VERIFICAR PERSISTÊNCIA
+────────────────────────────────────────────────────
+
+1. Clicar em "Editar" novamente para o mesmo usuário
+2. Verificar valores atualizados
+
+RESULTADO ESPERADO:
+  ✅ Valor Hora:        200,00        (novo valor, formatado)
+  ✅ Valor Desloc.:     75,25         (novo valor, formatado)
+
+RESULTADO OBTIDO:
+  ☐ Passou    ☐ Falhou
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 RESUMO DOS TESTES
+────────────────────
+
+┌─────────────────────────┬──────────┬──────────┐
+│ Teste                   │ Passou   │ Falhou   │
+├─────────────────────────┼──────────┼──────────┤
+│ 1. Criar com monetários │ ☐        │ ☐        │
+│ 2. Verificar tabela     │ ☐        │ ☐        │
+│ 3. Editar e formatar    │ ☐        │ ☐        │
+│ 4. Atualizar valores    │ ☐        │ ☐        │
+│ 5. Verificar persistência │ ☐      │ ☐        │
+└─────────────────────────┴──────────┴──────────┘
+
+TOTAL: 5/5 TESTES DEVEM PASSAR ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ SE ALGO DEU ERRADO
+─────────────────────
+
+Erro 1: Valores sem formatação na edição (150.00 em vez de 150,00)
+├─ Abrir DevTools (F12)
+├─ Console: typeof $.fn.mask
+├─ Deve retornar: "function"
+└─ Se retornar "undefined": jQuery Mask não carregou
+
+Erro 2: Erro 422 ao salvar
+├─ Abrir DevTools (F12) → Network → Selecionar request "salvar-usuario"
+├─ Ir para "Response" ou "Preview"
+├─ Procurar por: "O campo deve ser um número"
+└─ Significa: Sanitização falhou
+
+Erro 3: Valores não aparecem na tabela
+├─ Verificar console por erros (F12 → Console)
+├─ Fazer refresh (F5)
+└─ Verificar se criou o usuário mesmo
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SUCESSO!
+
+Se todos os 5 passos passarem com ✅:
+
+  ✅ Campos monetários funcionam corretamente
+  ✅ Pronto para testes de QA
+  ✅ Pronto para staging
+  ✅ Pronto para produção
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTAÇÃO DISPONÍVEL
+
+• TESTE_CAMPOS_MONETARIOS.md
+  └─ Testes detalhados (A-F) e troubleshooting completo
+
+• RESUMO_CAMPOS_MONETARIOS_FINAL.md
+  └─ Explicação técnica completa da implementação
+
+• CORRECAO_VALORES_MONETARIOS.md
+  └─ Detalhes do processo de conversão
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Data: 30 de Novembro de 2025
+Status: ✅ PRONTO PARA TESTE
+Tempo estimado: 5-10 minutos
