@@ -20,6 +20,7 @@
 
 @push('scripts')
 <script src="{{ asset('plugins/datatables/datatables.min.js') }}"></script>
+<script src="{{ asset('js/validators/cpf-validator.js') }}"></script>
 <script src="{{ asset('js/cadastros/usuarios.js') }}"></script>
 @endpush
 
@@ -89,8 +90,8 @@
                         </div>
                         <div class="row">
                             <div class="form-floating mb-3 col-md-3">
-                                <input type="text" name="txtUsuarioCGC" id="txtUsuarioCGC" class="form-control cpf-cnpj" placeholder="CPF/CNPJ" />
-                                <label for="txtUsuarioCGC">CPF/CNPJ</label>
+                                <input type="text" name="txtUsuarioCPF" id="txtUsuarioCPF" class="form-control cpf" placeholder="CPF" />
+                                <label for="txtUsuarioCPF">CPF</label>
                             </div>
                             <div class="form-floating mb-3 col-md-2">
                                 <input type="text" name="txtUsuarioValorHora" id="txtUsuarioValorHora" class="form-control money" placeholder="Valor Hora" />

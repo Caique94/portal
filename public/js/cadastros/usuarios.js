@@ -43,7 +43,7 @@ $(function () {
       { title: 'Nome',      data: 'name',    defaultContent: '' },
       { title: 'Email',     data: 'email',   defaultContent: '' },
       { title: 'Celular',   data: 'celular', className: 'dt-center', orderable: false, width: '150px', defaultContent: '' },
-      { title: 'CPF/CNPJ',  data: 'cgc',     className: 'dt-center', orderable: false, width: '150px', defaultContent: '' },
+      { title: 'CPF',       data: 'cgc',     className: 'dt-center', orderable: false, width: '150px', defaultContent: '' },
       {
         title: 'Ativo',
         data: 'ativo',
@@ -139,7 +139,7 @@ $(function () {
       $('#txtUsuarioEmail').val(r.email || '');
       $('#txtUsuarioCelular').val(r.celular || '');
       $('#slcUsuarioPapel').val(r.papel || '');
-      $('#txtUsuarioCGC').val(r.cgc || '');
+      $('#txtUsuarioCPF').val(r.cgc || '');
       $('#txtUsuarioValorHora').val(r.valor_hora || '');
       $('#txtUsuarioValorDesloc').val(r.valor_desloc || '');
       $('#txtUsuarioValorKM').val(r.valor_km || '');
@@ -169,7 +169,7 @@ $(function () {
       $('#txtUsuarioEmail').val(r.email || '');
       $('#txtUsuarioCelular').val(r.celular || '');
       $('#slcUsuarioPapel').val(r.papel || '');
-      $('#txtUsuarioCGC').val(r.cgc || '');
+      $('#txtUsuarioCPF').val(r.cgc || '');
       $('#txtUsuarioValorHora').val(r.valor_hora || '');
       $('#txtUsuarioValorDesloc').val(r.valor_desloc || '');
       $('#txtUsuarioValorKM').val(r.valor_km || '');
@@ -236,8 +236,12 @@ $(function () {
     const jsonData = {};
 
     formData.forEach((value, key) => {
+      // ✅ SANITIZAR CPF: remover máscara (deixar só números)
+      if (key === 'txtUsuarioCPF' && value) {
+        jsonData[key] = value.replace(/\D/g, '');
+      }
       // ✅ SANITIZAR CNPJ: remover máscara (deixar só números)
-      if (key === 'txtPJCNPJ' && value) {
+      else if (key === 'txtPJCNPJ' && value) {
         jsonData[key] = value.replace(/\D/g, '');
       }
       // ✅ SANITIZAR CPF/CNPJ DO TITULAR: remover máscara

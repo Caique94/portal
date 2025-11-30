@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Mail\PasswordResetMail;
+use App\Helpers\CpfHelper;
 
 class UserController extends Controller
 {
@@ -188,7 +189,7 @@ class UserController extends Controller
             'slcUsuarioPapel'       => 'required|in:admin,consultor,financeiro',
             'txtUsuarioDataNasc'    => 'nullable|date_format:Y-m-d',
             'txtUsuarioCelular'     => 'nullable|string|max:20',
-            'txtUsuarioCGC'         => 'nullable|string|max:20',
+            'txtUsuarioCPF'         => 'nullable|string|max:20|regex:/^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$/',
             'txtUsuarioValorHora'   => 'nullable|numeric|min:0',
             'txtUsuarioValorDesloc' => 'nullable|numeric|min:0',
             'txtUsuarioValorKM'     => 'nullable|numeric|min:0',
@@ -240,6 +241,7 @@ class UserController extends Controller
             'slcUsuarioPapel.required' => 'O papel é obrigatório',
             'slcUsuarioPapel.in'       => 'O papel deve ser admin, consultor ou financeiro',
             'txtUsuarioDataNasc.date_format' => 'A data deve estar no formato YYYY-MM-DD',
+            'txtUsuarioCPF.regex'      => 'O CPF deve estar no formato XXX.XXX.XXX-XX ou conter 11 dígitos',
         ];
     }
 
@@ -255,6 +257,9 @@ class UserController extends Controller
             $senha = substr(uniqid(), 0, 8);
         }
 
+        // Limpar CPF (remover máscara)
+        $cpf = CpfHelper::clean($data['txtUsuarioCPF'] ?? null);
+
         $user = User::create([
             'name'     => $data['txtUsuarioNome'],
             'email'    => $data['txtUsuarioEmail'],
@@ -262,7 +267,7 @@ class UserController extends Controller
             'papel'    => $data['slcUsuarioPapel'],
             'ativo'    => true,
             'data_nasc' => $data['txtUsuarioDataNasc'] ?? null,
-            'cgc'      => $data['txtUsuarioCGC'] ?? null,
+            'cgc'      => $cpf,
             'celular'  => $data['txtUsuarioCelular'] ?? null,
             'valor_hora' => $data['txtUsuarioValorHora'] ?? '0.00',
             'valor_desloc' => $data['txtUsuarioValorDesloc'] ?? '0.00',
@@ -273,6 +278,7 @@ class UserController extends Controller
         \Log::info('Novo usuário criado', [
             'userId' => $user->id,
             'email' => $user->email,
+            'cpf' => $cpf,
             'senha_provisoria' => $senha
         ]);
 
@@ -286,12 +292,15 @@ class UserController extends Controller
     {
         $user = User::findOrFail($userId);
 
+        // Limpar CPF (remover máscara)
+        $cpf = !empty($data['txtUsuarioCPF']) ? CpfHelper::clean($data['txtUsuarioCPF']) : $user->cgc;
+
         $user->update([
             'name'     => $data['txtUsuarioNome'],
             'email'    => $data['txtUsuarioEmail'],
             'papel'    => $data['slcUsuarioPapel'],
             'data_nasc' => $data['txtUsuarioDataNasc'] ?? $user->data_nasc,
-            'cgc'      => $data['txtUsuarioCGC'] ?? $user->cgc,
+            'cgc'      => $cpf,
             'celular'  => $data['txtUsuarioCelular'] ?? $user->celular,
             'valor_hora' => $data['txtUsuarioValorHora'] ?? $user->valor_hora,
             'valor_desloc' => $data['txtUsuarioValorDesloc'] ?? $user->valor_desloc,
@@ -301,7 +310,8 @@ class UserController extends Controller
 
         \Log::info('Usuário atualizado', [
             'userId' => $user->id,
-            'email' => $user->email
+            'email' => $user->email,
+            'cpf' => $cpf
         ]);
 
         return $user;
