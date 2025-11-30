@@ -133,13 +133,13 @@ $(function () {
       }
       $('#usuario_id').val(r.id || '');
 
-      // preenche campos
+      // ===== ABA 1: DADOS PESSOAIS =====
       $('#txtUsuarioNome').val(r.name || '');
       $('#txtUsuarioDataNasc').val(r.data_nasc || '');
       $('#txtUsuarioEmail').val(r.email || '');
-      $('#txtUsuarioCelular').val(r.celular || '');
+      $('#txtUsuarioCelular').val(r.celular || '').trigger('input');
       $('#slcUsuarioPapel').val(r.papel || '');
-      $('#txtUsuarioCPF').val(r.cgc || '');
+      $('#txtUsuarioCPF').val(r.cgc || '').trigger('input');
 
       // Formata valores monetários: 150.00 → R$ 150,00
       const formatMoneyValue = (value) => {
@@ -152,6 +152,34 @@ $(function () {
       $('#txtUsuarioValorDesloc').val(formatMoneyValue(r.valor_desloc)).trigger('input');
       $('#txtUsuarioValorKM').val(formatMoneyValue(r.valor_km)).trigger('input');
       $('#txtUsuarioSalarioBase').val(formatMoneyValue(r.salario_base)).trigger('input');
+
+      // ===== ABA 2: PESSOA JURÍDICA =====
+      $('#txtPJCNPJ').val(r.cnpj || '').trigger('input');
+      $('#txtPJRazaoSocial').val(r.razao_social || '');
+      $('#txtPJNomeFantasia').val(r.nome_fantasia || '');
+      $('#txtPJInscricaoEstadual').val(r.inscricao_estadual || '');
+      $('#txtPJInscricaoMunicipal').val(r.inscricao_municipal || '');
+      $('#txtPJEndereco').val(r.endereco || '');
+      $('#txtPJNumero').val(r.numero || '');
+      $('#txtPJComplemento').val(r.complemento || '');
+      $('#txtPJBairro').val(r.bairro || '');
+      $('#txtPJCidade').val(r.cidade || '');
+      $('#slcPJEstado').val(r.estado || '');
+      $('#txtPJCEP').val(r.cep || '').trigger('input');
+      $('#txtPJTelefone').val(r.telefone || '').trigger('input');
+      $('#txtPJEmail').val(r.email_pj || '');
+      $('#txtPJSite').val(r.site || '');
+      $('#txtPJRamoAtividade').val(r.ramo_atividade || '');
+      $('#txtPJDataConstituicao').val(r.data_constituicao || '');
+
+      // ===== ABA 3: DADOS DE PAGAMENTO =====
+      $('#txtPagTitularConta').val(r.titular_conta || '');
+      $('#txtPagCpfCnpjTitular').val(r.cpf_cnpj_titular || '').trigger('input');
+      $('#txtPagBanco').val(r.banco || '');
+      $('#txtPagAgencia').val(r.agencia || '');
+      $('#txtPagConta').val(r.conta || '');
+      $('#slcPagTipoConta').val(r.tipo_conta || '');
+      $('#txtPagPixKey').val(r.pix_key || '');
 
       // desabilita todos os campos e o botão salvar
       $('#formUsuario input, #formUsuario select').prop('disabled', true);
@@ -171,13 +199,13 @@ $(function () {
       }
       $('#usuario_id').val(r.id || '');
 
-      // preenche campos
+      // ===== ABA 1: DADOS PESSOAIS =====
       $('#txtUsuarioNome').val(r.name || '');
       $('#txtUsuarioDataNasc').val(r.data_nasc || '');
       $('#txtUsuarioEmail').val(r.email || '');
-      $('#txtUsuarioCelular').val(r.celular || '');
+      $('#txtUsuarioCelular').val(r.celular || '').trigger('input');
       $('#slcUsuarioPapel').val(r.papel || '');
-      $('#txtUsuarioCPF').val(r.cgc || '');
+      $('#txtUsuarioCPF').val(r.cgc || '').trigger('input');
 
       // Formata valores monetários: 150.00 → R$ 150,00
       const formatMoneyValue = (value) => {
@@ -190,6 +218,34 @@ $(function () {
       $('#txtUsuarioValorDesloc').val(formatMoneyValue(r.valor_desloc)).trigger('input');
       $('#txtUsuarioValorKM').val(formatMoneyValue(r.valor_km)).trigger('input');
       $('#txtUsuarioSalarioBase').val(formatMoneyValue(r.salario_base)).trigger('input');
+
+      // ===== ABA 2: PESSOA JURÍDICA =====
+      $('#txtPJCNPJ').val(r.cnpj || '').trigger('input');
+      $('#txtPJRazaoSocial').val(r.razao_social || '');
+      $('#txtPJNomeFantasia').val(r.nome_fantasia || '');
+      $('#txtPJInscricaoEstadual').val(r.inscricao_estadual || '');
+      $('#txtPJInscricaoMunicipal').val(r.inscricao_municipal || '');
+      $('#txtPJEndereco').val(r.endereco || '');
+      $('#txtPJNumero').val(r.numero || '');
+      $('#txtPJComplemento').val(r.complemento || '');
+      $('#txtPJBairro').val(r.bairro || '');
+      $('#txtPJCidade').val(r.cidade || '');
+      $('#slcPJEstado').val(r.estado || '');
+      $('#txtPJCEP').val(r.cep || '').trigger('input');
+      $('#txtPJTelefone').val(r.telefone || '').trigger('input');
+      $('#txtPJEmail').val(r.email_pj || '');
+      $('#txtPJSite').val(r.site || '');
+      $('#txtPJRamoAtividade').val(r.ramo_atividade || '');
+      $('#txtPJDataConstituicao').val(r.data_constituicao || '');
+
+      // ===== ABA 3: DADOS DE PAGAMENTO =====
+      $('#txtPagTitularConta').val(r.titular_conta || '');
+      $('#txtPagCpfCnpjTitular').val(r.cpf_cnpj_titular || '').trigger('input');
+      $('#txtPagBanco').val(r.banco || '');
+      $('#txtPagAgencia').val(r.agencia || '');
+      $('#txtPagConta').val(r.conta || '');
+      $('#slcPagTipoConta').val(r.tipo_conta || '');
+      $('#txtPagPixKey').val(r.pix_key || '');
 
       // habilita campos para edição
       $('#formUsuario input, #formUsuario select').prop('disabled', false);
