@@ -256,11 +256,15 @@ $(function () {
       else if (key === 'txtPJTelefone' && value) {
         jsonData[key] = value.replace(/\D/g, '');
       }
-      // ✅ SANITIZAR VALORES MONETÁRIOS: remover máscara
+      // ✅ SANITIZAR VALORES MONETÁRIOS: remover máscara e converter para número válido
       else if ((key === 'txtUsuarioValorHora' || key === 'txtUsuarioValorDesloc' ||
                 key === 'txtUsuarioValorKM' || key === 'txtUsuarioSalarioBase') && value) {
-        // Remove máscara de moeda: R$ 1.234,56 → 1234.56
-        jsonData[key] = value.replace(/[^\d,]/g, '').replace(',', '.');
+        // Remove máscara de moeda: "R$ 1.250,56" → "1250.56"
+        // E converte para número decimal válido
+        const cleanValue = value.replace(/[^\d,]/g, '').replace(',', '.');
+        const numericValue = parseFloat(cleanValue);
+        // Se for um número válido, formata com 2 casas decimais, senão deixa vazio
+        jsonData[key] = !isNaN(numericValue) && cleanValue ? numericValue.toFixed(2) : '';
       }
       // ✅ SANITIZAR CPF/CNPJ DO TITULAR: remover máscara
       else if (key === 'txtPagCpfCnpjTitular' && value) {
