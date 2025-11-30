@@ -452,30 +452,112 @@ public function changePassword(\Illuminate\Http\Request $r)
     // DataTables: retorna JSON e ignora colunas inexistentes
     public function list()
     {
-        // colunas base sempre seguras
-        $cols = ['id','name','email'];
-        // opcionais (só adiciona se existirem)
-        foreach (['papel','cgc','celular','ativo','valor_hora','valor_desloc','valor_km','salario_base','data_nasc','created_at'] as $c) {
-            if (Schema::hasColumn('users', $c)) $cols[] = $c;
-        }
+        // ===== CARREGA TODOS OS 34 CAMPOS =====
+        // 10 da ABA 1 (users) + 17 da ABA 2 (pessoa_juridica_usuarios) + 7 da ABA 3 (pagamento_usuarios)
 
-        $rows = User::query()->select($cols)->get()->map(function (User $u) {
-            return [
-                'id'            => (int)$u->id,
-                'name'          => (string)($u->name ?? ''),
-                'email'         => (string)($u->email ?? ''),
-                'papel'         => (string)($u->papel ?? ''),
-                'cgc'           => (string)($u->cgc ?? ''),
-                'celular'       => (string)($u->celular ?? ''),
-                'ativo'         => (bool)($u->ativo ?? false),
-                'valor_hora'    => isset($u->valor_hora)    ? (string)$u->valor_hora    : '0.00',
-                'valor_desloc'  => isset($u->valor_desloc)  ? (string)$u->valor_desloc  : '0.00',
-                'valor_km'      => isset($u->valor_km)      ? (string)$u->valor_km      : '0.00',
-                'salario_base'  => isset($u->salario_base)  ? (string)$u->salario_base  : '0.00',
-                'data_nasc'     => method_exists($u, 'getAttribute') && $u->data_nasc ? $u->data_nasc->format('Y-m-d') : '',
-                'created_at'    => $u->created_at ? $u->created_at->toDateTimeString() : '',
-            ];
-        })->values()->all();
+        $rows = User::query()
+            // LEFT JOIN com Pessoa Jurídica
+            ->leftJoin('pessoa_juridica_usuarios', 'users.id', '=', 'pessoa_juridica_usuarios.user_id')
+            // LEFT JOIN com Pagamento
+            ->leftJoin('pagamento_usuarios', 'users.id', '=', 'pagamento_usuarios.user_id')
+            // SELECT de todos os 34 campos
+            ->select(
+                // ===== ABA 1: Dados Pessoais (10 campos) =====
+                'users.id',
+                'users.name',
+                'users.email',
+                'users.celular',
+                'users.papel',
+                'users.cgc',
+                'users.valor_hora',
+                'users.valor_desloc',
+                'users.valor_km',
+                'users.salario_base',
+                'users.data_nasc',
+
+                // ===== ABA 2: Pessoa Jurídica (17 campos) =====
+                'pessoa_juridica_usuarios.cnpj',
+                'pessoa_juridica_usuarios.razao_social',
+                'pessoa_juridica_usuarios.nome_fantasia',
+                'pessoa_juridica_usuarios.inscricao_estadual',
+                'pessoa_juridica_usuarios.inscricao_municipal',
+                'pessoa_juridica_usuarios.endereco',
+                'pessoa_juridica_usuarios.numero',
+                'pessoa_juridica_usuarios.complemento',
+                'pessoa_juridica_usuarios.bairro',
+                'pessoa_juridica_usuarios.cidade',
+                'pessoa_juridica_usuarios.estado',
+                'pessoa_juridica_usuarios.cep',
+                'pessoa_juridica_usuarios.telefone',
+                DB::raw('pessoa_juridica_usuarios.email as email_pj'),
+                'pessoa_juridica_usuarios.site',
+                'pessoa_juridica_usuarios.ramo_atividade',
+                'pessoa_juridica_usuarios.data_constituicao',
+
+                // ===== ABA 3: Dados de Pagamento (7 campos) =====
+                'pagamento_usuarios.titular_conta',
+                'pagamento_usuarios.cpf_cnpj_titular',
+                'pagamento_usuarios.banco',
+                'pagamento_usuarios.agencia',
+                'pagamento_usuarios.conta',
+                'pagamento_usuarios.tipo_conta',
+                'pagamento_usuarios.pix_key',
+
+                // Campos adicionais
+                'users.ativo',
+                'users.created_at'
+            )
+            ->get()
+            ->map(function ($u) {
+                return [
+                    // ===== ABA 1: Dados Pessoais =====
+                    'id'                      => (int)$u->id,
+                    'name'                    => (string)($u->name ?? ''),
+                    'email'                   => (string)($u->email ?? ''),
+                    'data_nasc'               => (string)($u->data_nasc ?? ''),
+                    'celular'                 => (string)($u->celular ?? ''),
+                    'papel'                   => (string)($u->papel ?? ''),
+                    'cgc'                     => (string)($u->cgc ?? ''),
+                    'valor_hora'              => isset($u->valor_hora)    ? (string)$u->valor_hora    : '',
+                    'valor_desloc'            => isset($u->valor_desloc)  ? (string)$u->valor_desloc  : '',
+                    'valor_km'                => isset($u->valor_km)      ? (string)$u->valor_km      : '',
+                    'salario_base'            => isset($u->salario_base)  ? (string)$u->salario_base  : '',
+
+                    // ===== ABA 2: Pessoa Jurídica =====
+                    'cnpj'                    => (string)($u->cnpj ?? ''),
+                    'razao_social'            => (string)($u->razao_social ?? ''),
+                    'nome_fantasia'           => (string)($u->nome_fantasia ?? ''),
+                    'inscricao_estadual'      => (string)($u->inscricao_estadual ?? ''),
+                    'inscricao_municipal'     => (string)($u->inscricao_municipal ?? ''),
+                    'endereco'                => (string)($u->endereco ?? ''),
+                    'numero'                  => (string)($u->numero ?? ''),
+                    'complemento'             => (string)($u->complemento ?? ''),
+                    'bairro'                  => (string)($u->bairro ?? ''),
+                    'cidade'                  => (string)($u->cidade ?? ''),
+                    'estado'                  => (string)($u->estado ?? ''),
+                    'cep'                     => (string)($u->cep ?? ''),
+                    'telefone'                => (string)($u->telefone ?? ''),
+                    'email_pj'                => (string)($u->email_pj ?? ''),
+                    'site'                    => (string)($u->site ?? ''),
+                    'ramo_atividade'          => (string)($u->ramo_atividade ?? ''),
+                    'data_constituicao'       => (string)($u->data_constituicao ?? ''),
+
+                    // ===== ABA 3: Dados de Pagamento =====
+                    'titular_conta'           => (string)($u->titular_conta ?? ''),
+                    'cpf_cnpj_titular'        => (string)($u->cpf_cnpj_titular ?? ''),
+                    'banco'                   => (string)($u->banco ?? ''),
+                    'agencia'                 => (string)($u->agencia ?? ''),
+                    'conta'                   => (string)($u->conta ?? ''),
+                    'tipo_conta'              => (string)($u->tipo_conta ?? ''),
+                    'pix_key'                 => (string)($u->pix_key ?? ''),
+
+                    // Campos adicionais
+                    'ativo'                   => (bool)($u->ativo ?? false),
+                    'created_at'              => $u->created_at ? $u->created_at->toDateTimeString() : '',
+                ];
+            })
+            ->values()
+            ->all();
 
         return response()->json(['data' => $rows], 200, ['Content-Type' => 'application/json; charset=utf-8']);
     }
