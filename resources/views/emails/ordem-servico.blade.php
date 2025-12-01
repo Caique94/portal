@@ -72,16 +72,10 @@
     <td>
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 20px;">
         <tr>
-          <td style="flex: 1; width: 33.33%;">
-            <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec" style="height: 50px; width: auto; vertical-align: middle;">
-            <span style="display: inline-block; font-size: 13px; font-weight: bold; margin-left: 10px;">
-              Personalitec<br><small style="font-size: 10px; opacity: 0.95;">Sua visão, nossa tecnologia</small>
-            </span>
-          </td>
-          <td style="flex: 2; width: 33.33%; text-align: center;">
+          <td style="flex: 1; text-align: center;">
             <h2 style="font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 1px;">ORDEM DE ATENDIMENTO</h2>
           </td>
-          <td style="width: 33.33%; text-align: right;">
+          <td style="width: 150px; text-align: right;">
             <table cellpadding="0" cellspacing="0" border="0" style="background-color: #0A5FA6; border-radius: 6px; padding: 12px 18px; margin-left: auto; min-width: 100px;">
               <tr>
                 <td style="text-align: center; font-size: 10px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9; display: block;">NUMERO</td>
@@ -226,10 +220,10 @@
               </tr>
             </table>
 
-            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%);">
               <tr>
                 <td width="70%" style="vertical-align: middle;"></td>
-                <td width="30%" style="text-align: center; padding: 10px;">
+                <td width="30%" style="text-align: center; padding: 20px;">
                   <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec" style="max-width: 180px; height: auto;">
                 </td>
               </tr>
