@@ -145,7 +145,18 @@
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_final ?? '00:00' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}</td>
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->deslocamento ? 'R$ ' . number_format($ordemServico->deslocamento, 2, ',', '.') : '--' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">
+                  @php
+                    // Calcula valor do traslado: deslocamento (horas) × valor_hora do consultor
+                    $valor_traslado = 0;
+                    if ($ordemServico->deslocamento && $ordemServico->consultor) {
+                      $deslocamento_horas = floatval($ordemServico->deslocamento);
+                      $valor_hora_consultor = floatval($ordemServico->consultor->valor_hora ?? 0);
+                      $valor_traslado = $deslocamento_horas * $valor_hora_consultor;
+                    }
+                  @endphp
+                  {{ $valor_traslado > 0 ? 'R$ ' . number_format($valor_traslado, 2, ',', '.') : '--' }}
+                </td>
                 <td style="padding: 10px 5px; text-align: center;">
                   @php
                     // Calcula total de horas: (hora_fim - hora_inicio - hora_desconto)
