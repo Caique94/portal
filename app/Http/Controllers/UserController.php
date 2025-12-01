@@ -66,11 +66,24 @@ class UserController extends Controller
                     $statusCode = 201;
                 }
 
-                // ===== 4.5 Salvar Pessoa Jurídica (sempre, mesmo que parcial) =====
+                // ===== 4.5 Salvar Pessoa Jurídica (apenas se todos os obrigatórios preenchidos) =====
                 try {
                     $pessoaJuridica = $this->validatePessoaJuridica($validated);
-                    // Salvar se houver algum dado preenchido
-                    if (!empty($pessoaJuridica['cnpj']) || !empty($pessoaJuridica['razao_social'])) {
+
+                    // Campos OBRIGATÓRIOS: cnpj, razao_social, endereco, numero, bairro, cidade, estado, cep, telefone, email
+                    $temTodosCamposObrigatorios =
+                        !empty($pessoaJuridica['cnpj']) &&
+                        !empty($pessoaJuridica['razao_social']) &&
+                        !empty($pessoaJuridica['endereco']) &&
+                        !empty($pessoaJuridica['numero']) &&
+                        !empty($pessoaJuridica['bairro']) &&
+                        !empty($pessoaJuridica['cidade']) &&
+                        !empty($pessoaJuridica['estado']) &&
+                        !empty($pessoaJuridica['cep']) &&
+                        !empty($pessoaJuridica['telefone']) &&
+                        !empty($pessoaJuridica['email']);
+
+                    if ($temTodosCamposObrigatorios) {
                         $pessoaJuridica['user_id'] = $user->id;
                         $user->pessoaJuridica()->updateOrCreate(
                             ['user_id' => $user->id],
@@ -79,6 +92,13 @@ class UserController extends Controller
                         \Log::info('Pessoa Jurídica salva com sucesso', [
                             'user_id' => $user->id,
                             'cnpj' => $pessoaJuridica['cnpj'] ?? 'vazio'
+                        ]);
+                    } else {
+                        \Log::info('Pessoa Jurídica não salva (faltam campos obrigatórios)', [
+                            'user_id' => $user->id,
+                            'cnpj' => $pessoaJuridica['cnpj'] ?? 'vazio',
+                            'razao_social' => $pessoaJuridica['razao_social'] ?? 'vazio',
+                            'estado' => $pessoaJuridica['estado'] ?? 'vazio'
                         ]);
                     }
                 } catch (\Exception $e) {
@@ -89,11 +109,18 @@ class UserController extends Controller
                     throw $e;
                 }
 
-                // ===== 4.6 Salvar Dados de Pagamento (sempre, mesmo que parcial) =====
+                // ===== 4.6 Salvar Dados de Pagamento (apenas se todos os obrigatórios preenchidos) =====
                 try {
                     $pagamento = $this->validatePagamento($validated);
-                    // Salvar se houver algum dado preenchido
-                    if (!empty($pagamento['titular_conta']) || !empty($pagamento['banco'])) {
+
+                    // Campos OBRIGATÓRIOS: titular_conta, banco, agencia, conta
+                    $temTodosCamposPagamento =
+                        !empty($pagamento['titular_conta']) &&
+                        !empty($pagamento['banco']) &&
+                        !empty($pagamento['agencia']) &&
+                        !empty($pagamento['conta']);
+
+                    if ($temTodosCamposPagamento) {
                         $pagamento['user_id'] = $user->id;
                         $user->pagamento()->updateOrCreate(
                             ['user_id' => $user->id],
@@ -102,6 +129,14 @@ class UserController extends Controller
                         \Log::info('Dados de Pagamento salvos com sucesso', [
                             'user_id' => $user->id,
                             'banco' => $pagamento['banco'] ?? 'vazio'
+                        ]);
+                    } else {
+                        \Log::info('Dados de Pagamento não salvos (faltam campos obrigatórios)', [
+                            'user_id' => $user->id,
+                            'titular_conta' => $pagamento['titular_conta'] ?? 'vazio',
+                            'banco' => $pagamento['banco'] ?? 'vazio',
+                            'agencia' => $pagamento['agencia'] ?? 'vazio',
+                            'conta' => $pagamento['conta'] ?? 'vazio'
                         ]);
                     }
                 } catch (\Exception $e) {
