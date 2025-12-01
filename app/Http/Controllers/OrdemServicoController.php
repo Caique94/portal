@@ -832,21 +832,36 @@ class OrdemServicoController extends Controller
                 'recipient' => 'required|in:consultor,cliente,ambos'
             ]);
 
-            // Executar reenvio
-            $action = new \App\Actions\ResendReportEmailAction(new \App\Services\ReportEmailService());
-            $result = $action->execute($os, $validated['recipient']);
+            // Executar reenvio usando novo serviço
+            $emailService = new OrdemServicoEmailService();
+            $recipient = $validated['recipient'];
 
-            if ($result['success']) {
+            $resultados = [
+                'consultor' => false,
+                'cliente' => false
+            ];
+
+            if ($recipient === 'consultor' || $recipient === 'ambos') {
+                $resultados['consultor'] = $emailService->enviarParaConsultor($os);
+            }
+
+            if ($recipient === 'cliente' || $recipient === 'ambos') {
+                $resultados['cliente'] = $emailService->enviarParaCliente($os);
+            }
+
+            $sucesso = array_filter($resultados);
+
+            if (!empty($sucesso)) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Email(s) reenviado(s) com sucesso',
-                    'result' => $result
+                    'result' => $resultados
                 ], 200);
             } else {
                 return response()->json([
                     'success' => false,
                     'message' => 'Erro ao reenviar email(s)',
-                    'result' => $result
+                    'result' => $resultados
                 ], 400);
             }
 
