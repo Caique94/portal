@@ -204,7 +204,7 @@
         </tr>
         <tr>
           <td style="padding: 16px;">
-            <!-- 4-Column Summary Table - 3 rows -->
+            <!-- 4-Column Summary Table - 2 rows -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px; background-color: #F2F2F2;">
               <!-- Row 1 -->
               <tr>
@@ -216,13 +216,13 @@
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 15px; font-weight: 600; width: 25%;">
                   {{ $ordemServico->nr_atendimento ?? $ordemServico->id }}
                 </td>
-                <!-- Column 3: Previsão Retorno (2-line label) -->
+                <!-- Column 3: Data de Emissão (2-line label) -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 500; width: 25%;">
-                  Previsão<br>Retorno
+                  Data de<br>Emissão
                 </td>
-                <!-- Column 4: Date Value -->
+                <!-- Column 4: Data de Emissão Value -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
-                  {{ $ordemServico->updated_at ? \Carbon\Carbon::parse($ordemServico->updated_at)->addDay()->format('d/m/Y') : '--' }}
+                  {{ $ordemServico->data_emissao ? \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') : '--' }}
                 </td>
               </tr>
               <!-- Row 2 -->
@@ -242,40 +242,6 @@
                 <!-- Column 4: TOTAL OS Value -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 700;">
                   {{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}
-                </td>
-              </tr>
-              <!-- Row 3: Total Horas -->
-              <tr>
-                <!-- Column 1: TOTAL HORAS Label -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 700; width: 25%;">
-                  TOTAL<br>DE HORAS
-                </td>
-                <!-- Column 2: TOTAL HORAS Value -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; font-weight: 700; width: 25%;">
-                  @php
-                    $resumo_total_horas = 0;
-                    if ($ordemServico->hora_inicio && $ordemServico->hora_final) {
-                      $inicio = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_inicio);
-                      $fim = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_final);
-                      $total_minutos = $fim->diffInMinutes($inicio);
-
-                      if ($ordemServico->hora_desconto) {
-                        list($desc_h, $desc_m) = explode(':', $ordemServico->hora_desconto);
-                        $desconto_minutos = intval($desc_h) * 60 + intval($desc_m);
-                        $total_minutos -= $desconto_minutos;
-                      }
-
-                      $resumo_total_horas = max(0, round($total_minutos / 60, 2));
-                    }
-                  @endphp
-                  {{ number_format($resumo_total_horas, 2, '.', '') }}
-                </td>
-                <!-- Column 3 & 4: Empty cells for alignment -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; width: 25%;">
-                  &nbsp;
-                </td>
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
-                  &nbsp;
                 </td>
               </tr>
             </table>
