@@ -4,157 +4,216 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Ordem de Serviço #{{ $ordemServico->id }}</title>
-  <style>
-    :root{
-      --blue-primary:#2E7DA8; --blue-light:#5B9FBF; --blue-accent:#0A5FA6; --bg-light:#F5F8FA; --bg:#ffffff; --text-dark:#1F3A56; --text-light:#556B7E;
-      --radius:6px; --gap:16px; --max-w:1000px;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;background:#EFEFEF;color:var(--text-dark);padding:15px}
+  <style type="text/css">
+    body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f5f5f5; }
+    .container { max-width: 980px; margin: 0 auto; background-color: #ffffff; border-collapse: collapse; }
+    .header { background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%); padding: 20px; color: white; text-align: left; }
+    .header-content { display: flex; justify-content: space-between; align-items: center; }
+    .logo-section { flex: 1; }
+    .logo-section img { height: 50px; margin-right: 15px; }
+    .logo-text { display: inline-block; font-size: 13px; font-weight: bold; }
+    .logo-text small { display: block; font-size: 10px; opacity: 0.95; }
+    .title { flex: 2; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 1px; }
+    .numero-box { background-color: #0A5FA6; padding: 12px 18px; border-radius: 6px; min-width: 100px; text-align: center; }
+    .numero-label { font-size: 10px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9; }
+    .numero-valor { font-size: 18px; font-weight: bold; margin-top: 5px; }
 
-    .paper{max-width:var(--max-w);margin:0 auto;background:var(--bg);border-radius:0;border:none;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)}
+    .main-content { padding: 25px 20px; }
+    .row-2col { display: flex; gap: 20px; margin-bottom: 25px; }
+    .col { flex: 1; }
 
-    .header{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 20px;background:linear-gradient(135deg,var(--blue-primary) 0%,var(--blue-light) 100%);color:#fff}
-    .header .brand{display:flex;align-items:center;gap:12px;flex:1}
-    .brand img{height:48px;width:auto}
-    .brand .tag{font-size:12px;line-height:1.2;font-weight:600;color:#fff}
-    .brand .tag small{display:block;font-size:10px;opacity:0.95}
-    .title{flex:2;text-align:center;font-size:28px;font-weight:700;letter-spacing:0.5px}
-    .num{background:var(--blue-accent);padding:10px 16px;border-radius:var(--radius);text-align:center;min-width:100px}
-    .num small{display:block;font-size:10px;letter-spacing:0.5px;opacity:0.9;font-weight:600}
-    .num strong{display:block;font-size:18px;font-weight:700;margin-top:3px}
+    .client-box { background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; }
+    .client-row { display: flex; margin: 10px 0; font-size: 13px; line-height: 1.5; }
+    .client-label { font-weight: bold; color: #0A5FA6; min-width: 100px; }
+    .client-value { color: #1F3A56; flex: 1; }
 
-    .main{padding:20px}
-    .content-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+    .times-box { background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; overflow: hidden; }
+    .times-header { background-color: #2E7DA8; color: white; display: flex; text-align: center; font-weight: bold; font-size: 11px; }
+    .times-header div { flex: 1; padding: 12px 5px; border-right: 1px solid #5B9FBF; }
+    .times-header div:last-child { border-right: none; }
+    .times-body { display: flex; text-align: center; padding: 12px 5px; font-weight: 600; font-size: 13px; color: #1F3A56; }
+    .times-body div { flex: 1; border-right: 1px solid #E0E8F0; padding: 5px; }
+    .times-body div:last-child { border-right: none; }
 
-    .client-box{background:var(--bg-light);padding:16px;border-radius:var(--radius);border:1px solid #E0E8F0}
-    .client-box .row{display:flex;gap:10px;margin:8px 0;font-size:13px;line-height:1.4}
-    .client-box .label{font-weight:700;color:var(--blue-accent);min-width:90px;flex-shrink:0}
-    .client-box .value{color:var(--text-dark);flex:1}
+    .section-title { background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px; }
+    .detail-box { background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; line-height: 1.6; color: #1F3A56; font-size: 13px; text-align: justify; }
 
-    .times-box{background:var(--bg-light);border:1px solid #E0E8F0;border-radius:var(--radius);overflow:hidden}
-    .times-head{display:grid;grid-template-columns:repeat(5,1fr);background:var(--blue-primary);color:#fff;padding:10px;font-weight:700;font-size:11px;text-align:center;gap:2px}
-    .times-head div{padding:4px 2px}
-    .times-body{display:grid;grid-template-columns:repeat(5,1fr);padding:10px;font-weight:600;font-size:13px;text-align:center;color:var(--text-dark);gap:2px}
-    .times-body div{padding:4px 2px}
+    .summary-box { background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; margin-top: 20px; overflow: hidden; }
+    .summary-title { background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px; }
+    .summary-content { display: flex; padding: 16px; gap: 20px; }
+    .summary-table { flex: 1; }
+    .summary-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .summary-table th { background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; }
+    .summary-table td { padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; }
+    .summary-table .big-value { font-weight: 800; color: #0A5FA6; font-size: 14px; }
+    .summary-logo { width: 200px; text-align: center; display: flex; align-items: center; justify-content: center; }
+    .summary-logo img { max-width: 180px; height: auto; }
 
-    .section-title{background:linear-gradient(90deg,var(--blue-primary) 0%,var(--blue-light) 100%);color:#fff;padding:10px 16px;border-radius:var(--radius);font-weight:700;margin:18px 0 10px;text-align:center;font-size:13px;letter-spacing:0.3px}
-    .detail{background:var(--bg-light);padding:14px;border-radius:var(--radius);border:1px solid #E0E8F0;line-height:1.6;text-align:justify;color:var(--text-dark);font-size:13px}
-
-    .summary-section{margin-top:15px;background:var(--bg-light);border:1px solid #E0E8F0;border-radius:var(--radius);overflow:hidden}
-    .summary-title{background:linear-gradient(90deg,var(--blue-primary) 0%,var(--blue-light) 100%);color:#fff;padding:10px 16px;font-weight:700;text-align:center;font-size:13px;letter-spacing:0.3px}
-    .summary-content{display:flex;gap:20px;padding:16px}
-    .summary-table{flex:1}
-    .summary-table table{width:100%;border-collapse:collapse;font-size:12px}
-    .summary-table th{background:white;color:var(--blue-primary);padding:8px;border:1px solid #E0E8F0;font-weight:700;text-align:center}
-    .summary-table td{padding:8px;border:1px solid #E0E8F0;text-align:center;color:var(--text-dark)}
-    .summary-table .value-big{font-weight:800;color:var(--blue-accent);font-size:14px}
-    .summary-logo{width:200px;text-align:center;display:flex;align-items:center;justify-content:center}
-    .summary-logo img{max-width:180px;height:auto}
-
-    @media (max-width:768px){
-      .title{font-size:20px}
-      .header{flex-wrap:wrap;padding:12px 16px}
-      .brand{flex:1}
-      .num{min-width:80px}
-      .content-wrapper{grid-template-columns:1fr;gap:16px}
-      .summary-content{flex-direction:column}
-      .summary-logo{width:100%;margin-top:10px}
-      .brand img{height:42px}
+    @media (max-width: 768px) {
+      .header-content { flex-wrap: wrap; }
+      .title { font-size: 20px; }
+      .row-2col { flex-direction: column; gap: 16px; }
+      .summary-content { flex-direction: column; }
+      .summary-logo { width: 100%; margin-top: 10px; }
     }
 
-    @media (max-width:480px){
-      .header{flex-direction:column;align-items:flex-start}
-      .title{font-size:16px;text-align:left}
-      .brand img{height:36px}
-      .num{align-self:flex-end;margin-top:5px}
-      .times-head,.times-body{grid-template-columns:repeat(2,1fr)}
-      .times-head div:nth-child(n+3),.times-body div:nth-child(n+3){grid-column:auto}
-      .main{padding:12px}
-      .content-wrapper{gap:12px}
+    @media (max-width: 480px) {
+      .logo-text { font-size: 11px; }
+      .title { font-size: 16px; }
+      .numero-box { padding: 10px 14px; min-width: 80px; }
+      .times-header, .times-body { font-size: 11px; }
+      .main-content { padding: 15px 12px; }
     }
   </style>
 </head>
 <body>
-  <article class="paper" role="document" aria-label="Ordem de Serviço">
-    <header class="header">
-      <div class="brand">
-        <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec logo">
-        <div class="tag">Personalitec<br><small style="opacity:0.95">Sua visão, nossa tecnologia</small></div>
-      </div>
-
-      <div class="title">ORDEM DE ATENDIMENTO</div>
-
-      <div class="num"><small>NUMERO</small><strong>{{ $ordemServico->id }}</strong></div>
-    </header>
-
-    <main class="main">
-      <div class="content-wrapper">
-        <div class="client-box">
-          <div class="row"><span class="label">Cliente:</span> <span class="value">{{ $ordemServico->cliente->name ?? 'N/A' }}</span></div>
-          <div class="row"><span class="label">Contato:</span> <span class="value">{{ $ordemServico->cliente->pessoaJuridica->email ?? $ordemServico->cliente->email ?? 'N/A' }}</span></div>
-          <div class="row"><span class="label">Emissão:</span> <span class="value">{{ \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') }}</span></div>
-          <div class="row"><span class="label">Consultor:</span> <span class="value">{{ $ordemServico->consultor->name ?? 'N/A' }}</span></div>
-        </div>
-
-        <div class="times-box">
-          <div class="times-head">
-            <div>HORA INICIO</div>
-            <div>HORA FIM</div>
-            <div>DESCONTO</div>
-            <div>TRASLADO</div>
-            <div>TOTAL HORAS</div>
-          </div>
-          <div class="times-body">
-            <div>{{ $ordemServico->hora_inicio ?? '--:--' }}</div>
-            <div>{{ $ordemServico->hora_final ?? '--:--' }}</div>
-            <div>{{ $ordemServico->hora_desconto ?? '--' }}</div>
-            <div>{{ $ordemServico->deslocamento ? 'R$ ' . number_format($ordemServico->deslocamento, 2, ',', '.') : '--' }}</div>
-            <div>{{ $ordemServico->horas_trabalhadas ?? '--' }}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-title">DETALHAMENTO</div>
-      <div class="detail">
-        {!! nl2br($ordemServico->detalhamento ?? 'Nenhum detalhamento fornecido.') !!}
-      </div>
-
-      <div class="summary-section">
-        <div class="summary-title">RESUMO</div>
-        <div class="summary-content">
-          <div class="summary-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Chamado Personalitec</th>
-                  <th>{{ $ordemServico->nr_atendimento ?? $ordemServico->id }}</th>
-                  <th>Previsão Retorno</th>
-                  <th>{{ $ordemServico->updated_at ? \Carbon\Carbon::parse($ordemServico->updated_at)->addDay()->format('d/m/Y') : '--' }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>KM</td>
-                  <td>{{ $ordemServico->km ?? '--' }}</td>
-                  <td>Valor Total</td>
-                  <td class="value-big">{{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}</td>
-                </tr>
-                <tr>
-                  <td>Horas Trabalhadas</td>
-                  <td>{{ $ordemServico->horas_trabalhadas ?? '--' }}</td>
-                  <td>Status</td>
-                  <td>@if($ordemServico->status == 1) Pendente @elseif($ordemServico->status == 2) Aprovado @elseif($ordemServico->status == 3) Finalizado @else Desconhecido @endif</td>
-                </tr>
-              </tbody>
+<table class="container" width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 20px;">
+        <tr>
+          <td style="flex: 1; width: 33.33%;">
+            <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec" style="height: 50px; width: auto; vertical-align: middle;">
+            <span style="display: inline-block; font-size: 13px; font-weight: bold; margin-left: 10px;">
+              Personalitec<br><small style="font-size: 10px; opacity: 0.95;">Sua visão, nossa tecnologia</small>
+            </span>
+          </td>
+          <td style="flex: 2; width: 33.33%; text-align: center;">
+            <h2 style="font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 1px;">ORDEM DE ATENDIMENTO</h2>
+          </td>
+          <td style="width: 33.33%; text-align: right;">
+            <table cellpadding="0" cellspacing="0" border="0" style="background-color: #0A5FA6; border-radius: 6px; padding: 12px 18px; margin-left: auto; min-width: 100px;">
+              <tr>
+                <td style="text-align: center; font-size: 10px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9; display: block;">NUMERO</td>
+              </tr>
+              <tr>
+                <td style="text-align: center; font-size: 18px; font-weight: bold; margin-top: 5px;">{{ $ordemServico->id }}</td>
+              </tr>
             </table>
-          </div>
-          <div class="summary-logo">
-            <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec">
-          </div>
-        </div>
-      </div>
-    </main>
-  </article>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding: 25px 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="50%" style="padding-right: 10px; vertical-align: top;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; padding: 16px;">
+              <tr>
+                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Cliente:</td>
+                <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->cliente->name ?? 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Contato:</td>
+                <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->cliente->pessoaJuridica->email ?? $ordemServico->cliente->email ?? 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Emissão:</td>
+                <td style="color: #1F3A56; padding: 8px 0;">{{ \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') }}</td>
+              </tr>
+              <tr>
+                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Consultor:</td>
+                <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->consultor->name ?? 'N/A' }}</td>
+              </tr>
+            </table>
+          </td>
+
+          <td width="50%" style="padding-left: 10px; vertical-align: top;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; overflow: hidden;">
+              <tr style="background-color: #2E7DA8; color: white; font-weight: bold; font-size: 11px;">
+                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA INICIO</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA FIM</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">DESCONTO</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">TRASLADO</td>
+                <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
+              </tr>
+              <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_inicio ?? '--:--' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_final ?? '--:--' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_desconto ?? '--' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->deslocamento ? 'R$ ' . number_format($ordemServico->deslocamento, 2, ',', '.') : '--' }}</td>
+                <td style="padding: 10px 5px; text-align: center;">{{ $ordemServico->horas_trabalhadas ?? '--' }}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding: 0 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px;">
+        <tr>
+          <td>DETALHAMENTO</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding: 0 20px 20px 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; line-height: 1.6; color: #1F3A56; font-size: 13px;">
+        <tr>
+          <td>{!! nl2br($ordemServico->detalhamento ?? 'Nenhum detalhamento fornecido.') !!}</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding: 0 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; margin-top: 20px; overflow: hidden;">
+        <tr>
+          <td style="background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px;">RESUMO</td>
+        </tr>
+        <tr>
+          <td style="padding: 16px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px;">
+              <tr>
+                <th style="background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Chamado Personalitec</th>
+                <th style="background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">{{ $ordemServico->nr_atendimento ?? $ordemServico->id }}</th>
+                <th style="background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Previsão Retorno</th>
+                <th style="background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">{{ $ordemServico->updated_at ? \Carbon\Carbon::parse($ordemServico->updated_at)->addDay()->format('d/m/Y') : '--' }}</th>
+              </tr>
+              <tr>
+                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">KM</td>
+                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">{{ $ordemServico->km ?? '--' }}</td>
+                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">Valor Total</td>
+                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 800;">{{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">Horas Trabalhadas</td>
+                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">{{ $ordemServico->horas_trabalhadas ?? '--' }}</td>
+                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">Status</td>
+                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">
+                  @if($ordemServico->status == 1) Pendente @elseif($ordemServico->status == 2) Aprovado @elseif($ordemServico->status == 3) Finalizado @else Desconhecido @endif
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="70%" style="vertical-align: middle;"></td>
+                <td width="30%" style="text-align: center; padding: 10px;">
+                  <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec" style="max-width: 180px; height: auto;">
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding: 20px; text-align: center; color: #666; font-size: 11px;">
+      <p style="margin: 0;">© {{ date('Y') }} Personalitec Soluções. Todos os direitos reservados.</p>
+    </td>
+  </tr>
+</table>
 </body>
 </html>
