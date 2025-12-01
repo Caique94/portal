@@ -816,7 +816,9 @@ class OrdemServicoController extends Controller
     public function resendEmail(Request $request, $id)
     {
         try {
-            $os = OrdemServico::findOrFail($id);
+            // Carrega com eager loading dos relacionamentos necessários
+            $os = OrdemServico::with(['cliente', 'cliente.pessoaJuridica', 'consultor'])
+                ->findOrFail($id);
 
             // Validar permissão
             $user = Auth::user();
@@ -860,7 +862,7 @@ class OrdemServicoController extends Controller
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Erro ao reenviar email(s)',
+                    'message' => 'Erro ao reenviar email(s). Verifique os logs para mais detalhes.',
                     'result' => $resultados
                 ], 400);
             }
