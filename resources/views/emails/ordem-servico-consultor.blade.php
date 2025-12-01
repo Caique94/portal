@@ -218,11 +218,11 @@
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
                   {{ $ordemServico->km ?? '--' }}
                 </td>
-                <!-- Column 3: MEU GANHO Label -->
+                <!-- Column 3: VALOR TOTAL Label -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 700; width: 25%;">
-                  MEU GANHO
+                  VALOR TOTAL
                 </td>
-                <!-- Column 4: MEU GANHO Value -->
+                <!-- Column 4: VALOR TOTAL Value -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 700;">
                   @php
                     $valor_horas = floatval($ordemServico->qtde_total ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);

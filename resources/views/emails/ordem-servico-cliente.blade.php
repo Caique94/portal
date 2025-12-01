@@ -220,11 +220,11 @@
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
                   {{ $ordemServico->km ?? '--' }}
                 </td>
-                <!-- Column 3: TOTAL A PAGAR Label -->
+                <!-- Column 3: VALOR TOTAL Label -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 700; width: 25%;">
-                  TOTAL A PAGAR
+                  VALOR TOTAL
                 </td>
-                <!-- Column 4: TOTAL A PAGAR Value -->
+                <!-- Column 4: VALOR TOTAL Value -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 700;">
                   {{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}
                 </td>
