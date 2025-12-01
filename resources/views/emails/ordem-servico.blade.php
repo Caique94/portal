@@ -7,14 +7,14 @@
   <style type="text/css">
     body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f5f5f5; }
     .container { max-width: 980px; margin: 0 auto; background-color: #ffffff; border-collapse: collapse; }
-    .header { background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%); padding: 20px; color: white; text-align: left; }
+    .header { background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%); padding: 20px; color: white; text-align: left; }
     .header-content { display: flex; justify-content: space-between; align-items: center; }
     .logo-section { flex: 1; }
     .logo-section img { height: 50px; margin-right: 15px; }
     .logo-text { display: inline-block; font-size: 13px; font-weight: bold; }
     .logo-text small { display: block; font-size: 10px; opacity: 0.95; }
     .title { flex: 2; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 1px; }
-    .numero-box { background-color: #0A5FA6; padding: 12px 18px; border-radius: 6px; min-width: 100px; text-align: center; }
+    .numero-box { background-color: #1565C0; padding: 12px 18px; border-radius: 6px; min-width: 100px; text-align: center; }
     .numero-label { font-size: 10px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9; }
     .numero-valor { font-size: 18px; font-weight: bold; margin-top: 5px; }
 
@@ -24,28 +24,28 @@
 
     .client-box { background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; }
     .client-row { display: flex; margin: 10px 0; font-size: 13px; line-height: 1.5; }
-    .client-label { font-weight: bold; color: #0A5FA6; min-width: 100px; }
+    .client-label { font-weight: bold; color: #1565C0; min-width: 100px; }
     .client-value { color: #1F3A56; flex: 1; }
 
     .times-box { background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; overflow: hidden; }
-    .times-header { background-color: #2E7DA8; color: white; display: flex; text-align: center; font-weight: bold; font-size: 11px; }
-    .times-header div { flex: 1; padding: 12px 5px; border-right: 1px solid #5B9FBF; }
+    .times-header { background-color: #1E88E5; color: white; display: flex; text-align: center; font-weight: bold; font-size: 11px; }
+    .times-header div { flex: 1; padding: 12px 5px; border-right: 1px solid #42A5F5; }
     .times-header div:last-child { border-right: none; }
     .times-body { display: flex; text-align: center; padding: 12px 5px; font-weight: 600; font-size: 13px; color: #1F3A56; }
     .times-body div { flex: 1; border-right: 1px solid #E0E8F0; padding: 5px; }
     .times-body div:last-child { border-right: none; }
 
-    .section-title { background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px; }
+    .section-title { background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px; }
     .detail-box { background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; line-height: 1.6; color: #1F3A56; font-size: 13px; text-align: justify; }
 
     .summary-box { background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; margin-top: 20px; overflow: hidden; }
-    .summary-title { background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px; }
+    .summary-title { background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px; }
     .summary-content { display: flex; padding: 16px; gap: 20px; }
     .summary-table { flex: 1; }
     .summary-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .summary-table th { background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; }
+    .summary-table th { background-color: white; color: #1E88E5; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; }
     .summary-table td { padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; }
-    .summary-table .big-value { font-weight: 800; color: #0A5FA6; font-size: 14px; }
+    .summary-table .big-value { font-weight: 800; color: #1565C0; font-size: 14px; }
     .summary-logo { width: 200px; text-align: center; display: flex; align-items: center; justify-content: center; }
     .summary-logo img { max-width: 180px; height: auto; }
 
@@ -70,7 +70,7 @@
 <table class="container" width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr>
     <td>
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 20px;">
         <tr>
           <td style="width: 60px;">
             <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec" style="height: 50px; width: auto; vertical-align: middle;">
@@ -79,7 +79,7 @@
             <h2 style="font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 1px;">ORDEM DE ATENDIMENTO</h2>
           </td>
           <td style="width: 150px; text-align: right;">
-            <table cellpadding="0" cellspacing="0" border="0" style="background-color: #0A5FA6; border-radius: 6px; padding: 12px 18px; margin-left: auto; min-width: 100px;">
+            <table cellpadding="0" cellspacing="0" border="0" style="background-color: #1565C0; border-radius: 6px; padding: 12px 18px; margin-left: auto; min-width: 100px;">
               <tr>
                 <td style="text-align: center; font-size: 10px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9; display: block;">NUMERO</td>
               </tr>
@@ -100,7 +100,7 @@
           <td width="50%" style="padding-right: 10px; vertical-align: top;">
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; padding: 16px;">
               <tr>
-                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Cliente:</td>
+                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Cliente:</td>
                 <td style="color: #1F3A56; padding: 8px 0;">
                   @if($ordemServico->cliente)
                     {{ $ordemServico->cliente->nome ?? $ordemServico->cliente->nome_fantasia ?? 'N/A' }}
@@ -110,7 +110,7 @@
                 </td>
               </tr>
               <tr>
-                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Contato:</td>
+                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Contato:</td>
                 <td style="color: #1F3A56; padding: 8px 0;">
                   @if($ordemServico->cliente)
                     {{ $ordemServico->cliente->email ?? $ordemServico->cliente->contato ?? 'N/A' }}
@@ -120,11 +120,11 @@
                 </td>
               </tr>
               <tr>
-                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Emissão:</td>
+                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Emissão:</td>
                 <td style="color: #1F3A56; padding: 8px 0;">{{ \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') }}</td>
               </tr>
               <tr>
-                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Consultor:</td>
+                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Consultor:</td>
                 <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->consultor->name ?? 'N/A' }}</td>
               </tr>
             </table>
@@ -132,12 +132,12 @@
 
           <td width="50%" style="padding-left: 10px; vertical-align: top;">
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; overflow: hidden;">
-              <tr style="background-color: #2E7DA8; color: white; font-weight: bold; font-size: 11px;">
-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA INICIO</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA FIM</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA DESCONTO</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">DESPESA</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">TRANSLADO</td>
+              <tr style="background-color: #1E88E5; color: white; font-weight: bold; font-size: 11px;">
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA INICIO</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA FIM</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA DESCONTO</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">DESPESA</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">TRANSLADO</td>
                 <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
               </tr>
               <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
@@ -194,7 +194,7 @@
 
   <tr>
     <td style="padding: 0 20px;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px;">
         <tr>
           <td>DETALHAMENTO</td>
         </tr>
@@ -216,7 +216,7 @@
     <td style="padding: 0 20px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; margin-top: 20px; overflow: hidden;">
         <tr>
-          <td style="background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px;">RESUMO</td>
+          <td style="background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px;">RESUMO</td>
         </tr>
         <tr>
           <td style="padding: 16px;">
@@ -262,7 +262,7 @@
               </tr>
             </table>
 
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%);">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%);">
               <tr>
                 <td width="70%" style="vertical-align: middle;"></td>
                 <td width="30%" style="text-align: center; padding: 20px;">
