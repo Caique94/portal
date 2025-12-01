@@ -103,7 +103,7 @@
                 <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Cliente:</td>
                 <td style="color: #1F3A56; padding: 8px 0;">
                   @if($ordemServico->cliente)
-                    {{ $ordemServico->cliente->name ?? 'N/A' }}
+                    {{ $ordemServico->cliente->nome ?? $ordemServico->cliente->nome_fantasia ?? 'N/A' }}
                   @else
                     N/A
                   @endif
@@ -135,6 +135,7 @@
               <tr style="background-color: #2E7DA8; color: white; font-weight: bold; font-size: 11px;">
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA INICIO</td>
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA FIM</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA DESCONTO</td>
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">DESPESA</td>
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">TRASLADO</td>
                 <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
@@ -142,6 +143,7 @@
               <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_inicio ?? '00:00' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_final ?? '00:00' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->deslocamento ? 'R$ ' . number_format($ordemServico->deslocamento, 2, ',', '.') : '--' }}</td>
                 <td style="padding: 10px 5px; text-align: center;">
@@ -202,7 +204,7 @@
         </tr>
         <tr>
           <td style="padding: 16px;">
-            <!-- 4-Column Summary Table - 2 rows -->
+            <!-- 4-Column Summary Table - 3 rows -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px; background-color: #F2F2F2;">
               <!-- Row 1 -->
               <tr>
@@ -240,6 +242,40 @@
                 <!-- Column 4: TOTAL OS Value -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 700;">
                   {{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}
+                </td>
+              </tr>
+              <!-- Row 3: Total Horas -->
+              <tr>
+                <!-- Column 1: TOTAL HORAS Label -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 700; width: 25%;">
+                  TOTAL<br>DE HORAS
+                </td>
+                <!-- Column 2: TOTAL HORAS Value -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; font-weight: 700; width: 25%;">
+                  @php
+                    $resumo_total_horas = 0;
+                    if ($ordemServico->hora_inicio && $ordemServico->hora_final) {
+                      $inicio = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_inicio);
+                      $fim = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_final);
+                      $total_minutos = $fim->diffInMinutes($inicio);
+
+                      if ($ordemServico->hora_desconto) {
+                        list($desc_h, $desc_m) = explode(':', $ordemServico->hora_desconto);
+                        $desconto_minutos = intval($desc_h) * 60 + intval($desc_m);
+                        $total_minutos -= $desconto_minutos;
+                      }
+
+                      $resumo_total_horas = max(0, round($total_minutos / 60, 2));
+                    }
+                  @endphp
+                  {{ number_format($resumo_total_horas, 2, '.', '') }}
+                </td>
+                <!-- Column 3 & 4: Empty cells for alignment -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; width: 25%;">
+                  &nbsp;
+                </td>
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
+                  &nbsp;
                 </td>
               </tr>
             </table>
