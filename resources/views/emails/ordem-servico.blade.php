@@ -116,11 +116,7 @@
                 <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Contato:</td>
                 <td style="color: #1F3A56; padding: 8px 0;">
                   @if($ordemServico->cliente)
-                    @if($ordemServico->cliente->pessoaJuridica && $ordemServico->cliente->pessoaJuridica->email)
-                      {{ $ordemServico->cliente->pessoaJuridica->email }}
-                    @else
-                      {{ $ordemServico->cliente->email ?? 'N/A' }}
-                    @endif
+                    {{ $ordemServico->cliente->email ?? $ordemServico->cliente->contato ?? 'N/A' }}
                   @else
                     N/A
                   @endif

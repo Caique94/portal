@@ -817,7 +817,7 @@ class OrdemServicoController extends Controller
     {
         try {
             // Carrega com eager loading dos relacionamentos necessários
-            $os = OrdemServico::with(['cliente', 'cliente.pessoaJuridica', 'consultor'])
+            $os = OrdemServico::with(['cliente', 'consultor'])
                 ->findOrFail($id);
 
             // Validar permissão
