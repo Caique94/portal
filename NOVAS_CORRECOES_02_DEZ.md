@@ -37,20 +37,17 @@
 
 ---
 
-### 3. ✅ Totalizador de Horas no RESUMO (Não Mais Vazio)
-**Antes:** Seção RESUMO não tinha total de horas
-**Depois:** RESUMO agora mostra "TOTAL DE HORAS" calculado
+### 3. ✅ RESUMO Simplificado (Sem Total de Horas)
+**Antes:** RESUMO tinha Previsão Retorno + Total de Horas (3 linhas)
+**Depois:** RESUMO mostra apenas Data de Emissão (2 linhas, mais limpo)
 
 **Layout do RESUMO:**
 ```
 ┌──────────────────────┬──────────┬──────────────────────┬──────────────┐
-│ Chamado              │ 150      │ Previsão Retorno     │ 02/12/2025   │
+│ Chamado              │ 150      │ Data de Emissão      │ 01/12/2025   │
 │ Personalitec         │          │                      │              │
 ├──────────────────────┼──────────┼──────────────────────┼──────────────┤
 │ KM                   │ --       │ TOTAL OS             │ R$ 435,00    │
-├──────────────────────┼──────────┼──────────────────────┼──────────────┤
-│ TOTAL                │ 7.50     │ [espaço vazio]       │ [espaço]     │
-│ DE HORAS             │          │                      │              │
 └──────────────────────┴──────────┴──────────────────────┴──────────────┘
 ```
 
@@ -70,26 +67,13 @@
 {{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}
 ```
 
-### Total de Horas no RESUMO
+### Data de Emissão no RESUMO
 ```blade
-@php
-  $resumo_total_horas = 0;
-  if ($ordemServico->hora_inicio && $ordemServico->hora_final) {
-    $inicio = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_inicio);
-    $fim = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_final);
-    $total_minutos = $fim->diffInMinutes($inicio);
-
-    if ($ordemServico->hora_desconto) {
-      list($desc_h, $desc_m) = explode(':', $ordemServico->hora_desconto);
-      $desconto_minutos = intval($desc_h) * 60 + intval($desc_m);
-      $total_minutos -= $desconto_minutos;
-    }
-
-    $resumo_total_horas = max(0, round($total_minutos / 60, 2));
-  }
-@endphp
-{{ number_format($resumo_total_horas, 2, '.', '') }}
+<!-- Usa data_emissao diretamente -->
+{{ $ordemServico->data_emissao ? \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') : '--' }}
 ```
+
+**Nota:** Total de horas ainda está visível na **tabela de horas**, não precisa estar no RESUMO também.
 
 ---
 
@@ -110,25 +94,24 @@ RESUMO:
   Previsão Retorno: 02/12/2025
   KM: --
   TOTAL OS: R$ 435,00
-  (sem total de horas)
 ```
 
 ### Depois ✅
 ```
 CLIENTE INFO:
-  Cliente: HOMEPLAST (0001)  ✓ ADICIONADO
+  Cliente: HOMEPLAST (0001)  ✓ CORRIGIDO
   Contato: RAUL
 
 TABELA DE HORAS:
-  HORA INICIO | HORA FIM | HORA DESCONTO | DESPESA | TRASLADO | TOTAL HORAS
-  08:00       | 17:00    | 01:30         | R$ 30   | --       | 7.50
+  HORA INI | HORA FIM | HORA DESCONTO | DESPESA | TRASLADO | TOTAL HORAS
+  08:00    | 17:00    | 01:30         | R$ 30   | --       | 7.50  ✓ ADICIONADO
 
 RESUMO:
   Chamado Personalitec: 150
-  Previsão Retorno: 02/12/2025
+  Data de Emissão: 01/12/2025  ✓ CORRIGIDO (era Previsão Retorno)
   KM: --
   TOTAL OS: R$ 435,00
-  TOTAL DE HORAS: 7.50  ✓ ADICIONADO
+  ✓ REMOVIDO: TOTAL DE HORAS (mantém tabela limpa)
 ```
 
 ---
@@ -137,12 +120,13 @@ RESUMO:
 
 - [x] Nome do cliente sendo buscado corretamente do banco
 - [x] Coluna HORA DESCONTO adicionada na tabela de horas
-- [x] Total de horas calculado no RESUMO (não vazio)
 - [x] Fallback para nome_fantasia se nome estiver vazio
 - [x] Formatação de horas consistente (HH:MM)
 - [x] Cálculo respeitando desconto: (fim - inicio - desconto)
 - [x] Resultado não negativo (máximo 0.00)
 - [x] Arredondamento a 2 casas decimais
+- [x] RESUMO simplificado com Data de Emissão (não Previsão Retorno)
+- [x] TOTAL DE HORAS removido do RESUMO (mantém tabela limpa)
 
 ---
 
@@ -167,29 +151,38 @@ RESUMO:
    - ✓ Cliente mostra: `HOMEPLAST (0001)`
    - ✓ Tabela tem coluna HORA DESCONTO: `01:30`
    - ✓ TOTAL HORAS na tabela: `7.50` (9 - 1.5)
-   - ✓ RESUMO mostra TOTAL DE HORAS: `7.50`
+   - ✓ RESUMO mostra Data de Emissão: `01/12/2025` (não Previsão Retorno)
+   - ✓ RESUMO não mostra TOTAL DE HORAS (removido, mais limpo)
 
 ---
 
 ## 🔄 Sincronização
 
-Todas as 3 exibições do total de horas usam **exatamente a mesma lógica:**
+Todas as exibições do total de horas usam **exatamente a mesma lógica:**
 
 | Local | Fórmula | Resultado |
 |-------|---------|-----------|
 | Tabela de Horas (TOTAL HORAS) | (17:00 - 08:00 - 01:30) | 7.50 ✓ |
-| RESUMO (TOTAL DE HORAS) | (17:00 - 08:00 - 01:30) | 7.50 ✓ |
 | JavaScript Helper | (17:00 - 08:00 - 01:30) | 7.50 ✓ |
+
+**Nota:** TOTAL DE HORAS foi **removido do RESUMO** para manter layout limpo (evita duplicação).
 
 ---
 
-## 📝 Commit Info
+## 📝 Commits Info
 
 ```
-Commit: e3d82cf
+Commit 1: e3d82cf
 Arquivo: resources/views/emails/ordem-servico.blade.php
 Linhas: +38, -2
-Tipo: Fix (correção de bugs)
+Descrição: Add client name, hour discount column, total hours summary
+Tipo: Fix
+
+Commit 2: 879ceaf  ← NOVO
+Arquivo: resources/views/emails/ordem-servico.blade.php
+Linhas: +5, -39
+Descrição: Remove total hours from RESUMO, replace return date with issue date
+Tipo: Fix
 ```
 
 ---
@@ -198,8 +191,10 @@ Tipo: Fix (correção de bugs)
 
 ✅ **PRONTO PARA PRODUÇÃO**
 
-Todas as 3 solicitações foram implementadas:
-1. ✅ Nome do cliente agora aparece
-2. ✅ Campo de horas descontadas adicionado
-3. ✅ Totalizador de horas preenchido (não em branco)
+Todas as solicitações foram implementadas:
+1. ✅ Nome do cliente agora aparece (buscado do banco)
+2. ✅ Campo de horas descontadas adicionado (HORA DESCONTO na tabela)
+3. ✅ RESUMO simplificado:
+   - Data de Emissão (ao invés de Previsão Retorno)
+   - Total de Horas removido (mantém em tabela, evita duplicação)
 
