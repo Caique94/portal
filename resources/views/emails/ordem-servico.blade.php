@@ -72,6 +72,9 @@
     <td>
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 20px;">
         <tr>
+          <td style="width: 60px;">
+            <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec" style="height: 50px; width: auto; vertical-align: middle;">
+          </td>
           <td style="flex: 1; text-align: center;">
             <h2 style="font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 1px;">ORDEM DE ATENDIMENTO</h2>
           </td>
