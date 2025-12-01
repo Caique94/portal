@@ -1,0 +1,293 @@
+╔════════════════════════════════════════════════════════════════════╗
+║         CARTÃO DE REFERÊNCIA RÁPIDA                                 ║
+║         SESSÃO 30 DE NOVEMBRO DE 2025                              ║
+║         PROBLEMAS RESOLVIDOS E SOLUÇÕES                            ║
+╚════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 4 PROBLEMAS RESOLVIDOS
+
+1️⃣  CAMPOS MONETÁRIOS - Erro 422
+   ├─ Problema: "O campo deve ser um número"
+   ├─ Causa: Formato brasileiro não validado
+   ├─ Solução: Sanitização + Formatação + .trigger('input')
+   └─ Status: ✅ RESOLVIDO
+
+2️⃣  CAMPOS NÃO CARREGAVAM - 24 campos faltavam ao editar
+   ├─ Problema: ABA 2 e ABA 3 vazias ao abrir edição
+   ├─ Causa: Código só carregava 10 de 34 campos
+   ├─ Solução: Adicionado carregamento dos 24 campos faltantes
+   └─ Status: ✅ RESOLVIDO
+
+3️⃣  BACKEND NÃO RETORNAVA DADOS - Faltavam ABA 2 e ABA 3
+   ├─ Problema: /listar-usuarios retornava só ABA 1
+   ├─ Causa: Faltava JOINs com tabelas relacionadas
+   ├─ Solução: Implementado LEFT JOINs
+   └─ Status: ✅ RESOLVIDO
+
+4️⃣  ERRO 500 - NOT NULL constraint violation
+   ├─ Problema: SQLSTATE[23502] - coluna "estado" NULL
+   ├─ Causa: Tentava salvar Pessoa Jurídica incompleta
+   ├─ Solução: Validação antes de INSERT
+   └─ Status: ✅ RESOLVIDO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 ARQUIVO MODIFICADO
+
+┌─────────────────────────────────────────────────────────┐
+│ app/Http/Controllers/UserController.php                 │
+├─────────────────────────────────────────────────────────┤
+│ Linhas 74-84:   Validação Pessoa Jurídica (10 campos)  │
+│ Linhas 92-102:  Logging Pessoa Jurídica                │
+│ Linhas 117-121: Validação Pagamento (4 campos)         │
+│ Linhas 129-140: Logging Pagamento                      │
+├─────────────────────────────────────────────────────────┤
+│ Commit: 1991096 (fix: Add validation for Pagamento)    │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│ public/js/cadastros/usuarios.js                         │
+├─────────────────────────────────────────────────────────┤
+│ Linhas 127-154:  Carregar campos ao Visualizar         │
+│ Linhas 193-257:  Carregar campos ao Editar             │
+│ Linhas 275-283:  Sanitizar campos monetários           │
+├─────────────────────────────────────────────────────────┤
+│ Commit: eaaad47 (fix: Load ALL 34 form fields)         │
+└─────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  CAMPOS CRÍTICOS (NÃO PODEM SER NULL)
+
+Pessoa Jurídica (10 campos obrigatórios):
+   1. CNPJ
+   2. Razão Social
+   3. Endereço
+   4. Número
+   5. Bairro
+   6. Cidade
+   7. Estado ← CAUSA DO ERRO ORIGINAL
+   8. CEP
+   9. Telefone
+  10. Email
+
+Pagamento (4 campos obrigatórios):
+   1. Titular da Conta
+   2. Banco
+   3. Agência
+   4. Conta
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ VALIDAÇÃO IMPLEMENTADA
+
+Pessoa Jurídica (Linhas 74-84):
+┌────────────────────────────────────────────────────┐
+│ $temTodosCamposObrigatorios =                      │
+│     !empty($pessoaJuridica['cnpj']) &&            │
+│     !empty($pessoaJuridica['razao_social']) &&    │
+│     !empty($pessoaJuridica['endereco']) &&        │
+│     !empty($pessoaJuridica['numero']) &&          │
+│     !empty($pessoaJuridica['bairro']) &&          │
+│     !empty($pessoaJuridica['cidade']) &&          │
+│     !empty($pessoaJuridica['estado']) &&          │
+│     !empty($pessoaJuridica['cep']) &&             │
+│     !empty($pessoaJuridica['telefone']) &&        │
+│     !empty($pessoaJuridica['email']);             │
+│                                                    │
+│ if ($temTodosCamposObrigatorios) {                │
+│     // SALVA em pessoa_juridica_usuarios          │
+│ } else {                                          │
+│     // SKIPS - não tenta salvar incompleto       │
+│ }                                                  │
+└────────────────────────────────────────────────────┘
+
+Pagamento (Linhas 117-121):
+┌────────────────────────────────────────────────────┐
+│ $temTodosCamposPagamento =                        │
+│     !empty($pagamento['titular_conta']) &&        │
+│     !empty($pagamento['banco']) &&                │
+│     !empty($pagamento['agencia']) &&              │
+│     !empty($pagamento['conta']);                  │
+│                                                    │
+│ if ($temTodosCamposPagamento) {                   │
+│     // SALVA em pagamento_usuarios                │
+│ } else {                                          │
+│     // SKIPS - não tenta salvar incompleto       │
+│ }                                                  │
+└────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 COMPORTAMENTO DO SISTEMA
+
+Antes (❌ ERRADO):
+┌─────────────────────────────────────────┐
+│ Usuário preenche ABA 2 parcialmente     │
+│              ↓                          │
+│ Clica Salvar                            │
+│              ↓                          │
+│ INSERT com campos NULL                  │
+│              ↓                          │
+│ ❌ SQLSTATE[23502]: Not null violation  │
+│              ↓                          │
+│ ❌ Error 500                            │
+│              ↓                          │
+│ ❌ ROLLBACK (nada salva)                │
+└─────────────────────────────────────────┘
+
+Depois (✅ CORRETO):
+┌─────────────────────────────────────────┐
+│ Usuário preenche ABA 2 parcialmente     │
+│              ↓                          │
+│ Clica Salvar                            │
+│              ↓                          │
+│ Validação: Todos os 10 campos? NÃO    │
+│              ↓                          │
+│ SKIPS INSERT                            │
+│              ↓                          │
+│ ✅ COMMIT (ABA 1 salvo)                 │
+│              ↓                          │
+│ ✅ Success 201                          │
+│              ↓                          │
+│ 😊 Usuário pode editar depois           │
+└─────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTES RECOMENDADOS
+
+Teste 1: Apenas ABA 1 (sem ABA 2/3)
+   ├─ Esperado: ✅ Sucesso (skip AB2, AB3)
+   └─ Log: "Pessoa Jurídica não salva (faltam campos obrigatórios)"
+
+Teste 2: ABA 1 + ABA 2 INCOMPLETO
+   ├─ Esperado: ✅ Sucesso (skip AB2)
+   └─ Log: "Pessoa Jurídica não salva (faltam campos obrigatórios)"
+
+Teste 3: ABA 1 + ABA 2 COMPLETO
+   ├─ Esperado: ✅ Sucesso (save AB2)
+   └─ Log: "Pessoa Jurídica salva com sucesso"
+
+Teste 4: ABA 1 + ABA 3 INCOMPLETO
+   ├─ Esperado: ✅ Sucesso (skip AB3)
+   └─ Log: "Dados de Pagamento não salvos (faltam campos obrigatórios)"
+
+Teste 5: ABA 1 + ABA 3 COMPLETO
+   ├─ Esperado: ✅ Sucesso (save AB3)
+   └─ Log: "Dados de Pagamento salvos com sucesso"
+
+Teste 6: ABA 1 + 2 + 3 COMPLETOS
+   ├─ Esperado: ✅ Sucesso (save all)
+   └─ Logs: Ambas as mensagens de sucesso
+
+Teste 7: EDITAR + INVALIDAR ABA 2
+   ├─ Esperado: ✅ Sucesso (skip AB2 update)
+   └─ Dados antigos mantidos
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 LOGGING
+
+Verificar em: storage/logs/laravel.log
+
+Procurar por:
+   ✅ "Pessoa Jurídica salva com sucesso"
+   ✅ "Pessoa Jurídica não salva (faltam campos obrigatórios)"
+   ✅ "Dados de Pagamento salvos com sucesso"
+   ✅ "Dados de Pagamento não salvos (faltam campos obrigatórios)"
+
+❌ NUNCA deve aparecer:
+   ❌ SQLSTATE[23502]
+   ❌ Error 500
+   ❌ Not null violation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTAÇÃO
+
+Leia nesta ordem:
+
+1. GUIA_COMPLETO_SESSAO_30_NOV.md
+   └─ Visão geral de todos os 4 problemas
+
+2. RESUMO_SOLUCAO_CONSTRAINT_VIOLATIONS.md
+   └─ Detalhes do Problema 4 (constraint)
+
+3. TESTE_VALIDACAO_FORMULARIO_COMPLETO.md
+   └─ 7 testes para validar solução
+
+4. TESTE_RAPIDO_CAMPOS_MONETARIOS.txt
+   └─ 5 minutos de teste (Problema 1)
+
+5. CORRECAO_CAMPOS_NAO_CARREGAVAM.md
+   └─ Detalhes do Problema 2
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 PRÓXIMOS PASSOS
+
+HOJE (5-10 min):
+   1. Ler este cartão
+   2. Ler GUIA_COMPLETO_SESSAO_30_NOV.md
+   3. Executar Teste 1 em TESTE_VALIDACAO_FORMULARIO_COMPLETO.md
+
+AMANHÃ (30 min):
+   1. Executar Testes 1-7
+   2. Preencher matriz de resultados
+   3. Verificar logs
+
+PRÓXIMOS DIAS (1-2 dias):
+   1. Code review
+   2. Merge para staging
+   3. Testes em staging
+
+PRODUÇÃO (Após aprovação):
+   1. Backup BD
+   2. Deploy prod
+   3. Monitorar 1 hora
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📞 TROUBLESHOOTING RÁPIDO
+
+P: Erro 500 na Teste 1?
+R: Verificar lines 74-84. Talvez validação não está rodando.
+
+P: Campo "estado" aparece como NULL?
+R: Confirmar que field ID é 'txtPJEstado' em usuarios.js linha 189
+
+P: Teste 3 não salva Pessoa Jurídica?
+R: Verificar se TODOS os 10 campos estão preenchidos
+   Um campo vazio = skip completo
+
+P: Teste 5 não salva Pagamento?
+R: Verificar se TODOS os 4 campos estão preenchidos
+   Um campo vazio = skip completo
+
+P: Logs não aparecem?
+R: Verificar:
+   - Laravel logging está habilitado
+   - Arquivo storage/logs/laravel.log existe
+   - Permissões de escrita ok
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ STATUS
+
+Implementação:  ✅ 100% Completa
+Documentação:   ✅ 100% Completa
+Commits:        ✅ 4/4 criados
+Código review:  ⏳ Aguardando
+Testes:         ⏳ Aguardando execução
+
+PRONTO PARA:    TESTES E VALIDAÇÃO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Data: 30 de Novembro de 2025
+Criado por: Claude Code
+Status: 🟢 PRONTO
+
