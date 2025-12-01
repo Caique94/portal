@@ -488,13 +488,13 @@ public function changePassword(\Illuminate\Http\Request $r)
     public function list()
     {
         // ===== CARREGA TODOS OS 34 CAMPOS =====
-        // 10 da ABA 1 (users) + 17 da ABA 2 (pessoa_juridica_usuarios) + 7 da ABA 3 (pagamento_usuarios)
+        // 10 da ABA 1 (users) + 17 da ABA 2 (pessoa_juridica_usuario) + 7 da ABA 3 (pagamento_usuario)
 
         $rows = User::query()
             // LEFT JOIN com Pessoa Jurídica
-            ->leftJoin('pessoa_juridica_usuarios', 'users.id', '=', 'pessoa_juridica_usuarios.user_id')
+            ->leftJoin('pessoa_juridica_usuario', 'users.id', '=', 'pessoa_juridica_usuario.user_id')
             // LEFT JOIN com Pagamento
-            ->leftJoin('pagamento_usuarios', 'users.id', '=', 'pagamento_usuarios.user_id')
+            ->leftJoin('pagamento_usuario', 'users.id', '=', 'pagamento_usuario.user_id')
             // SELECT de todos os 34 campos
             ->select(
                 // ===== ABA 1: Dados Pessoais (10 campos) =====
@@ -511,32 +511,32 @@ public function changePassword(\Illuminate\Http\Request $r)
                 'users.data_nasc',
 
                 // ===== ABA 2: Pessoa Jurídica (17 campos) =====
-                'pessoa_juridica_usuarios.cnpj',
-                'pessoa_juridica_usuarios.razao_social',
-                'pessoa_juridica_usuarios.nome_fantasia',
-                'pessoa_juridica_usuarios.inscricao_estadual',
-                'pessoa_juridica_usuarios.inscricao_municipal',
-                'pessoa_juridica_usuarios.endereco',
-                'pessoa_juridica_usuarios.numero',
-                'pessoa_juridica_usuarios.complemento',
-                'pessoa_juridica_usuarios.bairro',
-                'pessoa_juridica_usuarios.cidade',
-                'pessoa_juridica_usuarios.estado',
-                'pessoa_juridica_usuarios.cep',
-                'pessoa_juridica_usuarios.telefone',
-                DB::raw('pessoa_juridica_usuarios.email as email_pj'),
-                'pessoa_juridica_usuarios.site',
-                'pessoa_juridica_usuarios.ramo_atividade',
-                'pessoa_juridica_usuarios.data_constituicao',
+                'pessoa_juridica_usuario.cnpj',
+                'pessoa_juridica_usuario.razao_social',
+                'pessoa_juridica_usuario.nome_fantasia',
+                'pessoa_juridica_usuario.inscricao_estadual',
+                'pessoa_juridica_usuario.inscricao_municipal',
+                'pessoa_juridica_usuario.endereco',
+                'pessoa_juridica_usuario.numero',
+                'pessoa_juridica_usuario.complemento',
+                'pessoa_juridica_usuario.bairro',
+                'pessoa_juridica_usuario.cidade',
+                'pessoa_juridica_usuario.estado',
+                'pessoa_juridica_usuario.cep',
+                'pessoa_juridica_usuario.telefone',
+                DB::raw('pessoa_juridica_usuario.email as email_pj'),
+                'pessoa_juridica_usuario.site',
+                'pessoa_juridica_usuario.ramo_atividade',
+                'pessoa_juridica_usuario.data_constituicao',
 
                 // ===== ABA 3: Dados de Pagamento (7 campos) =====
-                'pagamento_usuarios.titular_conta',
-                'pagamento_usuarios.cpf_cnpj_titular',
-                'pagamento_usuarios.banco',
-                'pagamento_usuarios.agencia',
-                'pagamento_usuarios.conta',
-                'pagamento_usuarios.tipo_conta',
-                'pagamento_usuarios.pix_key',
+                'pagamento_usuario.titular_conta',
+                'pagamento_usuario.cpf_cnpj_titular',
+                'pagamento_usuario.banco',
+                'pagamento_usuario.agencia',
+                'pagamento_usuario.conta',
+                'pagamento_usuario.tipo_conta',
+                'pagamento_usuario.pix_key',
 
                 // Campos adicionais
                 'users.ativo',
