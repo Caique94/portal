@@ -6,6 +6,7 @@ use App\Events\OSApproved;
 use App\Jobs\GenerateReportJob;
 use App\Models\Report;
 use App\Services\NotificationService;
+use App\Services\OrdemServicoEmailService;
 use Illuminate\Support\Facades\Log;
 
 class HandleOSApproved
@@ -56,6 +57,23 @@ class HandleOSApproved
             // Despachar jobs para gerar e enviar os relatórios
             GenerateReportJob::dispatch($reportConsultor);
             GenerateReportJob::dispatch($reportCliente);
+
+            // Enviar Ordem de Serviço por Email para Consultor e Cliente
+            try {
+                $emailService = new OrdemServicoEmailService();
+                $consultorEnviado = $emailService->enviarParaConsultor($os);
+                $clienteEnviado = $emailService->enviarParaCliente($os);
+
+                if ($consultorEnviado || $clienteEnviado) {
+                    Log::info("Emails de OS #{$os->id} enviados após aprovação", [
+                        'consultor' => $consultorEnviado,
+                        'cliente' => $clienteEnviado
+                    ]);
+                }
+            } catch (\Exception $emailError) {
+                Log::warning("Erro ao enviar emails de OS #{$os->id} após aprovação: " . $emailError->getMessage());
+                // Não falha o processo principal se email falhar
+            }
 
             Log::info("Relatórios criados, notificações enviadas e jobs despachados para OS #{$os->id}");
         } catch (\Exception $e) {
