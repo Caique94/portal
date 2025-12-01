@@ -140,11 +140,32 @@
                 <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
               </tr>
               <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_inicio ?? '--:--' }}</td>
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_final ?? '--:--' }}</td>
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->despesa ? 'R$ ' . number_format($ordemServico->despesa, 2, ',', '.') : '--' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_inicio ?? '00:00' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_final ?? '00:00' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->deslocamento ? 'R$ ' . number_format($ordemServico->deslocamento, 2, ',', '.') : '--' }}</td>
-                <td style="padding: 10px 5px; text-align: center;">{{ $ordemServico->horas_trabalhadas ?? '--' }}</td>
+                <td style="padding: 10px 5px; text-align: center;">
+                  @php
+                    // Calcula total de horas: (hora_fim - hora_inicio - hora_desconto)
+                    $total_horas = 0;
+                    if ($ordemServico->hora_inicio && $ordemServico->hora_final) {
+                      $inicio = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_inicio);
+                      $fim = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_final);
+                      $total_minutos = $fim->diffInMinutes($inicio);
+
+                      // Subtrair desconto se existir
+                      if ($ordemServico->hora_desconto) {
+                        list($desc_h, $desc_m) = explode(':', $ordemServico->hora_desconto);
+                        $desconto_minutos = intval($desc_h) * 60 + intval($desc_m);
+                        $total_minutos -= $desconto_minutos;
+                      }
+
+                      // Converter para horas decimais (máximo 0 se resultado negativo)
+                      $total_horas = max(0, round($total_minutos / 60, 2));
+                    }
+                  @endphp
+                  {{ number_format($total_horas, 2, '.', '') }}
+                </td>
               </tr>
             </table>
           </td>
