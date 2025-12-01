@@ -137,7 +137,7 @@
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA FIM</td>
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA DESCONTO</td>
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">DESPESA</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">TRASLADO</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">TRANSLADO</td>
                 <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
               </tr>
               <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
