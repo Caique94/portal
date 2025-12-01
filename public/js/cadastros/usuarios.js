@@ -135,7 +135,7 @@ $(function () {
 
       // ===== ABA 1: DADOS PESSOAIS =====
       $('#txtUsuarioNome').val(r.name || '');
-      $('#txtUsuarioDataNasc').val(r.data_nasc || '');
+      $('#txtUsuarioDataNasc').val(r.data_nasc || '').trigger('change');
       $('#txtUsuarioEmail').val(r.email || '');
       $('#txtUsuarioCelular').val(r.celular || '').trigger('input');
       $('#slcUsuarioPapel').val(r.papel || '');
@@ -201,7 +201,7 @@ $(function () {
 
       // ===== ABA 1: DADOS PESSOAIS =====
       $('#txtUsuarioNome').val(r.name || '');
-      $('#txtUsuarioDataNasc').val(r.data_nasc || '');
+      $('#txtUsuarioDataNasc').val(r.data_nasc || '').trigger('change');
       $('#txtUsuarioEmail').val(r.email || '');
       $('#txtUsuarioCelular').val(r.celular || '').trigger('input');
       $('#slcUsuarioPapel').val(r.papel || '');

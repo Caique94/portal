@@ -66,32 +66,53 @@ class UserController extends Controller
                     $statusCode = 201;
                 }
 
-                // ===== 4.5 Salvar Pessoa Jurídica (apenas se todos os obrigatórios preenchidos) =====
+                // ===== 4.5 Salvar Pessoa Jurídica (se houver pelo menos CNPJ OU qualquer campo preenchido) =====
                 try {
                     $pessoaJuridica = $this->validatePessoaJuridica($validated);
 
-                    // Campos OBRIGATÓRIOS: cnpj, razao_social, endereco, numero, bairro, cidade, estado, cep, telefone, email
-                    $temTodosCamposObrigatorios =
-                        !empty($pessoaJuridica['cnpj']) &&
-                        !empty($pessoaJuridica['razao_social']) &&
-                        !empty($pessoaJuridica['endereco']) &&
-                        !empty($pessoaJuridica['numero']) &&
-                        !empty($pessoaJuridica['bairro']) &&
-                        !empty($pessoaJuridica['cidade']) &&
-                        !empty($pessoaJuridica['estado']) &&
-                        !empty($pessoaJuridica['cep']) &&
-                        !empty($pessoaJuridica['telefone']) &&
+                    // Verifica se ALGUM campo de Pessoa Jurídica foi preenchido
+                    $temAlgumCampo = !empty($pessoaJuridica['cnpj']) ||
+                        !empty($pessoaJuridica['razao_social']) ||
+                        !empty($pessoaJuridica['endereco']) ||
+                        !empty($pessoaJuridica['numero']) ||
+                        !empty($pessoaJuridica['bairro']) ||
+                        !empty($pessoaJuridica['cidade']) ||
+                        !empty($pessoaJuridica['estado']) ||
+                        !empty($pessoaJuridica['cep']) ||
+                        !empty($pessoaJuridica['telefone']) ||
                         !empty($pessoaJuridica['email']);
 
                     \Log::debug('Validação Pessoa Jurídica', [
-                        'temTodos' => $temTodosCamposObrigatorios,
+                        'temAlgumCampo' => $temAlgumCampo,
                         'cnpj' => $pessoaJuridica['cnpj'] ?? null,
                         'razao_social' => $pessoaJuridica['razao_social'] ?? null,
                         'estado' => $pessoaJuridica['estado'] ?? null,
                         'email' => $pessoaJuridica['email'] ?? null,
                     ]);
 
-                    if ($temTodosCamposObrigatorios) {
+                    if ($temAlgumCampo) {
+                        // Se tem CNPJ, valida que todos os 10 campos obrigatórios estão preenchidos
+                        if (!empty($pessoaJuridica['cnpj'])) {
+                            $temTodosCamposObrigatorios =
+                                !empty($pessoaJuridica['cnpj']) &&
+                                !empty($pessoaJuridica['razao_social']) &&
+                                !empty($pessoaJuridica['endereco']) &&
+                                !empty($pessoaJuridica['numero']) &&
+                                !empty($pessoaJuridica['bairro']) &&
+                                !empty($pessoaJuridica['cidade']) &&
+                                !empty($pessoaJuridica['estado']) &&
+                                !empty($pessoaJuridica['cep']) &&
+                                !empty($pessoaJuridica['telefone']) &&
+                                !empty($pessoaJuridica['email']);
+
+                            if (!$temTodosCamposObrigatorios) {
+                                throw \Illuminate\Validation\ValidationException::withMessages([
+                                    'txtPJCNPJ' => ['Se CNPJ é preenchido, todos os 10 campos obrigatórios (CNPJ, Razão Social, Endereço, Número, Bairro, Cidade, Estado, CEP, Telefone, Email) devem ser preenchidos']
+                                ]);
+                            }
+                        }
+
+                        // Se chegou aqui, salva (pode ser parcial sem CNPJ)
                         $pessoaJuridica['user_id'] = $user->id;
                         $user->pessoaJuridica()->updateOrCreate(
                             ['user_id' => $user->id],
@@ -99,14 +120,13 @@ class UserController extends Controller
                         );
                         \Log::info('Pessoa Jurídica salva com sucesso', [
                             'user_id' => $user->id,
-                            'cnpj' => $pessoaJuridica['cnpj'] ?? 'vazio'
+                            'cnpj' => $pessoaJuridica['cnpj'] ?? 'vazio',
+                            'campos_preenchidos' => count(array_filter($pessoaJuridica))
                         ]);
                     } else {
-                        \Log::info('Pessoa Jurídica não salva (faltam campos obrigatórios)', [
-                            'user_id' => $user->id,
-                            'cnpj' => $pessoaJuridica['cnpj'] ?? 'vazio',
-                            'razao_social' => $pessoaJuridica['razao_social'] ?? 'vazio',
-                            'estado' => $pessoaJuridica['estado'] ?? 'vazio'
+                        // Nenhum campo foi preenchido, não tenta salvar
+                        \Log::info('Pessoa Jurídica não salva (todos os campos vazios)', [
+                            'user_id' => $user->id
                         ]);
                     }
                 } catch (\Exception $e) {

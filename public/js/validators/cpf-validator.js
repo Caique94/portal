@@ -122,13 +122,14 @@ $(document).ready(function() {
     }
 
     /**
-     * Bind eventos a todos os inputs com classe "cpf"
+     * Bind eventos APENAS a inputs com classe "cpf" dentro do modal de formulário
+     * Não aplica na tabela de listagem para não interferi com CPFs diferentes
      */
-    $(document).on('input', 'input.cpf', function() {
+    $(document).on('input', '#formUsuario input.cpf', function() {
         applyCPFMask(this);
     });
 
-    $(document).on('blur', 'input.cpf', function() {
+    $(document).on('blur', '#formUsuario input.cpf', function() {
         validateCPFOnBlur(this);
     });
 
