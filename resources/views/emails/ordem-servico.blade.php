@@ -185,34 +185,44 @@
         <tr>
           <td style="padding: 16px;">
             <!-- 4-Column Summary Table - 2 rows -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px;">
-              <!-- Row 1: Headers -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px; background-color: #F2F2F2;">
+              <!-- Row 1 -->
               <tr>
-                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">Chamado Personalitec</th>
-                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">Previsão Retorno</th>
-                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">KM</th>
-                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">TOTAL OS</th>
+                <!-- Column 1: Chamado Personalitec (2-line label) -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 500; width: 25%;">
+                  Chamado<br>Personalitec
+                </td>
+                <!-- Column 2: Chamado Value -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 15px; font-weight: 600; width: 25%;">
+                  {{ $ordemServico->nr_atendimento ?? $ordemServico->id }}
+                </td>
+                <!-- Column 3: Previsão Retorno (2-line label) -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 500; width: 25%;">
+                  Previsão<br>Retorno
+                </td>
+                <!-- Column 4: Date Value -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
+                  {{ $ordemServico->updated_at ? \Carbon\Carbon::parse($ordemServico->updated_at)->addDay()->format('d/m/Y') : '--' }}
+                </td>
               </tr>
-              <!-- Row 1: Values -->
-              <tr style="background-color: #FAFBFC;">
-                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 13px; font-weight: 600;">{{ $ordemServico->nr_atendimento ?? $ordemServico->id }}</td>
-                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 13px;">{{ $ordemServico->updated_at ? \Carbon\Carbon::parse($ordemServico->updated_at)->addDay()->format('d/m/Y') : '--' }}</td>
-                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 13px;">{{ $ordemServico->km ?? '--' }}</td>
-                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 800;">{{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}</td>
-              </tr>
-              <!-- Row 2: Headers -->
+              <!-- Row 2 -->
               <tr>
-                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">KM</th>
-                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">TOTAL OS</th>
-                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;"></th>
-                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;"></th>
-              </tr>
-              <!-- Row 2: Values -->
-              <tr style="background-color: #FAFBFC;">
-                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 13px;">{{ $ordemServico->km ?? '--' }}</td>
-                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 800;">{{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}</td>
-                <td style="padding: 14px 10px; border: 1px solid #E0E8F0;"></td>
-                <td style="padding: 14px 10px; border: 1px solid #E0E8F0;"></td>
+                <!-- Column 1: KM Label -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 500; width: 25%;">
+                  KM
+                </td>
+                <!-- Column 2: KM Value -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
+                  {{ $ordemServico->km ?? '--' }}
+                </td>
+                <!-- Column 3: TOTAL OS Label -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 700; width: 25%;">
+                  TOTAL OS
+                </td>
+                <!-- Column 4: TOTAL OS Value -->
+                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 700;">
+                  {{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}
+                </td>
               </tr>
             </table>
 
