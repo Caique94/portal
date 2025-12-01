@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\OrdemServico;
+use App\Mail\OrdemServicoMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+
+class OrdemServicoEmailService
+{
+    /**
+     * Enviar Ordem de Serviço para Consultor
+     */
+    public function enviarParaConsultor(OrdemServico $ordemServico): bool
+    {
+        try {
+            $consultor = $ordemServico->consultor;
+
+            if (!$consultor || !$consultor->email) {
+                Log::warning('Consultor não encontrado ou sem email', ['os_id' => $ordemServico->id]);
+                return false;
+            }
+
+            Mail::to($consultor->email)
+                ->send(new OrdemServicoMail($ordemServico, 'consultor'));
+
+            Log::info('Ordem de Serviço enviada para Consultor', [
+                'os_id' => $ordemServico->id,
+                'consultor_email' => $consultor->email,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar Ordem de Serviço para Consultor', [
+                'os_id' => $ordemServico->id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Enviar Ordem de Serviço para Cliente
+     */
+    public function enviarParaCliente(OrdemServico $ordemServico): bool
+    {
+        try {
+            $cliente = $ordemServico->cliente;
+
+            if (!$cliente) {
+                Log::warning('Cliente não encontrado', ['os_id' => $ordemServico->id]);
+                return false;
+            }
+
+            // Prioridade: email do contato > email PJ > email do usuário
+            $email = $cliente->pessoaJuridica->email ?? $cliente->email;
+
+            if (!$email) {
+                Log::warning('Cliente sem email cadastrado', ['os_id' => $ordemServico->id, 'cliente_id' => $cliente->id]);
+                return false;
+            }
+
+            Mail::to($email)
+                ->send(new OrdemServicoMail($ordemServico, 'cliente'));
+
+            Log::info('Ordem de Serviço enviada para Cliente', [
+                'os_id' => $ordemServico->id,
+                'cliente_email' => $email,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar Ordem de Serviço para Cliente', [
+                'os_id' => $ordemServico->id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Enviar para ambos (Consultor e Cliente)
+     */
+    public function enviarParaAmbos(OrdemServico $ordemServico): array
+    {
+        return [
+            'consultor' => $this->enviarParaConsultor($ordemServico),
+            'cliente' => $this->enviarParaCliente($ordemServico),
+        ];
+    }
+}

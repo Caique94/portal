@@ -11,6 +11,7 @@ use App\Services\OSValidation;
 use App\Services\AuditService;
 use App\Services\PermissionService;
 use App\Services\ConsultorTotalizadorService;
+use App\Services\OrdemServicoEmailService;
 use App\Events\OSCreated;
 use App\Events\OSApproved;
 use App\Events\OSRejected;
@@ -859,6 +860,99 @@ class OrdemServicoController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erro ao processar reenvio: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Enviar Ordem de Serviço por Email para Consultor
+     */
+    public function enviarParaConsultor(Request $request)
+    {
+        try {
+            $id = $request->input('id');
+            $ordemServico = OrdemServico::findOrFail($id);
+
+            $emailService = new OrdemServicoEmailService();
+            $sucesso = $emailService->enviarParaConsultor($ordemServico);
+
+            return response()->json([
+                'success' => $sucesso,
+                'message' => $sucesso
+                    ? 'Ordem de Serviço enviada para o Consultor com sucesso'
+                    : 'Erro ao enviar Ordem de Serviço para o Consultor'
+            ], $sucesso ? 200 : 400);
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar OS para Consultor', [
+                'os_id' => $request->input('id'),
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Enviar Ordem de Serviço por Email para Cliente
+     */
+    public function enviarParaCliente(Request $request)
+    {
+        try {
+            $id = $request->input('id');
+            $ordemServico = OrdemServico::findOrFail($id);
+
+            $emailService = new OrdemServicoEmailService();
+            $sucesso = $emailService->enviarParaCliente($ordemServico);
+
+            return response()->json([
+                'success' => $sucesso,
+                'message' => $sucesso
+                    ? 'Ordem de Serviço enviada para o Cliente com sucesso'
+                    : 'Erro ao enviar Ordem de Serviço para o Cliente'
+            ], $sucesso ? 200 : 400);
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar OS para Cliente', [
+                'os_id' => $request->input('id'),
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Enviar Ordem de Serviço para ambos (Consultor e Cliente)
+     */
+    public function enviarParaAmbos(Request $request)
+    {
+        try {
+            $id = $request->input('id');
+            $ordemServico = OrdemServico::findOrFail($id);
+
+            $emailService = new OrdemServicoEmailService();
+            $resultados = $emailService->enviarParaAmbos($ordemServico);
+
+            $ambosComSucesso = $resultados['consultor'] && $resultados['cliente'];
+
+            return response()->json([
+                'success' => $ambosComSucesso,
+                'message' => $ambosComSucesso
+                    ? 'Ordem de Serviço enviada com sucesso para Consultor e Cliente'
+                    : 'Erro ao enviar para um ou ambos os destinatários',
+                'detalhes' => $resultados
+            ], $ambosComSucesso ? 200 : 400);
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar OS para ambos', [
+                'os_id' => $request->input('id'),
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro: ' . $e->getMessage()
             ], 500);
         }
     }
