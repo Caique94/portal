@@ -159,9 +159,14 @@
                 </td>
                 <td style="padding: 10px 5px; text-align: center;">
                   @php
-                    // Calcula total de horas: (hora_fim - hora_inicio - hora_desconto)
+                    // Usa qtde_total se disponível, caso contrário calcula a partir dos horários
                     $total_horas = 0;
-                    if ($ordemServico->hora_inicio && $ordemServico->hora_final) {
+
+                    if ($ordemServico->qtde_total) {
+                      // Usa qtde_total da OS diretamente
+                      $total_horas = floatval($ordemServico->qtde_total);
+                    } elseif ($ordemServico->hora_inicio && $ordemServico->hora_final) {
+                      // Fallback: calcula a partir dos horários
                       $inicio = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_inicio);
                       $fim = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_final);
                       $total_minutos = $fim->diffInMinutes($inicio);
