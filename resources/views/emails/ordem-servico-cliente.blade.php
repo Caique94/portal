@@ -97,25 +97,62 @@
     <td style="padding: 25px 20px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td width="100%">
+          <td width="50%" style="padding-right: 10px; vertical-align: top;">
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; padding: 16px;">
               <tr>
-                <td style="font-weight: bold; color: #1565C0; width: 150px; padding: 8px 0;">Consultor:</td>
+                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Consultor:</td>
                 <td style="color: #1F3A56; padding: 8px 0;">
                   {{ $ordemServico->consultor->name ?? 'N/A' }}
                 </td>
               </tr>
               <tr>
-                <td style="font-weight: bold; color: #1565C0; width: 150px; padding: 8px 0;">Emissão:</td>
+                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Contato:</td>
+                <td style="color: #1F3A56; padding: 8px 0;">
+                  @if($ordemServico->cliente)
+                    {{ $ordemServico->cliente->email ?? $ordemServico->cliente->contato ?? 'N/A' }}
+                  @else
+                    N/A
+                  @endif
+                </td>
+              </tr>
+              <tr>
+                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Emissão:</td>
                 <td style="color: #1F3A56; padding: 8px 0;">{{ \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') }}</td>
               </tr>
               <tr>
-                <td style="font-weight: bold; color: #1565C0; width: 150px; padding: 8px 0;">Data de Atendimento:</td>
-                <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->hora_inicio && $ordemServico->hora_final ? $ordemServico->hora_inicio . ' às ' . $ordemServico->hora_final : '--' }}</td>
+                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Cliente:</td>
+                <td style="color: #1F3A56; padding: 8px 0;">
+                  @if($ordemServico->cliente)
+                    {{ $ordemServico->cliente->nome ?? $ordemServico->cliente->nome_fantasia ?? 'N/A' }}
+                  @else
+                    N/A
+                  @endif
+                </td>
               </tr>
-              <tr>
-                <td style="font-weight: bold; color: #1565C0; width: 150px; padding: 8px 0;">Total de Horas:</td>
-                <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, ',', '.') : '--' }} horas</td>
+            </table>
+          </td>
+
+          <td width="50%" style="padding-left: 10px; vertical-align: top;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; overflow: hidden;">
+              <tr style="background-color: #1E88E5; color: white; font-weight: bold; font-size: 11px;">
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA INICIO</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA FIM</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA DESCONTO</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">DESPESA</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">TRANSLADO</td>
+                <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
+              </tr>
+              <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_inicio ?? '00:00' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_final ?? '00:00' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">
+                  {{ $ordemServico->deslocamento ? 'R$ ' . number_format(floatval($ordemServico->deslocamento) * floatval($ordemServico->consultor->valor_hora ?? 0), 2, ',', '.') : '--' }}
+                </td>
+                <td style="padding: 10px 5px; text-align: center;">
+                  {{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, '.', '') : '--' }}
+                </td>
               </tr>
             </table>
           </td>
