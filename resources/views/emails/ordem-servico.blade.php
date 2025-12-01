@@ -184,27 +184,35 @@
         </tr>
         <tr>
           <td style="padding: 16px;">
-            <!-- Header Row -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 0;">
-              <tr>
-                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: left; font-size: 12px;">Chamado Personalitec</th>
-                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">KM</th>
-                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Horas Trabalhadas</th>
-                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Valor Total</th>
-                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Status</th>
-              </tr>
-            </table>
-
-            <!-- Data Row -->
+            <!-- 4-Column Summary Table - 2 rows -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px;">
+              <!-- Row 1: Headers -->
               <tr>
-                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: left; color: #1F3A56; font-size: 12px; font-weight: 600;">{{ $ordemServico->nr_atendimento ?? $ordemServico->id }}</td>
-                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">{{ $ordemServico->km ?? '--' }}</td>
-                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">{{ $ordemServico->horas_trabalhadas ?? '--' }}</td>
-                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: center; color: #0A5FA6; font-size: 13px; font-weight: 800;">{{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}</td>
-                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">
-                  @if($ordemServico->status == 1) Pendente @elseif($ordemServico->status == 2) Aprovado @elseif($ordemServico->status == 3) Finalizado @else Desconhecido @endif
-                </td>
+                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">Chamado Personalitec</th>
+                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">Previsão Retorno</th>
+                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">KM</th>
+                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">TOTAL OS</th>
+              </tr>
+              <!-- Row 1: Values -->
+              <tr style="background-color: #FAFBFC;">
+                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 13px; font-weight: 600;">{{ $ordemServico->nr_atendimento ?? $ordemServico->id }}</td>
+                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 13px;">{{ $ordemServico->updated_at ? \Carbon\Carbon::parse($ordemServico->updated_at)->addDay()->format('d/m/Y') : '--' }}</td>
+                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 13px;">{{ $ordemServico->km ?? '--' }}</td>
+                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 800;">{{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}</td>
+              </tr>
+              <!-- Row 2: Headers -->
+              <tr>
+                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">KM</th>
+                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;">TOTAL OS</th>
+                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;"></th>
+                <th style="background-color: #F5F8FA; color: #2E7DA8; padding: 14px 10px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px; width: 25%;"></th>
+              </tr>
+              <!-- Row 2: Values -->
+              <tr style="background-color: #FAFBFC;">
+                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 13px;">{{ $ordemServico->km ?? '--' }}</td>
+                <td style="padding: 14px 10px; border: 1px solid #E0E8F0; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 800;">{{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}</td>
+                <td style="padding: 14px 10px; border: 1px solid #E0E8F0;"></td>
+                <td style="padding: 14px 10px; border: 1px solid #E0E8F0;"></td>
               </tr>
             </table>
 
