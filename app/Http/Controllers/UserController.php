@@ -83,6 +83,14 @@ class UserController extends Controller
                         !empty($pessoaJuridica['telefone']) &&
                         !empty($pessoaJuridica['email']);
 
+                    \Log::debug('Validação Pessoa Jurídica', [
+                        'temTodos' => $temTodosCamposObrigatorios,
+                        'cnpj' => $pessoaJuridica['cnpj'] ?? null,
+                        'razao_social' => $pessoaJuridica['razao_social'] ?? null,
+                        'estado' => $pessoaJuridica['estado'] ?? null,
+                        'email' => $pessoaJuridica['email'] ?? null,
+                    ]);
+
                     if ($temTodosCamposObrigatorios) {
                         $pessoaJuridica['user_id'] = $user->id;
                         $user->pessoaJuridica()->updateOrCreate(
@@ -119,6 +127,14 @@ class UserController extends Controller
                         !empty($pagamento['banco']) &&
                         !empty($pagamento['agencia']) &&
                         !empty($pagamento['conta']);
+
+                    \Log::debug('Validação Pagamento', [
+                        'temTodos' => $temTodosCamposPagamento,
+                        'titular_conta' => $pagamento['titular_conta'] ?? null,
+                        'banco' => $pagamento['banco'] ?? null,
+                        'agencia' => $pagamento['agencia'] ?? null,
+                        'conta' => $pagamento['conta'] ?? null,
+                    ]);
 
                     if ($temTodosCamposPagamento) {
                         $pagamento['user_id'] = $user->id;
