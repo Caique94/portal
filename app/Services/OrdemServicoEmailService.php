@@ -15,6 +15,11 @@ class OrdemServicoEmailService
     public function enviarParaConsultor(OrdemServico $ordemServico): bool
     {
         try {
+            // Carregar relacionamentos se não estiverem carregados
+            if (!$ordemServico->relationLoaded('consultor')) {
+                $ordemServico->load('consultor', 'cliente', 'cliente.pessoaJuridica');
+            }
+
             $consultor = $ordemServico->consultor;
 
             if (!$consultor || !$consultor->email) {
@@ -46,6 +51,11 @@ class OrdemServicoEmailService
     public function enviarParaCliente(OrdemServico $ordemServico): bool
     {
         try {
+            // Carregar relacionamentos se não estiverem carregados
+            if (!$ordemServico->relationLoaded('cliente')) {
+                $ordemServico->load('cliente', 'cliente.pessoaJuridica', 'consultor');
+            }
+
             $cliente = $ordemServico->cliente;
 
             if (!$cliente) {
@@ -54,7 +64,13 @@ class OrdemServicoEmailService
             }
 
             // Prioridade: email do contato > email PJ > email do usuário
-            $email = $cliente->pessoaJuridica->email ?? $cliente->email;
+            $email = null;
+
+            if ($cliente->pessoaJuridica && $cliente->pessoaJuridica->email) {
+                $email = $cliente->pessoaJuridica->email;
+            } elseif ($cliente->email) {
+                $email = $cliente->email;
+            }
 
             if (!$email) {
                 Log::warning('Cliente sem email cadastrado', ['os_id' => $ordemServico->id, 'cliente_id' => $cliente->id]);

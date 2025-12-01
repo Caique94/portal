@@ -104,11 +104,27 @@
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; padding: 16px;">
               <tr>
                 <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Cliente:</td>
-                <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->cliente->name ?? 'N/A' }}</td>
+                <td style="color: #1F3A56; padding: 8px 0;">
+                  @if($ordemServico->cliente)
+                    {{ $ordemServico->cliente->name ?? 'N/A' }}
+                  @else
+                    N/A
+                  @endif
+                </td>
               </tr>
               <tr>
                 <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Contato:</td>
-                <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->cliente->pessoaJuridica->email ?? $ordemServico->cliente->email ?? 'N/A' }}</td>
+                <td style="color: #1F3A56; padding: 8px 0;">
+                  @if($ordemServico->cliente)
+                    @if($ordemServico->cliente->pessoaJuridica && $ordemServico->cliente->pessoaJuridica->email)
+                      {{ $ordemServico->cliente->pessoaJuridica->email }}
+                    @else
+                      {{ $ordemServico->cliente->email ?? 'N/A' }}
+                    @endif
+                  @else
+                    N/A
+                  @endif
+                </td>
               </tr>
               <tr>
                 <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Emissão:</td>
@@ -172,24 +188,25 @@
         </tr>
         <tr>
           <td style="padding: 16px;">
+            <!-- Header Row -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 0;">
+              <tr>
+                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: left; font-size: 12px;">Chamado Personalitec</th>
+                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">KM</th>
+                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Horas Trabalhadas</th>
+                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Valor Total</th>
+                <th style="background-color: white; color: #2E7DA8; padding: 12px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Status</th>
+              </tr>
+            </table>
+
+            <!-- Data Row -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px;">
               <tr>
-                <th style="background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Chamado Personalitec</th>
-                <th style="background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">{{ $ordemServico->nr_atendimento ?? $ordemServico->id }}</th>
-                <th style="background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">Previsão Retorno</th>
-                <th style="background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; font-size: 12px;">{{ $ordemServico->updated_at ? \Carbon\Carbon::parse($ordemServico->updated_at)->addDay()->format('d/m/Y') : '--' }}</th>
-              </tr>
-              <tr>
-                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">KM</td>
-                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">{{ $ordemServico->km ?? '--' }}</td>
-                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">Valor Total</td>
-                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 800;">{{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}</td>
-              </tr>
-              <tr>
-                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">Horas Trabalhadas</td>
-                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">{{ $ordemServico->horas_trabalhadas ?? '--' }}</td>
-                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">Status</td>
-                <td style="padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">
+                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: left; color: #1F3A56; font-size: 12px; font-weight: 600;">{{ $ordemServico->nr_atendimento ?? $ordemServico->id }}</td>
+                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">{{ $ordemServico->km ?? '--' }}</td>
+                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">{{ $ordemServico->horas_trabalhadas ?? '--' }}</td>
+                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: center; color: #0A5FA6; font-size: 13px; font-weight: 800;">{{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}</td>
+                <td style="padding: 12px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; font-size: 12px;">
                   @if($ordemServico->status == 1) Pendente @elseif($ordemServico->status == 2) Aprovado @elseif($ordemServico->status == 3) Finalizado @else Desconhecido @endif
                 </td>
               </tr>
