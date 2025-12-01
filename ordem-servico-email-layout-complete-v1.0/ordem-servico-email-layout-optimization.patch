@@ -1,0 +1,605 @@
+From 879ceaf457ebb9ecde995ba85c4cde3cf2b9a7c2 Mon Sep 17 00:00:00 2001
+From: Caique94 <caique94@github.com>
+Date: Mon, 1 Dec 2025 10:50:30 -0300
+Subject: [PATCH 1/6] fix: Remove total hours from RESUMO and replace return
+ date with issue date
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Removed TOTAL DE HORAS row from RESUMO section (now only 2 rows)
+- Changed Previsão Retorno to Data de Emissão
+- Uses data_emissao field directly from OrdemServico
+- Cleaner layout with only essential information in RESUMO
+
+Changes:
+✓ RESUMO now shows: Chamado | Data de Emissão | KM | TOTAL OS
+✓ Removed: TOTAL DE HORAS row (total hours still visible in hours table)
+✓ Data uses DD/MM/YYYY format
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+---
+ .../views/emails/ordem-servico.blade.php      | 44 +++----------------
+ 1 file changed, 5 insertions(+), 39 deletions(-)
+
+diff --git a/resources/views/emails/ordem-servico.blade.php b/resources/views/emails/ordem-servico.blade.php
+index 5edfc82..c27976d 100644
+--- a/resources/views/emails/ordem-servico.blade.php
++++ b/resources/views/emails/ordem-servico.blade.php
+@@ -204,7 +204,7 @@
+         </tr>
+         <tr>
+           <td style="padding: 16px;">
+-            <!-- 4-Column Summary Table - 3 rows -->
++            <!-- 4-Column Summary Table - 2 rows -->
+             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px; background-color: #F2F2F2;">
+               <!-- Row 1 -->
+               <tr>
+@@ -216,13 +216,13 @@
+                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 15px; font-weight: 600; width: 25%;">
+                   {{ $ordemServico->nr_atendimento ?? $ordemServico->id }}
+                 </td>
+-                <!-- Column 3: Previsão Retorno (2-line label) -->
++                <!-- Column 3: Data de Emissão (2-line label) -->
+                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 500; width: 25%;">
+-                  Previsão<br>Retorno
++                  Data de<br>Emissão
+                 </td>
+-                <!-- Column 4: Date Value -->
++                <!-- Column 4: Data de Emissão Value -->
+                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
+-                  {{ $ordemServico->updated_at ? \Carbon\Carbon::parse($ordemServico->updated_at)->addDay()->format('d/m/Y') : '--' }}
++                  {{ $ordemServico->data_emissao ? \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') : '--' }}
+                 </td>
+               </tr>
+               <!-- Row 2 -->
+@@ -244,40 +244,6 @@
+                   {{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}
+                 </td>
+               </tr>
+-              <!-- Row 3: Total Horas -->
+-              <tr>
+-                <!-- Column 1: TOTAL HORAS Label -->
+-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 700; width: 25%;">
+-                  TOTAL<br>DE HORAS
+-                </td>
+-                <!-- Column 2: TOTAL HORAS Value -->
+-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; font-weight: 700; width: 25%;">
+-                  @php
+-                    $resumo_total_horas = 0;
+-                    if ($ordemServico->hora_inicio && $ordemServico->hora_final) {
+-                      $inicio = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_inicio);
+-                      $fim = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_final);
+-                      $total_minutos = $fim->diffInMinutes($inicio);
+-
+-                      if ($ordemServico->hora_desconto) {
+-                        list($desc_h, $desc_m) = explode(':', $ordemServico->hora_desconto);
+-                        $desconto_minutos = intval($desc_h) * 60 + intval($desc_m);
+-                        $total_minutos -= $desconto_minutos;
+-                      }
+-
+-                      $resumo_total_horas = max(0, round($total_minutos / 60, 2));
+-                    }
+-                  @endphp
+-                  {{ number_format($resumo_total_horas, 2, '.', '') }}
+-                </td>
+-                <!-- Column 3 & 4: Empty cells for alignment -->
+-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; width: 25%;">
+-                  &nbsp;
+-                </td>
+-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
+-                  &nbsp;
+-                </td>
+-              </tr>
+             </table>
+ 
+             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%);">
+-- 
+2.51.2.windows.1
+
+
+From 33da9d33708cf3c293507156b215c0baa2d6bf13 Mon Sep 17 00:00:00 2001
+From: Caique94 <caique94@github.com>
+Date: Mon, 1 Dec 2025 10:54:51 -0300
+Subject: [PATCH 2/6] docs: Update documentation to reflect RESUMO refinement
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Document removal of total hours from RESUMO for cleaner layout
+- Update examples showing Data de Emissão instead of Previsão Retorno
+- Reflect current final state with 2-row RESUMO layout
+- Clarify that total hours calculation remains in hours table only
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+---
+ NOVAS_CORRECOES_02_DEZ.md | 79 ++++++++++++++++++---------------------
+ 1 file changed, 37 insertions(+), 42 deletions(-)
+
+diff --git a/NOVAS_CORRECOES_02_DEZ.md b/NOVAS_CORRECOES_02_DEZ.md
+index 3dfbe99..6219555 100644
+--- a/NOVAS_CORRECOES_02_DEZ.md
++++ b/NOVAS_CORRECOES_02_DEZ.md
+@@ -37,20 +37,17 @@ ### 2. ✅ Adicionada Coluna "HORA DESCONTO" na Tabela de Horas
+ 
+ ---
+ 
+-### 3. ✅ Totalizador de Horas no RESUMO (Não Mais Vazio)
+-**Antes:** Seção RESUMO não tinha total de horas
+-**Depois:** RESUMO agora mostra "TOTAL DE HORAS" calculado
++### 3. ✅ RESUMO Simplificado (Sem Total de Horas)
++**Antes:** RESUMO tinha Previsão Retorno + Total de Horas (3 linhas)
++**Depois:** RESUMO mostra apenas Data de Emissão (2 linhas, mais limpo)
+ 
+ **Layout do RESUMO:**
+ ```
+ ┌──────────────────────┬──────────┬──────────────────────┬──────────────┐
+-│ Chamado              │ 150      │ Previsão Retorno     │ 02/12/2025   │
++│ Chamado              │ 150      │ Data de Emissão      │ 01/12/2025   │
+ │ Personalitec         │          │                      │              │
+ ├──────────────────────┼──────────┼──────────────────────┼──────────────┤
+ │ KM                   │ --       │ TOTAL OS             │ R$ 435,00    │
+-├──────────────────────┼──────────┼──────────────────────┼──────────────┤
+-│ TOTAL                │ 7.50     │ [espaço vazio]       │ [espaço]     │
+-│ DE HORAS             │          │                      │              │
+ └──────────────────────┴──────────┴──────────────────────┴──────────────┘
+ ```
+ 
+@@ -70,27 +67,14 @@ ### Coluna HORA DESCONTO
+ {{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}
+ ```
+ 
+-### Total de Horas no RESUMO
++### Data de Emissão no RESUMO
+ ```blade
+-@php
+-  $resumo_total_horas = 0;
+-  if ($ordemServico->hora_inicio && $ordemServico->hora_final) {
+-    $inicio = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_inicio);
+-    $fim = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_final);
+-    $total_minutos = $fim->diffInMinutes($inicio);
+-
+-    if ($ordemServico->hora_desconto) {
+-      list($desc_h, $desc_m) = explode(':', $ordemServico->hora_desconto);
+-      $desconto_minutos = intval($desc_h) * 60 + intval($desc_m);
+-      $total_minutos -= $desconto_minutos;
+-    }
+-
+-    $resumo_total_horas = max(0, round($total_minutos / 60, 2));
+-  }
+-@endphp
+-{{ number_format($resumo_total_horas, 2, '.', '') }}
++<!-- Usa data_emissao diretamente -->
++{{ $ordemServico->data_emissao ? \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') : '--' }}
+ ```
+ 
++**Nota:** Total de horas ainda está visível na **tabela de horas**, não precisa estar no RESUMO também.
++
+ ---
+ 
+ ## 📊 Exemplo Visual (Email Renderizado)
+@@ -110,25 +94,24 @@ ### Antes
+   Previsão Retorno: 02/12/2025
+   KM: --
+   TOTAL OS: R$ 435,00
+-  (sem total de horas)
+ ```
+ 
+ ### Depois ✅
+ ```
+ CLIENTE INFO:
+-  Cliente: HOMEPLAST (0001)  ✓ ADICIONADO
++  Cliente: HOMEPLAST (0001)  ✓ CORRIGIDO
+   Contato: RAUL
+ 
+ TABELA DE HORAS:
+-  HORA INICIO | HORA FIM | HORA DESCONTO | DESPESA | TRASLADO | TOTAL HORAS
+-  08:00       | 17:00    | 01:30         | R$ 30   | --       | 7.50
++  HORA INI | HORA FIM | HORA DESCONTO | DESPESA | TRASLADO | TOTAL HORAS
++  08:00    | 17:00    | 01:30         | R$ 30   | --       | 7.50  ✓ ADICIONADO
+ 
+ RESUMO:
+   Chamado Personalitec: 150
+-  Previsão Retorno: 02/12/2025
++  Data de Emissão: 01/12/2025  ✓ CORRIGIDO (era Previsão Retorno)
+   KM: --
+   TOTAL OS: R$ 435,00
+-  TOTAL DE HORAS: 7.50  ✓ ADICIONADO
++  ✓ REMOVIDO: TOTAL DE HORAS (mantém tabela limpa)
+ ```
+ 
+ ---
+@@ -137,12 +120,13 @@ ## ✅ Checklist
+ 
+ - [x] Nome do cliente sendo buscado corretamente do banco
+ - [x] Coluna HORA DESCONTO adicionada na tabela de horas
+-- [x] Total de horas calculado no RESUMO (não vazio)
+ - [x] Fallback para nome_fantasia se nome estiver vazio
+ - [x] Formatação de horas consistente (HH:MM)
+ - [x] Cálculo respeitando desconto: (fim - inicio - desconto)
+ - [x] Resultado não negativo (máximo 0.00)
+ - [x] Arredondamento a 2 casas decimais
++- [x] RESUMO simplificado com Data de Emissão (não Previsão Retorno)
++- [x] TOTAL DE HORAS removido do RESUMO (mantém tabela limpa)
+ 
+ ---
+ 
+@@ -167,29 +151,38 @@ ## 🧪 Como Testar
+    - ✓ Cliente mostra: `HOMEPLAST (0001)`
+    - ✓ Tabela tem coluna HORA DESCONTO: `01:30`
+    - ✓ TOTAL HORAS na tabela: `7.50` (9 - 1.5)
+-   - ✓ RESUMO mostra TOTAL DE HORAS: `7.50`
++   - ✓ RESUMO mostra Data de Emissão: `01/12/2025` (não Previsão Retorno)
++   - ✓ RESUMO não mostra TOTAL DE HORAS (removido, mais limpo)
+ 
+ ---
+ 
+ ## 🔄 Sincronização
+ 
+-Todas as 3 exibições do total de horas usam **exatamente a mesma lógica:**
++Todas as exibições do total de horas usam **exatamente a mesma lógica:**
+ 
+ | Local | Fórmula | Resultado |
+ |-------|---------|-----------|
+ | Tabela de Horas (TOTAL HORAS) | (17:00 - 08:00 - 01:30) | 7.50 ✓ |
+-| RESUMO (TOTAL DE HORAS) | (17:00 - 08:00 - 01:30) | 7.50 ✓ |
+ | JavaScript Helper | (17:00 - 08:00 - 01:30) | 7.50 ✓ |
+ 
++**Nota:** TOTAL DE HORAS foi **removido do RESUMO** para manter layout limpo (evita duplicação).
++
+ ---
+ 
+-## 📝 Commit Info
++## 📝 Commits Info
+ 
+ ```
+-Commit: e3d82cf
++Commit 1: e3d82cf
+ Arquivo: resources/views/emails/ordem-servico.blade.php
+ Linhas: +38, -2
+-Tipo: Fix (correção de bugs)
++Descrição: Add client name, hour discount column, total hours summary
++Tipo: Fix
++
++Commit 2: 879ceaf  ← NOVO
++Arquivo: resources/views/emails/ordem-servico.blade.php
++Linhas: +5, -39
++Descrição: Remove total hours from RESUMO, replace return date with issue date
++Tipo: Fix
+ ```
+ 
+ ---
+@@ -198,8 +191,10 @@ ## 🚀 Status Final
+ 
+ ✅ **PRONTO PARA PRODUÇÃO**
+ 
+-Todas as 3 solicitações foram implementadas:
+-1. ✅ Nome do cliente agora aparece
+-2. ✅ Campo de horas descontadas adicionado
+-3. ✅ Totalizador de horas preenchido (não em branco)
++Todas as solicitações foram implementadas:
++1. ✅ Nome do cliente agora aparece (buscado do banco)
++2. ✅ Campo de horas descontadas adicionado (HORA DESCONTO na tabela)
++3. ✅ RESUMO simplificado:
++   - Data de Emissão (ao invés de Previsão Retorno)
++   - Total de Horas removido (mantém em tabela, evita duplicação)
+ 
+-- 
+2.51.2.windows.1
+
+
+From 1a4b552514972f7d122d7ca3e0af9c3d90702331 Mon Sep 17 00:00:00 2001
+From: Caique94 <caique94@github.com>
+Date: Mon, 1 Dec 2025 11:04:43 -0300
+Subject: [PATCH 3/6] =?UTF-8?q?fix:=20Calculate=20traslado=20value=20corre?=
+ =?UTF-8?q?ctly=20as=20displacement=20hours=20=C3=97=20hourly=20rate?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Changed TRASLADO from displaying raw deslocamento field to calculating actual value
+- Formula: deslocamento (hours) × consultor.valor_hora (hourly rate)
+- Matches the calculation used in totalizador service
+- Shows correct R$ value in email instead of raw decimal
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+---
+ resources/views/emails/ordem-servico.blade.php | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/resources/views/emails/ordem-servico.blade.php b/resources/views/emails/ordem-servico.blade.php
+index c27976d..c820a1a 100644
+--- a/resources/views/emails/ordem-servico.blade.php
++++ b/resources/views/emails/ordem-servico.blade.php
+@@ -145,7 +145,18 @@
+                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_final ?? '00:00' }}</td>
+                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}</td>
+                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}</td>
+-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->deslocamento ? 'R$ ' . number_format($ordemServico->deslocamento, 2, ',', '.') : '--' }}</td>
++                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">
++                  @php
++                    // Calcula valor do traslado: deslocamento (horas) × valor_hora do consultor
++                    $valor_traslado = 0;
++                    if ($ordemServico->deslocamento && $ordemServico->consultor) {
++                      $deslocamento_horas = floatval($ordemServico->deslocamento);
++                      $valor_hora_consultor = floatval($ordemServico->consultor->valor_hora ?? 0);
++                      $valor_traslado = $deslocamento_horas * $valor_hora_consultor;
++                    }
++                  @endphp
++                  {{ $valor_traslado > 0 ? 'R$ ' . number_format($valor_traslado, 2, ',', '.') : '--' }}
++                </td>
+                 <td style="padding: 10px 5px; text-align: center;">
+                   @php
+                     // Calcula total de horas: (hora_fim - hora_inicio - hora_desconto)
+-- 
+2.51.2.windows.1
+
+
+From e2514a7cf457875186835e7303321f7a164b80cf Mon Sep 17 00:00:00 2001
+From: Caique94 <caique94@github.com>
+Date: Mon, 1 Dec 2025 11:06:20 -0300
+Subject: [PATCH 4/6] fix: Use qtde_total field for TOTAL HORAS instead of
+ calculating from times
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Changed TOTAL HORAS to prioritize qtde_total field from OS
+- Falls back to calculation from hora_inicio/hora_final if qtde_total is not set
+- Ensures email displays the exact quantity total configured in the form
+- Matches the "Olde Total" field value shown in admin
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+---
+ resources/views/emails/ordem-servico.blade.php | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/resources/views/emails/ordem-servico.blade.php b/resources/views/emails/ordem-servico.blade.php
+index c820a1a..8e5182c 100644
+--- a/resources/views/emails/ordem-servico.blade.php
++++ b/resources/views/emails/ordem-servico.blade.php
+@@ -159,9 +159,14 @@
+                 </td>
+                 <td style="padding: 10px 5px; text-align: center;">
+                   @php
+-                    // Calcula total de horas: (hora_fim - hora_inicio - hora_desconto)
++                    // Usa qtde_total se disponível, caso contrário calcula a partir dos horários
+                     $total_horas = 0;
+-                    if ($ordemServico->hora_inicio && $ordemServico->hora_final) {
++
++                    if ($ordemServico->qtde_total) {
++                      // Usa qtde_total da OS diretamente
++                      $total_horas = floatval($ordemServico->qtde_total);
++                    } elseif ($ordemServico->hora_inicio && $ordemServico->hora_final) {
++                      // Fallback: calcula a partir dos horários
+                       $inicio = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_inicio);
+                       $fim = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_final);
+                       $total_minutos = $fim->diffInMinutes($inicio);
+-- 
+2.51.2.windows.1
+
+
+From a914b16411cd376ee3a1973a737326c4c694ec50 Mon Sep 17 00:00:00 2001
+From: Caique94 <caique94@github.com>
+Date: Mon, 1 Dec 2025 11:08:44 -0300
+Subject: [PATCH 5/6] fix: Correct spelling of TRASLADO to TRANSLADO in email
+ table header
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+---
+ resources/views/emails/ordem-servico.blade.php | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/views/emails/ordem-servico.blade.php b/resources/views/emails/ordem-servico.blade.php
+index 8e5182c..3000bd6 100644
+--- a/resources/views/emails/ordem-servico.blade.php
++++ b/resources/views/emails/ordem-servico.blade.php
+@@ -137,7 +137,7 @@
+                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA FIM</td>
+                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA DESCONTO</td>
+                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">DESPESA</td>
+-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">TRASLADO</td>
++                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">TRANSLADO</td>
+                 <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
+               </tr>
+               <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
+-- 
+2.51.2.windows.1
+
+
+From e2033aaf0034518e6f2f1575ce3626c21236a7cd Mon Sep 17 00:00:00 2001
+From: Caique94 <caique94@github.com>
+Date: Mon, 1 Dec 2025 11:15:45 -0300
+Subject: [PATCH 6/6] style: Update email gradient colors to brighter blue tone
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Changed gradient from #2E7DA8-#5B9FBF to #1E88E5-#42A5F5 (brighter blue)
+- Updated all accent colors from #0A5FA6 to #1565C0
+- Updated border divider colors from #5B9FBF to #42A5F5
+- Applied new colors to:
+  * Header gradient
+  * Section titles (DETALHAMENTO, RESUMO)
+  * Table headers (hours table, summary table)
+  * Footer logo gradient
+  * Label colors (client info labels)
+  * Value highlights (big numbers)
+- Maintains visual hierarchy while providing fresher appearance
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+---
+ .../views/emails/ordem-servico.blade.php      | 48 +++++++++----------
+ 1 file changed, 24 insertions(+), 24 deletions(-)
+
+diff --git a/resources/views/emails/ordem-servico.blade.php b/resources/views/emails/ordem-servico.blade.php
+index 3000bd6..3aa1eec 100644
+--- a/resources/views/emails/ordem-servico.blade.php
++++ b/resources/views/emails/ordem-servico.blade.php
+@@ -7,14 +7,14 @@
+   <style type="text/css">
+     body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f5f5f5; }
+     .container { max-width: 980px; margin: 0 auto; background-color: #ffffff; border-collapse: collapse; }
+-    .header { background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%); padding: 20px; color: white; text-align: left; }
++    .header { background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%); padding: 20px; color: white; text-align: left; }
+     .header-content { display: flex; justify-content: space-between; align-items: center; }
+     .logo-section { flex: 1; }
+     .logo-section img { height: 50px; margin-right: 15px; }
+     .logo-text { display: inline-block; font-size: 13px; font-weight: bold; }
+     .logo-text small { display: block; font-size: 10px; opacity: 0.95; }
+     .title { flex: 2; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 1px; }
+-    .numero-box { background-color: #0A5FA6; padding: 12px 18px; border-radius: 6px; min-width: 100px; text-align: center; }
++    .numero-box { background-color: #1565C0; padding: 12px 18px; border-radius: 6px; min-width: 100px; text-align: center; }
+     .numero-label { font-size: 10px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9; }
+     .numero-valor { font-size: 18px; font-weight: bold; margin-top: 5px; }
+ 
+@@ -24,28 +24,28 @@
+ 
+     .client-box { background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; }
+     .client-row { display: flex; margin: 10px 0; font-size: 13px; line-height: 1.5; }
+-    .client-label { font-weight: bold; color: #0A5FA6; min-width: 100px; }
++    .client-label { font-weight: bold; color: #1565C0; min-width: 100px; }
+     .client-value { color: #1F3A56; flex: 1; }
+ 
+     .times-box { background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; overflow: hidden; }
+-    .times-header { background-color: #2E7DA8; color: white; display: flex; text-align: center; font-weight: bold; font-size: 11px; }
+-    .times-header div { flex: 1; padding: 12px 5px; border-right: 1px solid #5B9FBF; }
++    .times-header { background-color: #1E88E5; color: white; display: flex; text-align: center; font-weight: bold; font-size: 11px; }
++    .times-header div { flex: 1; padding: 12px 5px; border-right: 1px solid #42A5F5; }
+     .times-header div:last-child { border-right: none; }
+     .times-body { display: flex; text-align: center; padding: 12px 5px; font-weight: 600; font-size: 13px; color: #1F3A56; }
+     .times-body div { flex: 1; border-right: 1px solid #E0E8F0; padding: 5px; }
+     .times-body div:last-child { border-right: none; }
+ 
+-    .section-title { background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px; }
++    .section-title { background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px; }
+     .detail-box { background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; line-height: 1.6; color: #1F3A56; font-size: 13px; text-align: justify; }
+ 
+     .summary-box { background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; margin-top: 20px; overflow: hidden; }
+-    .summary-title { background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px; }
++    .summary-title { background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px; }
+     .summary-content { display: flex; padding: 16px; gap: 20px; }
+     .summary-table { flex: 1; }
+     .summary-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+-    .summary-table th { background-color: white; color: #2E7DA8; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; }
++    .summary-table th { background-color: white; color: #1E88E5; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; }
+     .summary-table td { padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; }
+-    .summary-table .big-value { font-weight: 800; color: #0A5FA6; font-size: 14px; }
++    .summary-table .big-value { font-weight: 800; color: #1565C0; font-size: 14px; }
+     .summary-logo { width: 200px; text-align: center; display: flex; align-items: center; justify-content: center; }
+     .summary-logo img { max-width: 180px; height: auto; }
+ 
+@@ -70,7 +70,7 @@
+ <table class="container" width="100%" cellpadding="0" cellspacing="0" border="0">
+   <tr>
+     <td>
+-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 20px;">
++      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 20px;">
+         <tr>
+           <td style="width: 60px;">
+             <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec" style="height: 50px; width: auto; vertical-align: middle;">
+@@ -79,7 +79,7 @@
+             <h2 style="font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 1px;">ORDEM DE ATENDIMENTO</h2>
+           </td>
+           <td style="width: 150px; text-align: right;">
+-            <table cellpadding="0" cellspacing="0" border="0" style="background-color: #0A5FA6; border-radius: 6px; padding: 12px 18px; margin-left: auto; min-width: 100px;">
++            <table cellpadding="0" cellspacing="0" border="0" style="background-color: #1565C0; border-radius: 6px; padding: 12px 18px; margin-left: auto; min-width: 100px;">
+               <tr>
+                 <td style="text-align: center; font-size: 10px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9; display: block;">NUMERO</td>
+               </tr>
+@@ -100,7 +100,7 @@
+           <td width="50%" style="padding-right: 10px; vertical-align: top;">
+             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; padding: 16px;">
+               <tr>
+-                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Cliente:</td>
++                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Cliente:</td>
+                 <td style="color: #1F3A56; padding: 8px 0;">
+                   @if($ordemServico->cliente)
+                     {{ $ordemServico->cliente->nome ?? $ordemServico->cliente->nome_fantasia ?? 'N/A' }}
+@@ -110,7 +110,7 @@
+                 </td>
+               </tr>
+               <tr>
+-                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Contato:</td>
++                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Contato:</td>
+                 <td style="color: #1F3A56; padding: 8px 0;">
+                   @if($ordemServico->cliente)
+                     {{ $ordemServico->cliente->email ?? $ordemServico->cliente->contato ?? 'N/A' }}
+@@ -120,11 +120,11 @@
+                 </td>
+               </tr>
+               <tr>
+-                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Emissão:</td>
++                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Emissão:</td>
+                 <td style="color: #1F3A56; padding: 8px 0;">{{ \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') }}</td>
+               </tr>
+               <tr>
+-                <td style="font-weight: bold; color: #0A5FA6; width: 100px; padding: 8px 0;">Consultor:</td>
++                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Consultor:</td>
+                 <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->consultor->name ?? 'N/A' }}</td>
+               </tr>
+             </table>
+@@ -132,12 +132,12 @@
+ 
+           <td width="50%" style="padding-left: 10px; vertical-align: top;">
+             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; overflow: hidden;">
+-              <tr style="background-color: #2E7DA8; color: white; font-weight: bold; font-size: 11px;">
+-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA INICIO</td>
+-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA FIM</td>
+-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA DESCONTO</td>
+-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">DESPESA</td>
+-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">TRANSLADO</td>
++              <tr style="background-color: #1E88E5; color: white; font-weight: bold; font-size: 11px;">
++                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA INICIO</td>
++                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA FIM</td>
++                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA DESCONTO</td>
++                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">DESPESA</td>
++                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">TRANSLADO</td>
+                 <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
+               </tr>
+               <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
+@@ -194,7 +194,7 @@
+ 
+   <tr>
+     <td style="padding: 0 20px;">
+-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px;">
++      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px;">
+         <tr>
+           <td>DETALHAMENTO</td>
+         </tr>
+@@ -216,7 +216,7 @@
+     <td style="padding: 0 20px;">
+       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; margin-top: 20px; overflow: hidden;">
+         <tr>
+-          <td style="background: linear-gradient(90deg, #2E7DA8 0%, #5B9FBF 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px;">RESUMO</td>
++          <td style="background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px;">RESUMO</td>
+         </tr>
+         <tr>
+           <td style="padding: 16px;">
+@@ -262,7 +262,7 @@
+               </tr>
+             </table>
+ 
+-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #2E7DA8 0%, #5B9FBF 100%);">
++            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%);">
+               <tr>
+                 <td width="70%" style="vertical-align: middle;"></td>
+                 <td width="30%" style="text-align: center; padding: 20px;">
+-- 
+2.51.2.windows.1
+

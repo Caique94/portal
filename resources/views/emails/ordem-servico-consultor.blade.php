@@ -124,8 +124,8 @@
                 <td style="color: #1F3A56; padding: 8px 0;">{{ \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') }}</td>
               </tr>
               <tr>
-                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Consultor:</td>
-                <td style="color: #1F3A56; padding: 8px 0;">{{ $ordemServico->consultor->name ?? 'N/A' }}</td>
+                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Seu Valor/Hora:</td>
+                <td style="color: #1F3A56; padding: 8px 0;">R$ {{ number_format($ordemServico->consultor->valor_hora ?? 0, 2, ',', '.') }}</td>
               </tr>
             </table>
           </td>
@@ -183,7 +183,7 @@
     <td style="padding: 0 20px;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; margin-top: 20px; overflow: hidden;">
         <tr>
-          <td style="background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px;">RESUMO</td>
+          <td style="background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px;">RESUMO - SEU GANHO</td>
         </tr>
         <tr>
           <td style="padding: 16px;">
@@ -218,13 +218,20 @@
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
                   {{ $ordemServico->km ?? '--' }}
                 </td>
-                <!-- Column 3: TOTAL OS Label -->
+                <!-- Column 3: MEU GANHO Label -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 700; width: 25%;">
-                  TOTAL OS
+                  MEU GANHO
                 </td>
-                <!-- Column 4: TOTAL OS Value -->
+                <!-- Column 4: MEU GANHO Value -->
                 <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 700;">
-                  {{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : '--' }}
+                  @php
+                    $valor_horas = floatval($ordemServico->qtde_total ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
+                    $valor_km = floatval($ordemServico->km ?? 0) * floatval($ordemServico->consultor->valor_km ?? 0);
+                    $valor_deslocamento = floatval($ordemServico->deslocamento ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
+                    $valor_despesa = floatval($ordemServico->valor_despesa ?? 0);
+                    $total_ganho = $valor_horas + $valor_km + $valor_deslocamento + $valor_despesa;
+                  @endphp
+                  R$ {{ number_format($total_ganho, 2, ',', '.') }}
                 </td>
               </tr>
             </table>

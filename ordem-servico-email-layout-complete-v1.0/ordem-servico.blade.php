@@ -146,10 +146,43 @@
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">
-                  {{ $ordemServico->deslocamento ? 'R$ ' . number_format(floatval($ordemServico->deslocamento) * floatval($ordemServico->consultor->valor_hora ?? 0), 2, ',', '.') : '--' }}
+                  @php
+                    // Calcula valor do traslado: deslocamento (horas) × valor_hora do consultor
+                    $valor_traslado = 0;
+                    if ($ordemServico->deslocamento && $ordemServico->consultor) {
+                      $deslocamento_horas = floatval($ordemServico->deslocamento);
+                      $valor_hora_consultor = floatval($ordemServico->consultor->valor_hora ?? 0);
+                      $valor_traslado = $deslocamento_horas * $valor_hora_consultor;
+                    }
+                  @endphp
+                  {{ $valor_traslado > 0 ? 'R$ ' . number_format($valor_traslado, 2, ',', '.') : '--' }}
                 </td>
                 <td style="padding: 10px 5px; text-align: center;">
-                  {{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, '.', '') : '--' }}
+                  @php
+                    // Usa qtde_total se disponível, caso contrário calcula a partir dos horários
+                    $total_horas = 0;
+
+                    if ($ordemServico->qtde_total) {
+                      // Usa qtde_total da OS diretamente
+                      $total_horas = floatval($ordemServico->qtde_total);
+                    } elseif ($ordemServico->hora_inicio && $ordemServico->hora_final) {
+                      // Fallback: calcula a partir dos horários
+                      $inicio = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_inicio);
+                      $fim = \Carbon\Carbon::createFromFormat('H:i', $ordemServico->hora_final);
+                      $total_minutos = $fim->diffInMinutes($inicio);
+
+                      // Subtrair desconto se existir
+                      if ($ordemServico->hora_desconto) {
+                        list($desc_h, $desc_m) = explode(':', $ordemServico->hora_desconto);
+                        $desconto_minutos = intval($desc_h) * 60 + intval($desc_m);
+                        $total_minutos -= $desconto_minutos;
+                      }
+
+                      // Converter para horas decimais (máximo 0 se resultado negativo)
+                      $total_horas = max(0, round($total_minutos / 60, 2));
+                    }
+                  @endphp
+                  {{ number_format($total_horas, 2, '.', '') }}
                 </td>
               </tr>
             </table>

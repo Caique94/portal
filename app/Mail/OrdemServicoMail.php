@@ -35,8 +35,13 @@ class OrdemServicoMail extends Mailable
 
     public function content(): Content
     {
+        // Seleciona o template baseado no tipo de destinatário
+        $view = $this->tipoDestinatario === 'consultor'
+            ? 'emails.ordem-servico-consultor'
+            : 'emails.ordem-servico-cliente';
+
         return new Content(
-            view: 'emails.ordem-servico',
+            view: $view,
             with: [
                 'ordemServico' => $this->ordemServico,
                 'tipoDestinatario' => $this->tipoDestinatario,
