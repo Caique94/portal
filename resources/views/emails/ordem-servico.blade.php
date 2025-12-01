@@ -135,14 +135,14 @@
               <tr style="background-color: #2E7DA8; color: white; font-weight: bold; font-size: 11px;">
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA INICIO</td>
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">HORA FIM</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">DESCONTO</td>
+                <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">DESPESA</td>
                 <td style="padding: 12px 5px; border-right: 1px solid #5B9FBF; text-align: center;">TRASLADO</td>
                 <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
               </tr>
               <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_inicio ?? '--:--' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_final ?? '--:--' }}</td>
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_desconto ?? '--' }}</td>
+                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->despesa ? 'R$ ' . number_format($ordemServico->despesa, 2, ',', '.') : '--' }}</td>
                 <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->deslocamento ? 'R$ ' . number_format($ordemServico->deslocamento, 2, ',', '.') : '--' }}</td>
                 <td style="padding: 10px 5px; text-align: center;">{{ $ordemServico->horas_trabalhadas ?? '--' }}</td>
               </tr>
