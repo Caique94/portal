@@ -25,8 +25,8 @@ class OrdemServicoMail extends Mailable
         $this->ordemServico = $ordemServico;
         $this->tipoDestinatario = $tipoDestinatario;
 
-        // Gerar PDF automaticamente
-        $this->gerarPdfAnexo();
+        // PDF geração desativada até que PHP GD extension seja instalada
+        // $this->gerarPdfAnexo();
     }
 
     /**

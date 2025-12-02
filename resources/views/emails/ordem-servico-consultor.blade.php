@@ -4,257 +4,218 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Ordem de Serviço #{{ $ordemServico->id }}</title>
-  <style type="text/css">
-    body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f5f5f5; }
-    .container { max-width: 980px; margin: 0 auto; background-color: #ffffff; border-collapse: collapse; }
-    .header { background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%); padding: 20px; color: white; text-align: left; }
-    .header-content { display: flex; justify-content: space-between; align-items: center; }
-    .logo-section { flex: 1; }
-    .logo-section img { height: 50px; margin-right: 15px; }
-    .logo-text { display: inline-block; font-size: 13px; font-weight: bold; }
-    .logo-text small { display: block; font-size: 10px; opacity: 0.95; }
-    .title { flex: 2; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 1px; }
-    .numero-box { background-color: #1565C0; padding: 12px 18px; border-radius: 6px; min-width: 100px; text-align: center; }
-    .numero-label { font-size: 10px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9; }
-    .numero-valor { font-size: 18px; font-weight: bold; margin-top: 5px; }
-
-    .main-content { padding: 25px 20px; }
-    .row-2col { display: flex; gap: 20px; margin-bottom: 25px; }
-    .col { flex: 1; }
-
-    .client-box { background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; }
-    .client-row { display: flex; margin: 10px 0; font-size: 13px; line-height: 1.5; }
-    .client-label { font-weight: bold; color: #1565C0; min-width: 100px; }
-    .client-value { color: #1F3A56; flex: 1; }
-
-    .times-box { background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; overflow: hidden; }
-    .times-header { background-color: #1E88E5; color: white; display: flex; text-align: center; font-weight: bold; font-size: 11px; }
-    .times-header div { flex: 1; padding: 12px 5px; border-right: 1px solid #42A5F5; }
-    .times-header div:last-child { border-right: none; }
-    .times-body { display: flex; text-align: center; padding: 12px 5px; font-weight: 600; font-size: 13px; color: #1F3A56; }
-    .times-body div { flex: 1; border-right: 1px solid #E0E8F0; padding: 5px; }
-    .times-body div:last-child { border-right: none; }
-
-    .section-title { background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px; }
-    .detail-box { background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; line-height: 1.6; color: #1F3A56; font-size: 13px; text-align: justify; }
-
-    .summary-box { background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; margin-top: 20px; overflow: hidden; }
-    .summary-title { background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px; }
-    .summary-content { display: flex; padding: 16px; gap: 20px; }
-    .summary-table { flex: 1; }
-    .summary-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .summary-table th { background-color: white; color: #1E88E5; padding: 10px 8px; border: 1px solid #E0E8F0; font-weight: bold; text-align: center; }
-    .summary-table td { padding: 10px 8px; border: 1px solid #E0E8F0; text-align: center; color: #1F3A56; }
-    .summary-table .big-value { font-weight: 800; color: #1565C0; font-size: 14px; }
-    .summary-logo { width: 200px; text-align: center; display: flex; align-items: center; justify-content: center; }
-    .summary-logo img { max-width: 180px; height: auto; }
-
-    @media (max-width: 768px) {
-      .header-content { flex-wrap: wrap; }
-      .title { font-size: 20px; }
-      .row-2col { flex-direction: column; gap: 16px; }
-      .summary-content { flex-direction: column; }
-      .summary-logo { width: 100%; margin-top: 10px; }
-    }
-
-    @media (max-width: 480px) {
-      .logo-text { font-size: 11px; }
-      .title { font-size: 16px; }
-      .numero-box { padding: 10px 14px; min-width: 80px; }
-      .times-header, .times-body { font-size: 11px; }
-      .main-content { padding: 15px 12px; }
-    }
-  </style>
 </head>
-<body>
-<table class="container" width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr>
-    <td>
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 20px;">
-        <tr>
-          <td style="width: 60px;">
-            <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec" style="height: 50px; width: auto; vertical-align: middle;">
-          </td>
-          <td style="flex: 1; text-align: center;">
-            <h2 style="font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 1px;">ORDEM DE ATENDIMENTO</h2>
-          </td>
-          <td style="width: 150px; text-align: right;">
-            <table cellpadding="0" cellspacing="0" border="0" style="background-color: #1565C0; border-radius: 6px; padding: 12px 18px; margin-left: auto; min-width: 100px;">
-              <tr>
-                <td style="text-align: center; font-size: 10px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9; display: block;">NUMERO</td>
-              </tr>
-              <tr>
-                <td style="text-align: center; font-size: 18px; font-weight: bold; margin-top: 5px;">{{ $ordemServico->id }}</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
+<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+  <!--[if mso]>
+    <style type="text/css">
+      body, table, td { font-family: Arial, Helvetica, sans-serif !important; }
+    </style>
+  <![endif]-->
 
-  <tr>
-    <td style="padding: 25px 20px;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td width="50%" style="padding-right: 10px; vertical-align: top;">
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; padding: 16px;">
-              <tr>
-                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Cliente:</td>
-                <td style="color: #1F3A56; padding: 8px 0;">
-                  @if($ordemServico->cliente)
-                    {{ $ordemServico->cliente->nome ?? $ordemServico->cliente->nome_fantasia ?? 'N/A' }}
-                  @else
-                    N/A
-                  @endif
-                </td>
-              </tr>
-              <tr>
-                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Contato:</td>
-                <td style="color: #1F3A56; padding: 8px 0;">
-                  @if($ordemServico->cliente)
-                    {{ $ordemServico->cliente->email ?? $ordemServico->cliente->contato ?? 'N/A' }}
-                  @else
-                    N/A
-                  @endif
-                </td>
-              </tr>
-              <tr>
-                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Emissão:</td>
-                <td style="color: #1F3A56; padding: 8px 0;">{{ \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') }}</td>
-              </tr>
-              <tr>
-                <td style="font-weight: bold; color: #1565C0; width: 100px; padding: 8px 0;">Seu Valor/Hora:</td>
-                <td style="color: #1F3A56; padding: 8px 0;">R$ {{ number_format($ordemServico->consultor->valor_hora ?? 0, 2, ',', '.') }}</td>
-              </tr>
-            </table>
-          </td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f5f5f5;padding:20px 0;">
+    <tr>
+      <td align="center">
 
-          <td width="50%" style="padding-left: 10px; vertical-align: top;">
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; overflow: hidden;">
-              <tr style="background-color: #1E88E5; color: white; font-weight: bold; font-size: 11px;">
-                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA INICIO</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA FIM</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">HORA DESCONTO</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">DESPESA</td>
-                <td style="padding: 12px 5px; border-right: 1px solid #42A5F5; text-align: center;">TRANSLADO</td>
-                <td style="padding: 12px 5px; text-align: center;">TOTAL HORAS</td>
-              </tr>
-              <tr style="font-weight: 600; font-size: 13px; color: #1F3A56;">
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_inicio ?? '00:00' }}</td>
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_final ?? '00:00' }}</td>
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}</td>
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">{{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}</td>
-                <td style="padding: 10px 5px; border-right: 1px solid #E0E8F0; text-align: center;">
-                  {{ $ordemServico->deslocamento ? 'R$ ' . number_format(floatval($ordemServico->deslocamento) * floatval($ordemServico->consultor->valor_hora ?? 0), 2, ',', '.') : '--' }}
-                </td>
-                <td style="padding: 10px 5px; text-align: center;">
-                  {{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, '.', '') : '--' }}
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
+        <!-- container -->
+        <table width="980" cellpadding="0" cellspacing="0" border="0" style="max-width:980px;width:100%;background-color:#ffffff;">
+          <!-- HEADER -->
+          <tr>
+            <td style="padding:0;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#1565C0;">
+                <tr>
+                  <td width="80" style="padding:18px;vertical-align:middle;">
+                    <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png"
+                         alt="Personalitec" width="70" style="display:block;border:0;outline:none;text-decoration:none;">
+                  </td>
+                  <td align="center" style="padding:10px 0;">
+                    <h1 style="margin:0;color:#ffffff;font-size:22px;letter-spacing:1px;font-weight:700;">ORDEM DE ATENDIMENTO</h1>
+                  </td>
+                  <td width="150" align="right" style="padding:12px;">
+                    <table cellpadding="0" cellspacing="0" border="0" style="background-color:#0A5FA6;border-radius:6px;">
+                      <tr>
+                        <td style="padding:10px 12px;text-align:center;color:#ffffff;font-size:11px;font-weight:700;">NUMERO</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 12px;text-align:center;color:#ffffff;font-size:16px;font-weight:800;">{{ $ordemServico->id }}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-  <tr>
-    <td style="padding: 0 20px;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 20px 0 10px 0; text-align: center; letter-spacing: 0.5px;">
-        <tr>
-          <td>DETALHAMENTO</td>
-        </tr>
-      </table>
-    </td>
-  </tr>
+          <!-- MAIN CONTENT -->
+          <tr>
+            <td style="padding:20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <!-- Left column -->
+                  <td width="50%" valign="top" style="padding-right:10px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F8FA;border:1px solid #E0E8F0;border-radius:6px;padding:12px;">
+                      <tr>
+                        <td style="font-weight:700;color:#0A5FA6;padding:6px;width:110px;">Cliente:</td>
+                        <td style="color:#1F3A56;padding:6px;">
+                          @if($ordemServico->cliente)
+                            {{ $ordemServico->cliente->nome ?? $ordemServico->cliente->nome_fantasia ?? 'N/A' }}
+                          @else
+                            N/A
+                          @endif
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight:700;color:#0A5FA6;padding:6px;">Contato:</td>
+                        <td style="color:#1F3A56;padding:6px;">
+                          @if($ordemServico->cliente)
+                            {{ $ordemServico->cliente->email ?? $ordemServico->cliente->contato ?? 'N/A' }}
+                          @else
+                            N/A
+                          @endif
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight:700;color:#0A5FA6;padding:6px;">Emissão:</td>
+                        <td style="color:#1F3A56;padding:6px;">{{ \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') }}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight:700;color:#0A5FA6;padding:6px;">Consultor:</td>
+                        <td style="color:#1F3A56;padding:6px;">{{ $ordemServico->consultor->name ?? 'N/A' }}</td>
+                      </tr>
+                    </table>
+                  </td>
 
-  <tr>
-    <td style="padding: 0 20px 20px 20px;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; padding: 16px; border: 1px solid #E0E8F0; border-radius: 6px; line-height: 1.6; color: #1F3A56; font-size: 13px;">
-        <tr>
-          <td>{!! nl2br($ordemServico->detalhamento ?? 'Nenhum detalhamento fornecido.') !!}</td>
-        </tr>
-      </table>
-    </td>
-  </tr>
+                  <!-- Right column -->
+                  <td width="50%" valign="top" style="padding-left:10px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F8FA;border:1px solid #E0E8F0;border-radius:6px;overflow:hidden;">
+                      <tr style="background-color:#0A5FA6;color:#ffffff;font-weight:700;font-size:12px;">
+                        <td style="padding:12px;text-align:center;border-right:1px solid #1966A8;">HORA INICIO</td>
+                        <td style="padding:12px;text-align:center;border-right:1px solid #1966A8;">HORA FIM</td>
+                        <td style="padding:12px;text-align:center;border-right:1px solid #1966A8;">HORA DESCONTO</td>
+                        <td style="padding:12px;text-align:center;border-right:1px solid #1966A8;">TRANSLADO</td>
+                        <td style="padding:12px;text-align:center;">TOTAL HORAS</td>
+                      </tr>
+                      <tr style="font-weight:600;font-size:13px;color:#1F3A56;">
+                        <td style="padding:10px;text-align:center;border-right:1px solid #E0E8F0;">{{ $ordemServico->hora_inicio ?? '00:00' }}</td>
+                        <td style="padding:10px;text-align:center;border-right:1px solid #E0E8F0;">{{ $ordemServico->hora_final ?? '00:00' }}</td>
+                        <td style="padding:10px;text-align:center;border-right:1px solid #E0E8F0;">{{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}</td>
+                        </td>
+                        <td style="padding:10px;text-align:center;border-right:1px solid #E0E8F0;">
+                          @php
+                            if ($ordemServico->deslocamento) {
+                              $deslocamento = floatval($ordemServico->deslocamento);
+                              $horas = intval($deslocamento);
+                              $minutos = intval(($deslocamento - $horas) * 60);
+                              echo sprintf('%02d:%02d', $horas, $minutos);
+                            } else {
+                              echo '--';
+                            }
+                          @endphp
+                        </td>
+                        <td style="padding:10px;text-align:center;">{{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, '.', '') : '--' }}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-  <tr>
-    <td style="padding: 0 20px;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F5F8FA; border: 1px solid #E0E8F0; border-radius: 6px; margin-top: 20px; overflow: hidden;">
-        <tr>
-          <td style="background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%); color: white; padding: 12px 16px; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 0.5px;">RESUMO - SEU GANHO</td>
-        </tr>
-        <tr>
-          <td style="padding: 16px;">
-            <!-- 4-Column Summary Table - 2 rows -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px; background-color: #F2F2F2;">
-              <!-- Row 1 -->
-              <tr>
-                <!-- Column 1: Chamado Personalitec (2-line label) -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 500; width: 25%;">
-                  Chamado<br>Personalitec
-                </td>
-                <!-- Column 2: Chamado Value -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 15px; font-weight: 600; width: 25%;">
-                  {{ $ordemServico->nr_atendimento ?? $ordemServico->id }}
-                </td>
-                <!-- Column 3: Data de Emissão (2-line label) -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 500; width: 25%;">
-                  Data de<br>Emissão
-                </td>
-                <!-- Column 4: Data de Emissão Value -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
-                  {{ $ordemServico->data_emissao ? \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') : '--' }}
-                </td>
-              </tr>
-              <!-- Row 2 -->
-              <tr>
-                <!-- Column 1: KM Label -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 500; width: 25%;">
-                  KM
-                </td>
-                <!-- Column 2: KM Value -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #1F3A56; font-size: 14px; width: 25%;">
-                  {{ $ordemServico->km ?? '--' }}
-                </td>
-                <!-- Column 3: VALOR TOTAL Label -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #555; font-size: 11px; font-weight: 700; width: 25%;">
-                  VALOR TOTAL
-                </td>
-                <!-- Column 4: VALOR TOTAL Value -->
-                <td style="padding: 16px 12px; border: 1px solid #DEDEDE; text-align: center; color: #0A5FA6; font-size: 14px; font-weight: 700;">
-                  @php
-                    $valor_horas = floatval($ordemServico->qtde_total ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
-                    $valor_km = floatval($ordemServico->km ?? 0) * floatval($ordemServico->consultor->valor_km ?? 0);
-                    $valor_deslocamento = floatval($ordemServico->deslocamento ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
-                    $valor_despesa = floatval($ordemServico->valor_despesa ?? 0);
-                    $total_ganho = $valor_horas + $valor_km + $valor_deslocamento + $valor_despesa;
-                  @endphp
-                  R$ {{ number_format($total_ganho, 2, ',', '.') }}
-                </td>
-              </tr>
-            </table>
+          <!-- DETALHAMENTO TITLE -->
+          <tr>
+            <td style="padding:0 20px 10px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0A5FA6;color:#ffffff;padding:10px;border-radius:6px;">
+                <tr>
+                  <td align="center" style="font-weight:700;">DETALHAMENTO</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%);">
-              <tr>
-                <td width="70%" style="vertical-align: middle;"></td>
-                <td width="30%" style="text-align: center; padding: 20px;">
-                  <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png" alt="Personalitec" style="max-width: 180px; height: auto;">
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
+          <!-- DETALHAMENTO CONTENT -->
+          <tr>
+            <td style="padding:0 20px 20px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F8FA;border:1px solid #E0E8F0;border-radius:6px;padding:12px;">
+                <tr>
+                  <td style="color:#1F3A56;font-size:13px;line-height:1.6;text-align:left;">
+                    {!! nl2br(e($ordemServico->detalhamento ?? 'Nenhum detalhamento fornecido.')) !!}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-  <tr>
-    <td style="padding: 20px; text-align: center; color: #666; font-size: 11px;">
-      <p style="margin: 0;">© {{ date('Y') }} Personalitec Soluções. Todos os direitos reservados.</p>
-    </td>
-  </tr>
-</table>
+          <!-- RESUMO (Faixa Azul + 4 colunas × 2 linhas + logo à direita) -->
+          <tr>
+            <td style="padding:0 20px 20px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <!-- resumo block (60%) -->
+                  <td style="padding:0 10px 0 0;width:60%;vertical-align:top;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F8FA;border:1px solid #DDE6EE;border-radius:8px;overflow:hidden;">
+                      <!-- faixa -->
+                      <tr>
+                        <td style="background:#0A5FA6;color:#ffffff;font-size:14px;font-weight:700;text-align:center;padding:8px 10px;border-bottom:1px solid #DDE6EE;border-top-left-radius:8px;border-top-right-radius:8px;">
+                          RESUMO
+                        </td>
+                      </tr>
+
+                      <!-- inner table -->
+                      <tr>
+                        <td style="padding:0;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                            <!-- linha 1 -->
+                            <tr style="background:#F7F7F7;text-align:center;color:#0A5FA6;font-size:13px;font-weight:600;">
+                              <td style="padding:12px 8px;border-right:1px solid #E2E6EA;">Chamado<br><span style="font-weight:700;color:#0A5FA6;">Personalitec</span></td>
+                              <td style="padding:12px 8px;border-right:1px solid #E2E6EA;font-weight:700;color:#0A5FA6;">{{ $ordemServico->nr_atendimento ?? $ordemServico->id }}</td>
+                              <td style="padding:12px 8px;border-right:1px solid #E2E6EA;">Despesas</td>
+                              <td style="padding:12px 8px;">{{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}</td>
+                            </tr>
+
+                            <!-- linha 2 -->
+                            <tr style="background:#FFFFFF;text-align:center;color:#0A5FA6;font-size:13px;font-weight:600;">
+                              <td style="padding:12px 8px;border-top:1px solid #E2E6EA;border-right:1px solid #E2E6EA;">KM</td>
+                              <td style="padding:12px 8px;border-top:1px solid #E2E6EA;border-right:1px solid #E2E6EA;font-weight:700;color:#0A5FA6;">{{ $ordemServico->km ?? '--' }}</td>
+                              <td style="padding:12px 8px;border-top:1px solid #E2E6EA;border-right:1px solid #E2E6EA;font-weight:700;color:#0A5FA6;">TOTAL OS</td>
+                              <td style="padding:12px 8px;border-top:1px solid #E2E6EA;font-weight:800;color:#0A5FA6;font-size:14px;">
+                                {{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : (isset($total_ganho) ? 'R$ ' . number_format($total_ganho,2,',','.') : '--') }}
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+
+                  <!-- logo column (40%) -->
+                  <td style="padding:0 0 0 10px;width:40%;text-align:center;vertical-align:middle;">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="height:100%;vertical-align:middle;">
+                      <tr>
+                        <td style="padding:10px;text-align:center;vertical-align:middle;">
+                          <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png"
+                               alt="Personalitec" width="110" style="display:block;margin:0 auto 8px;">
+                          <div style="font-size:11px;color:#606060;margin-top:2px;">Sua visão, nossa tecnologia</div>
+                          <div style="font-size:12px;color:#0A5FA6;margin-top:8px;">atendimento@personalitec.com.br</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="padding:20px;text-align:center;color:#666;font-size:11px;">
+              <p style="margin:0;">© {{ date('Y') }} Personalitec Soluções. Todos os direitos reservados.</p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /container -->
+
+      </td>
+    </tr>
+  </table>
 </body>
 </html>

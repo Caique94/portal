@@ -298,12 +298,6 @@
                     <div class="info-label">Consultor:</div>
                     <div class="info-value">{{ $ordemServico->consultor->name ?? 'N/A' }}</div>
                 </div>
-                @if($tipoDestinatario === 'consultor')
-                <div class="info-row">
-                    <div class="info-label">Seu Valor/Hora:</div>
-                    <div class="info-value">R$ {{ number_format($ordemServico->consultor->valor_hora ?? 0, 2, ',', '.') }}</div>
-                </div>
-                @endif
             </div>
         </div>
 
@@ -327,14 +321,15 @@
                         <td>{{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}</td>
                         <td>
                             @php
-                                $valor_traslado = 0;
-                                if ($ordemServico->deslocamento && $ordemServico->consultor) {
-                                    $deslocamento_horas = floatval($ordemServico->deslocamento);
-                                    $valor_hora_consultor = floatval($ordemServico->consultor->valor_hora ?? 0);
-                                    $valor_traslado = $deslocamento_horas * $valor_hora_consultor;
-                                }
+                              if ($ordemServico->deslocamento) {
+                                $deslocamento = floatval($ordemServico->deslocamento);
+                                $horas = intval($deslocamento);
+                                $minutos = intval(($deslocamento - $horas) * 60);
+                                echo sprintf('%02d:%02d', $horas, $minutos);
+                              } else {
+                                echo '--';
+                              }
                             @endphp
-                            {{ $valor_traslado > 0 ? 'R$ ' . number_format($valor_traslado, 2, ',', '.') : '--' }}
                         </td>
                         <td>{{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, '.', '') : '--' }}</td>
                     </tr>
@@ -381,9 +376,8 @@
                     @php
                         $valor_horas = floatval($ordemServico->qtde_total ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
                         $valor_km = floatval($ordemServico->km ?? 0) * floatval($ordemServico->consultor->valor_km ?? 0);
-                        $valor_deslocamento = floatval($ordemServico->deslocamento ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
                         $valor_despesa = floatval($ordemServico->valor_despesa ?? 0);
-                        $total_ganho = $valor_horas + $valor_km + $valor_deslocamento + $valor_despesa;
+                        $total_ganho = $valor_horas + $valor_km + $valor_despesa;
                     @endphp
                     R$ {{ number_format($total_ganho, 2, ',', '.') }}
                 @else

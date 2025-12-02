@@ -63,21 +63,37 @@ class OrdemServicoEmailService
                 return false;
             }
 
-            // Cliente é um modelo da tabela cliente, que pode ter contatos
-            // Prioridade: Email principal do cliente
-            $email = $cliente->email ?? $cliente->contato;
+            // Buscar contato do cliente que tem flag recebe_email_os ativa
+            $contato = $cliente->contatos()
+                ->where('recebe_email_os', true)
+                ->first();
 
-            if (!$email) {
-                Log::warning('Cliente sem email cadastrado', ['os_id' => $ordemServico->id, 'cliente_id' => $cliente->id]);
+            if (!$contato || !$contato->email) {
+                Log::warning('Contato do cliente sem email ou sem permissão para receber OS', [
+                    'os_id' => $ordemServico->id,
+                    'cliente_id' => $cliente->id,
+                ]);
                 return false;
             }
 
-            Mail::to($email)
+            // Validar se é um email válido
+            if (!filter_var($contato->email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Email do contato inválido', [
+                    'os_id' => $ordemServico->id,
+                    'cliente_id' => $cliente->id,
+                    'email' => $contato->email,
+                ]);
+                return false;
+            }
+
+            Mail::to($contato->email)
                 ->send(new OrdemServicoMail($ordemServico, 'cliente'));
 
             Log::info('Ordem de Serviço enviada para Cliente', [
                 'os_id' => $ordemServico->id,
-                'cliente_email' => $email,
+                'cliente_email' => $contato->email,
+                'contato_id' => $contato->id,
+                'contato_nome' => $contato->nome,
             ]);
 
             return true;
