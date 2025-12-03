@@ -66,9 +66,14 @@
                                 <input type="text" name="txtClienteCGC" id="txtClienteCGC" class="form-control cpf-cnpj" placeholder="CPF/CNPJ" />
                                 <label for="txtClienteCGC">CPF/CNPJ</label>
                             </div>
-                            <div class="form-floating mb-3 col-md-8">
+                            <div class="form-floating mb-3 col-md-7">
                                 <select name="txtClienteContato" id="txtClienteContato" class="form-select"></select>
                                 <label for="txtClienteContato">Contato Principal</label>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end mb-3">
+                                <button type="button" class="btn btn-sm btn-outline-primary w-100" id="btnAdicionarContatoRapido" data-bs-toggle="tooltip" data-bs-title="Adicionar novo contato rapidamente">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
                             </div>
                         </div>
                         <div class="row">

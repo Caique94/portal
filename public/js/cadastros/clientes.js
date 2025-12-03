@@ -314,6 +314,35 @@ $(function () {
     });
   });
 
+  // Botão para adicionar contato direto no modal do cliente
+  $('#btnAdicionarContatoRapido').on('click', function () {
+    const clienteId = $('#cliente_id').val();
+
+    if (!clienteId) {
+      Toast.fire({ icon: 'warning', title: 'Salve o cliente primeiro antes de adicionar contatos' });
+      return;
+    }
+
+    // Limpar o formulário e remover o ID se existir
+    $('#formContato')[0].reset();
+    $('#contato_id').remove();
+    $('#chkContatoRecebeEmailOS').prop('checked', true);
+
+    // Obter nome do cliente do modal
+    const nomeCliente = $('#txtClienteNome').val() || 'Cliente';
+
+    $('#modalContatoLabel').text(nomeCliente + ' - Adicionar Contato');
+    $('#txtContatoClienteId').val(clienteId);
+
+    // Fechar modal do cliente e abrir modal do contato
+    $('#modalCliente').modal('hide');
+
+    // Esperar um pouco para fechar antes de abrir o novo modal
+    setTimeout(() => {
+      $('#modalContato').modal('show');
+    }, 300);
+  });
+
   $('#tblClientes').on('click', '.adicionar-contato', function () {
     const r = tblClientes.row($(this).closest('tr')).data();
     if (!r) return;

@@ -1,216 +1,289 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ordem de Serviço #{{ $ordemServico->id }}</title>
-</head>
-<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
-  <!--[if mso]>
-    <style type="text/css">
-      body, table, td { font-family: Arial, Helvetica, sans-serif !important; }
-    </style>
-  <![endif]-->
+<?php
+use Illuminate\Support\Facades\Auth;
+?>
 
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f5f5f5;padding:20px 0;">
-    <tr>
-      <td align="center">
+@extends('layout.master')
 
-        <!-- container -->
-        <table width="980" cellpadding="0" cellspacing="0" border="0" style="max-width:980px;width:100%;background-color:#ffffff;">
-          <!-- HEADER -->
-          <tr>
-            <td style="padding:0;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#1565C0;">
-                <tr>
-                  <td width="80" style="padding:18px;vertical-align:middle;">
-                    <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png"
-                         alt="Personalitec" width="70" style="display:block;border:0;outline:none;text-decoration:none;">
-                  </td>
-                  <td align="center" style="padding:10px 0;">
-                    <h1 style="margin:0;color:#ffffff;font-size:22px;letter-spacing:1px;font-weight:700;">ORDEM DE ATENDIMENTO</h1>
-                  </td>
-                  <td width="150" align="right" style="padding:12px;">
-                    <table cellpadding="0" cellspacing="0" border="0" style="background-color:#0A5FA6;border-radius:6px;">
-                      <tr>
-                        <td style="padding:10px 12px;text-align:center;color:#ffffff;font-size:11px;font-weight:700;">NUMERO</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 12px;text-align:center;color:#ffffff;font-size:16px;font-weight:800;">{{ $ordemServico->id }}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+@section('title', '- Ordem de Serviço')
 
-          <!-- MAIN CONTENT -->
-          <tr>
-            <td style="padding:20px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <!-- Left column -->
-                  <td width="50%" valign="top" style="padding-right:10px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F8FA;border:1px solid #E0E8F0;border-radius:6px;padding:12px;">
-                      <tr>
-                        <td style="font-weight:700;color:#0A5FA6;padding:6px;width:110px;">Cliente:</td>
-                        <td style="color:#1F3A56;padding:6px;">
-                          @if($ordemServico->cliente)
-                            {{ $ordemServico->cliente->nome ?? $ordemServico->cliente->nome_fantasia ?? 'N/A' }}
-                          @else
-                            N/A
-                          @endif
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="font-weight:700;color:#0A5FA6;padding:6px;">Contato:</td>
-                        <td style="color:#1F3A56;padding:6px;">
-                          @if($ordemServico->cliente)
-                            {{ $ordemServico->cliente->email ?? $ordemServico->cliente->contato ?? 'N/A' }}
-                          @else
-                            N/A
-                          @endif
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="font-weight:700;color:#0A5FA6;padding:6px;">Emissão:</td>
-                        <td style="color:#1F3A56;padding:6px;">{{ \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') }}</td>
-                      </tr>
-                      <tr>
-                        <td style="font-weight:700;color:#0A5FA6;padding:6px;">Consultor:</td>
-                        <td style="color:#1F3A56;padding:6px;">{{ $ordemServico->consultor->name ?? 'N/A' }}</td>
-                      </tr>
-                    </table>
-                  </td>
+@push('styles')
+<link href="{{ asset('plugins/datatables/datatables.min.css')}}" rel="stylesheet">
+<link href="{{ asset('plugins/select2/select2.min.css')}}" rel="stylesheet">
+<link href="{{ asset('plugins/select2/select2-bootstrap-5-theme.min.css')}}" rel="stylesheet">
+@endpush
 
-                  <!-- Right column -->
-                  <td width="50%" valign="top" style="padding-left:10px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F8FA;border:1px solid #E0E8F0;border-radius:6px;overflow:hidden;">
-                      <tr style="background-color:#0A5FA6;color:#ffffff;font-weight:700;font-size:12px;">
-                        <td style="padding:12px;text-align:center;border-right:1px solid #1966A8;">HORA INICIO</td>
-                        <td style="padding:12px;text-align:center;border-right:1px solid #1966A8;">HORA FIM</td>
-                        <td style="padding:12px;text-align:center;border-right:1px solid #1966A8;">HORA DESCONTO</td>
-                        <td style="padding:12px;text-align:center;border-right:1px solid #1966A8;">DESPESA</td>
-                        <td style="padding:12px;text-align:center;border-right:1px solid #1966A8;">TRANSLADO</td>
-                        <td style="padding:12px;text-align:center;">TOTAL HORAS</td>
-                      </tr>
-                      <tr style="font-weight:600;font-size:13px;color:#1F3A56;">
-                        <td style="padding:10px;text-align:center;border-right:1px solid #E0E8F0;">{{ $ordemServico->hora_inicio ?? '00:00' }}</td>
-                        <td style="padding:10px;text-align:center;border-right:1px solid #E0E8F0;">{{ $ordemServico->hora_final ?? '00:00' }}</td>
-                        <td style="padding:10px;text-align:center;border-right:1px solid #E0E8F0;">{{ $ordemServico->hora_desconto ? $ordemServico->hora_desconto : '00:00' }}</td>
-                        <td style="padding:10px;text-align:center;border-right:1px solid #E0E8F0;">
-                          {{ $ordemServico->valor_despesa ? 'R$ ' . number_format($ordemServico->valor_despesa, 2, ',', '.') : '--' }}
-                        </td>
-                        <td style="padding:10px;text-align:center;border-right:1px solid #E0E8F0;">
-                          {{ $ordemServico->deslocamento ? 'R$ ' . number_format(floatval($ordemServico->deslocamento) * floatval($ordemServico->consultor->valor_hora ?? 0), 2, ',', '.') : '--' }}
-                        </td>
-                        <td style="padding:10px;text-align:center;">{{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, '.', '') : '--' }}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+@section('content')
 
-          <!-- DETALHAMENTO TITLE -->
-          <tr>
-            <td style="padding:0 20px 10px 20px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0A5FA6;color:#ffffff;padding:10px;border-radius:6px;">
-                <tr>
-                  <td align="center" style="font-weight:700;">DETALHAMENTO</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+    <h4>ORDEM DE SERVI&Ccedil;O</h4>
 
-          <!-- DETALHAMENTO CONTENT -->
-          <tr>
-            <td style="padding:0 20px 20px 20px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F8FA;border:1px solid #E0E8F0;border-radius:6px;padding:12px;">
-                <tr>
-                  <td style="color:#1F3A56;font-size:13px;line-height:1.6;text-align:left;">
-                    {!! nl2br(e($ordemServico->detalhamento ?? 'Nenhum detalhamento fornecido.')) !!}
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+    <!-- incluir cards com graficos -->
 
-          <!-- RESUMO (Faixa Azul + 4 colunas × 2 linhas + logo à direita) -->
-          <tr>
-            <td style="padding:0 20px 20px 20px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-                <tr>
-                  <!-- resumo block (60%) -->
-                  <td style="padding:0 10px 0 0;width:60%;vertical-align:top;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F8FA;border:1px solid #DDE6EE;border-radius:8px;overflow:hidden;">
-                      <!-- faixa -->
-                      <tr>
-                        <td style="background:#0A5FA6;color:#ffffff;font-size:14px;font-weight:700;text-align:center;padding:8px 10px;border-bottom:1px solid #DDE6EE;border-top-left-radius:8px;border-top-right-radius:8px;">
-                          RESUMO
-                        </td>
-                      </tr>
+    <div class="mt-3">
+        <div class="table-responsive">
+            <table id="tblOrdensServico" class="table w-100"></table>
+        </div>
+    </div>
 
-                      <!-- inner table -->
-                      <tr>
-                        <td style="padding:0;">
-                          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-                            <!-- linha 1 -->
-                            <tr style="background:#F7F7F7;text-align:center;color:#444;font-size:13px;font-weight:600;">
-                              <td style="padding:12px 8px;border-right:1px solid #E2E6EA;">Chamado<br><span style="font-weight:700;color:#1A1A1A;">Personalitec</span></td>
-                              <td style="padding:12px 8px;border-right:1px solid #E2E6EA;font-weight:700;color:#1A1A1A;">{{ $ordemServico->nr_atendimento ?? $ordemServico->id }}</td>
-                              <td style="padding:12px 8px;border-right:1px solid #E2E6EA;">Previsão<br>Retorno</td>
-                              <td style="padding:12px 8px;">{{ $ordemServico->previsao_retorno ?? ($ordemServico->data_emissao ? \Carbon\Carbon::parse($ordemServico->data_emissao)->format('d/m/Y') : '--') }}</td>
-                            </tr>
+    <script>
+        const papel = '{{ auth()->user()->papel }}';
+        const user_id = '{{ $user->id }}';
+        const user_name = '{{ $user->name }}';
+    </script>
 
-                            <!-- linha 2 -->
-                            <tr style="background:#FFFFFF;text-align:center;color:#444;font-size:13px;font-weight:600;">
-                              <td style="padding:12px 8px;border-top:1px solid #E2E6EA;border-right:1px solid #E2E6EA;">KM</td>
-                              <td style="padding:12px 8px;border-top:1px solid #E2E6EA;border-right:1px solid #E2E6EA;font-weight:700;color:#1A1A1A;">{{ $ordemServico->km ?? '--' }}</td>
-                              <td style="padding:12px 8px;border-top:1px solid #E2E6EA;border-right:1px solid #E2E6EA;font-weight:700;color:#000;">TOTAL OS</td>
-                              <td style="padding:12px 8px;border-top:1px solid #E2E6EA;font-weight:800;color:#0A5FA6;font-size:14px;">
-                                {{ $ordemServico->valor_total ? 'R$ ' . number_format($ordemServico->valor_total, 2, ',', '.') : (isset($total_ganho) ? 'R$ ' . number_format($total_ganho,2,',','.') : '--') }}
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
+@endsection
 
-                  <!-- logo column (40%) -->
-                  <td style="padding:0 0 0 10px;width:40%;text-align:center;vertical-align:middle;">
-                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="height:100%;vertical-align:middle;">
-                      <tr>
-                        <td style="padding:10px;text-align:center;vertical-align:middle;">
-                          <img src="https://static.wixstatic.com/media/c4d4c1_6fa078f57383404faf7ceb1d9533f4fb~mv2.png/v1/fill/w_472,h_228,al_c,lg_1,q_85,enc_avif,quality_auto/Logo-Personalitec-Site.png"
-                               alt="Personalitec" width="110" style="display:block;margin:0 auto 8px;">
-                          <div style="font-size:14px;font-weight:800;color:#1A1A1A;">Personalitec</div>
-                          <div style="font-size:11px;color:#606060;margin-top:2px;">Sua visão, nossa tecnologia</div>
-                          <div style="font-size:12px;color:#0A5FA6;margin-top:8px;">atendimento@personalitec.com.br</div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+@push('scripts')
+<script src="{{ asset('plugins/datatables/datatables.min.js') }}"></script>
+<script src="{{ asset('plugins/select2/select2.full.min.js') }}"></script>
+<script src="{{ asset('plugins/select2/i18n/pt-BR.js') }}"></script>
+<script src="{{ asset('js/ordem-servico.js') }}"></script>
+<script src="{{ asset('js/projetos.js') }}"></script>
+@endpush
 
-          <!-- FOOTER -->
-          <tr>
-            <td style="padding:20px;text-align:center;color:#666;font-size:11px;">
-              <p style="margin:0;">© {{ date('Y') }} Personalitec Soluções. Todos os direitos reservados.</p>
-            </td>
-          </tr>
+@section('modal')
 
-        </table>
-        <!-- /container -->
+    <div class="modal fade" id="modalOrdemServico" tabindex="-1" data-bs-backdrop="static" aria-labelledby="modalOrdemServicoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-md-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalOrdemServicoLabel">Ordem de Servi&ccedil;o</h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formOrdemServico" action="#" method="post">
+                        <input type="hidden" name="txtOrdemPrecoProduto" id="txtOrdemPrecoProduto" class="calculo-valor-total" />
+                        <input type="hidden" name="txtOrdemValorTotal" id="txtOrdemValorTotal" />
+                        <div class="row">
+                            <div class="form-floating mb-3 col-md-2">
+                                <input type="text" name="txtOrdemId" id="txtOrdemId" class="form-control" placeholder="C&oacute;digo" readonly />
+                                <label for="txtOrdemId">C&oacute;digo</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-10">
+                                <input type="hidden" name="txtOrdemConsultorId" id="txtOrdemConsultorId" />
+                                <input type="text" id="txtOrdemConsultor" class="form-control" placeholder="Consultor" required readonly />
+                                <label for="txtOrdemConsultor">Consultor</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-md-10">
+                                <select name="slcOrdemClienteId" id="slcOrdemClienteId" class="form-select" required></select>
+                                <label for="slcOrdemClienteId">Cliente</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-2">
+                                <input type="date" name="txtOrdemDataEmissao" id="txtOrdemDataEmissao" class="form-control" placeholder="Data Emiss&atilde;o" />
+                                <label for="txtOrdemDataEmissao">Data Emiss&atilde;o</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="input-group mb-3 col-md-12">
+                                <div class="form-floating">
+                                    <select name="slcOrdemTipoDespesa" id="slcOrdemTipoDespesa" class="form-select" placeholder="Tipo Despesa">
+                                        <option value="">Selecionar ...</option>
+                                        <option value="refeicao">Refei&ccedil;&atilde;o</option>
+                                        <option value="outros">Outros</option>
+                                    </select>
+                                    <label for="slcOrdemTipoDespesa">Tipo Despesa</label>
+                                </div>
+                                <div class="form-floating">
+                                    <input type="text" name="txtOrdemDespesas" id="txtOrdemDespesas" class="form-control money calculo-valor-total" placeholder="Despesas" />
+                                    <label for="txtOrdemDespesas">Despesas</label>
+                                </div>
+                                <div class="form-floating f-g-4">
+                                    <input type="text" name="txtOrdemDespesasDetalhamento" id="txtOrdemDespesasDetalhamento" class="form-control" placeholder="Detalhamento" readonly />
+                                    <label for="txtOrdemDespesasDetalhamento">Detalhamento</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-md-12">
+                                <select name="slcProdutoOrdemId" id="slcProdutoOrdemId" class="form-select" required></select>
+                                <label for="slcProdutoOrdemId">Produto</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-md-3">
+                                <input type="time" name="txtProdutoOrdemHoraInicio" id="txtProdutoOrdemHoraInicio" class="form-control calculo-horas" placeholder="Hora In&iacute;cio" />
+                                <label for="txtProdutoOrdemHoraInicio">Hora In&iacute;cio</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-3">
+                                <input type="time" name="txtProdutoOrdemHoraFinal" id="txtProdutoOrdemHoraFinal" class="form-control calculo-horas" placeholder="Hora Final" />
+                                <label for="txtProdutoOrdemHoraFinal">Hora Final</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-3">
+                                <input type="time" name="txtProdutoOrdemHoraDesconto" id="txtProdutoOrdemHoraDesconto" class="form-control calculo-horas" placeholder="Hora Desconto" />
+                                <label for="txtProdutoOrdemHoraDesconto">Hora Desconto</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-3">
+                                <input type="text" name="txtProdutoOrdemQtdeTotal" id="txtProdutoOrdemQtdeTotal" class="form-control calculo-valor-total" placeholder="Qtde Total" readonly />
+                                <label for="txtProdutoOrdemQtdeTotal">Qtde Total</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-md-5">
+                                <input type="text" name="txtOrdemAssunto" id="txtOrdemAssunto" class="form-control" placeholder="Assunto" />
+                                <label for="txtOrdemAssunto">Assunto</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-4">
+                                <select name="projeto_id" id="slcOrdemProjetoId" class="form-select" placeholder="Selecione um projeto">
+                                    <option value="">Selecione um projeto</option>
+                                </select>
+                                <label for="slcOrdemProjetoId">Projeto</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-3">
+                                <input type="text" name="txtOrdemNrAtendimento" id="txtOrdemNrAtendimento" class="form-control" placeholder="Nr. Atendimento" />
+                                <label for="txtOrdemNrAtendimento">Nr. Atendimento</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-md-12">
+                                <textarea name="txtProdutoOrdemDetalhamento" id="txtProdutoOrdemDetalhamento" class="form-control" style="height: 100px;"></textarea>
+                                <label for="txtProdutoOrdemDetalhamento">Detalhamento</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text"><label for="chkOrdemPresencial">Presencial</label></span>
+                                    <div class="input-group-text"><input class="form-check-input calculo-valor-total" type="checkbox" name="chkOrdemPresencial" id="chkOrdemPresencial" value="1"></div>
+                                    <div class="form-floating" style="display: none;">
+                                        <input type="text" name="txtOrdemKM" id="txtOrdemKM" class="form-control money calculo-valor-total" placeholder="KM" />
+                                        <label for="txtOrdemKM">KM</label>
+                                    </div>
+                                    <div class="form-floating" style="display: none;">
+                                        <input type="text" name="txtOrdemDeslocamento" id="txtOrdemDeslocamento" class="form-control money calculo-valor-total" placeholder="0,00" />
+                                        <label for="txtOrdemDeslocamento">Deslocamento (HH:MM ou horas)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-floating mb-3 col-md-2" style="display: none;">
+                                <input type="text" name="txtOrdemTotal" id="txtOrdemTotal" class="form-control money" placecholder="Total OS" />
+                                <label>Total OS</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div>
+                                <div class="table-responsive">
+                                    <table id="tblProdutosOrdem" class="table w-100"></table>
+                                </div>
+                            </div>
+                        </div>
 
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
+                        @if(auth()->user()->papel !== 'cliente')
+                        <div id="divTotalizadorAdmin" class="row mt-4" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="card bg-light border-primary">
+                                    <div class="card-header bg-primary text-white">
+                                        @if(auth()->user()->papel === 'admin')
+                                            <h6 class="mb-0"><i class="bi bi-calculator"></i> Totalizador - Administração</h6>
+                                        @else
+                                            <h6 class="mb-0"><i class="bi bi-calculator"></i> Totalizador - Consultor</h6>
+                                        @endif
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <table class="table table-sm">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><strong>Valor Hora Cliente:</strong></td>
+                                                            <td class="text-end" id="valorHoraConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Valor KM Cliente:</strong></td>
+                                                            <td class="text-end" id="valorKMConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Valor do Serviço:</strong></td>
+                                                            <td class="text-end" id="totalValorServico">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Despesas:</strong></td>
+                                                            <td class="text-end" id="totalDespesas">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr id="linhaKM" style="display: none;">
+                                                            <td><strong>KM:</strong></td>
+                                                            <td class="text-end" id="totalKM">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr id="linhaDeslocamento" style="display: none;">
+                                                            <td><strong>Deslocamento:</strong></td>
+                                                            <td class="text-end" id="totalDeslocamento">R$ 0,00</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="alert alert-success mb-0">
+                                                    <h5 class="mb-1">TOTAL GERAL</h5>
+                                                    <h3 class="mb-0" id="totalGeral">R$ 0,00</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Segundo totalizador para Admin ver também a visão do Consultor --}}
+                        @if(auth()->user()->papel === 'admin')
+                        <div id="divTotalizadorConsultor" class="row mt-4" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="card bg-light border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0"><i class="bi bi-calculator"></i> Totalizador - Visão do Consultor</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <table class="table table-sm">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><strong>Valor Hora Consultor:</strong></td>
+                                                            <td class="text-end" id="valorHoraConsultorConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Valor KM Consultor:</strong></td>
+                                                            <td class="text-end" id="valorKMConsultorConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Valor do Serviço:</strong></td>
+                                                            <td class="text-end" id="totalValorServicoConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Despesas:</strong></td>
+                                                            <td class="text-end" id="totalDespesasConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr id="linhaKMConsultor" style="display: none;">
+                                                            <td><strong>KM:</strong></td>
+                                                            <td class="text-end" id="totalKMConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                        <tr id="linhaDeslocamentoConsultor" style="display: none;">
+                                                            <td><strong>Deslocamento:</strong></td>
+                                                            <td class="text-end" id="totalDeslocamentoConsultor">R$ 0,00</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="alert alert-info mb-0">
+                                                    <h5 class="mb-1">TOTAL GERAL</h5>
+                                                    <h3 class="mb-0" id="totalGeralConsultor">R$ 0,00</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        @endif
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-salvar-ordem-servico">Salvar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@endsection

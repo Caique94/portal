@@ -1,0 +1,166 @@
+════════════════════════════════════════════════════════════════════════════
+                   ORDEM DE SERVIÇO UPDATES - VERSÃO 2.2
+════════════════════════════════════════════════════════════════════════════
+
+📦 ARQUIVO: ordem-servico-updates-v2.2.tar.gz
+📏 TAMANHO: 30 KB
+📅 DATA: 2 de Dezembro de 2025
+✅ STATUS: Pronto para Produção
+
+════════════════════════════════════════════════════════════════════════════
+🎯 O QUE FOI INCLUÍDO
+════════════════════════════════════════════════════════════════════════════
+
+1. PATCH UNIFICADO
+   ├─ ordem-servico-updates.patch (131 KB)
+   └─ Contém todas as mudanças em um único arquivo
+
+2. ARQUIVOS MODIFICADOS (7 arquivos)
+   ├─ app/Mail/OrdemServicoMail.php
+   ├─ app/Services/OrdemServicoEmailService.php
+   ├─ app/Services/OrdemServicoPdfService.php
+   ├─ resources/views/emails/ordem-servico-consultor.blade.php
+   ├─ resources/views/emails/ordem-servico-cliente.blade.php
+   ├─ resources/views/emails/ordem-servico-pdf.blade.php
+   └─ (Estrutura de diretórios mantida)
+
+3. DOCUMENTAÇÃO COMPLETA
+   ├─ UPDATES_V2.2_README.md
+   │  └─ Guia detalhado de instalação e troubleshooting
+   ├─ RELEASE_NOTES_V2.2.md
+   │  └─ Notas de lançamento com comparativo antes/depois
+   └─ PACKAGE_SUMMARY.txt
+      └─ Este arquivo
+
+════════════════════════════════════════════════════════════════════════════
+🔧 MUDANÇAS PRINCIPAIS
+════════════════════════════════════════════════════════════════════════════
+
+✅ CONSULTOR EMAIL
+   • Calcula corretamente "VALOR TOTAL"
+   • Formula: (horas × valor_hora) + (km × valor_km) + despesas
+   • Exemplo: 8h × R$150 + 50km × R$5 + R$100 = R$1.550
+
+✅ CLIENTE EMAIL
+   • Busca contato correto da tabela 'contato'
+   • Filtra apenas contatos com 'recebe_email_os = true'
+   • Valida email antes de enviar
+   • Exibe 'valor_total' do banco de dados
+
+✅ LAYOUT
+   • Campo "Valor/Hora" alterado para "Consultor" (nome)
+   • TRANSLADO exibido em HH:MM (ex: 01:30)
+   • Cálculos corrigidos em ambos templates
+
+✅ PDF
+   • Temporariamente desativado (GD extension não instalada)
+   • Fácil reativação com uma linha de código
+   • Quando GD estiver disponível, basta descomentar linha 29
+
+════════════════════════════════════════════════════════════════════════════
+🚀 COMO USAR
+════════════════════════════════════════════════════════════════════════════
+
+OPÇÃO 1: APLICAR PATCH (Recomendado)
+─────────────────────────────────
+$ cd /seu/projeto/laravel
+$ tar -xzf ordem-servico-updates-v2.2.tar.gz
+$ patch -p1 < ordem-servico-updates.patch
+
+OPÇÃO 2: COPIAR ARQUIVOS MANUALMENTE
+──────────────────────────────────────
+1. Extrair: tar -xzf ordem-servico-updates-v2.2.tar.gz
+2. Copiar arquivos mantendo a estrutura de diretórios
+3. Verificar conflitos
+
+════════════════════════════════════════════════════════════════════════════
+📋 CHECKLIST PÓS-INSTALAÇÃO
+════════════════════════════════════════════════════════════════════════════
+
+□ Patch aplicado sem erros
+□ Email do CONSULTOR mostra "SEU GANHO" correto
+□ Email do CLIENTE recebido no contato com flag ativo
+□ TRANSLADO em formato HH:MM (ex: 01:30)
+□ Contatos sem email/permissão não causam erro
+□ Logs verificados (storage/logs/laravel.log)
+□ Validação de email funcionando
+
+════════════════════════════════════════════════════════════════════════════
+📚 DOCUMENTAÇÃO
+════════════════════════════════════════════════════════════════════════════
+
+Dentro do arquivo você encontrará:
+
+1. UPDATES_V2.2_README.md
+   • Instruções detalhadas de instalação
+   • Troubleshooting de problemas comuns
+   • Exemplos de valores exibidos
+   • Guia de reativação de PDF
+
+2. RELEASE_NOTES_V2.2.md
+   • Comparativo antes/depois
+   • Commits relacionados
+   • Testes recomendados
+   • Checklist pós-deploy
+
+════════════════════════════════════════════════════════════════════════════
+🔄 COMMITS INCLUSOS
+════════════════════════════════════════════════════════════════════════════
+
+2ef2e66 - fix: Calculate consultant earnings correctly in email summary
+58f7d45 - fix: Update client email logic to use Contato table with recebe_email_os flag
+bb05e41 - refactor: Optimize PDF rendering with dedicated DomPDF-compatible template (base)
+
+════════════════════════════════════════════════════════════════════════════
+💡 PRÓXIMAS AÇÕES
+════════════════════════════════════════════════════════════════════════════
+
+1. IMEDIATO:
+   □ Extrair e aplicar patch
+   □ Rodar testes de envio
+   □ Verificar logs
+
+2. CURTO PRAZO:
+   □ Deploy em produção
+   □ Monitorar emails enviados
+   □ Verificar satisfação de consultores/clientes
+
+3. FUTURO:
+   □ Instalar extensão PHP GD
+   □ Reativar geração de PDFs
+   □ Considerar melhorias adicionais
+
+════════════════════════════════════════════════════════════════════════════
+📞 SUPORTE
+════════════════════════════════════════════════════════════════════════════
+
+Se encontrar problemas:
+
+1. Verifique logs:
+   tail -f storage/logs/laravel.log
+
+2. Teste manualmente:
+   php artisan tinker
+   $os = OrdemServico::find(1);
+   Mail::to($os->consultor->email)->send(new OrdemServicoMail($os, 'consultor'));
+
+3. Confirme dados:
+   - Cliente tem contato com email válido?
+   - Contato tem 'recebe_email_os = true'?
+   - Email contém @ e domínio válido?
+
+════════════════════════════════════════════════════════════════════════════
+✨ RESUMO
+════════════════════════════════════════════════════════════════════════════
+
+Este pacote contém todas as correções e melhorias para o sistema de envio
+de Ordem de Serviço por email. As correções resolvem problemas de cálculo
+de valores, busca de email de cliente, e validação antes do envio.
+
+Status: ✅ Pronto para Produção
+
+Versão: 2.2
+Data: 2 de Dezembro de 2025
+Criado por: Claude Code
+
+════════════════════════════════════════════════════════════════════════════
