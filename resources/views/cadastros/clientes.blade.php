@@ -66,14 +66,17 @@
                                 <input type="text" name="txtClienteCGC" id="txtClienteCGC" class="form-control cpf-cnpj" placeholder="CPF/CNPJ" />
                                 <label for="txtClienteCGC">CPF/CNPJ</label>
                             </div>
-                            <div class="form-floating mb-3 col-md-7">
-                                <select name="txtClienteContato" id="txtClienteContato" class="form-select"></select>
-                                <label for="txtClienteContato">Contato Principal</label>
+                            <div class="form-floating mb-3 col-md-5">
+                                <select name="txtClienteContato" id="txtClienteContato" class="form-select" required></select>
+                                <label for="txtClienteContato">Contato Principal <span class="text-danger">*</span></label>
                             </div>
-                            <div class="col-md-1 d-flex align-items-end mb-3">
-                                <button type="button" class="btn btn-sm btn-outline-primary w-100" id="btnAdicionarContatoRapido" data-bs-toggle="tooltip" data-bs-title="Adicionar novo contato rapidamente">
-                                    <i class="bi bi-plus-circle"></i>
+                            <div class="col-md-2 d-flex align-items-end mb-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100" id="btnAdicionarContatoRapido" data-bs-toggle="modal" data-bs-target="#modalContato">
+                                    <i class="bi bi-person-plus"></i> Adicionar
                                 </button>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end mb-3 justify-content-end">
+                                <span class="badge bg-info" id="badgeContatoCount" style="display:none; height:fit-content;">0 contatos</span>
                             </div>
                         </div>
                         <div class="row">
@@ -100,10 +103,6 @@
                             <div class="form-floating mb-3 col-md-2">
                                 <input type="text" name="txtClienteKm" id="txtClienteKm" class="form-control mask-km" placeholder="KM" data-bs-toggle="tooltip" data-bs-title="Quantidade de KMs de deslocamento at&eacute; o cliente" data-bs-trigger="hover" data-bs-placement="top" />
                                 <label for="txtClienteKm">KM</label>
-                            </div>
-                            <div class="form-floating mb-3 col-md-2">
-                                <input type="text" name="txtClienteValorHora" id="txtClienteValorHora" class="form-control mask-moeda" placeholder="Valor Hora" data-bs-toggle="tooltip" data-bs-title="Valor da hora do cliente para c&aacute;lculo do totalizador" data-bs-trigger="hover" data-bs-placement="top" />
-                                <label for="txtClienteValorHora">Valor Hora</label>
                             </div>
                             <div class="form-floating mb-3 col-md-2">
                                 <input type="text" name="txtClienteDeslocamento" id="txtClienteDeslocamento" class="form-control mask-deslocamento" placeholder="Deslocamento" data-bs-toggle="tooltip" data-bs-title="Quantidade de KMs de deslocamento at&eacute; o cliente" data-bs-trigger="hover" data-bs-placement="top" />

@@ -3,6 +3,10 @@
 $(function () {
   const $form = $('#formCliente');
 
+  // Gerenciamento de contatos para novo cadastro (modo "adicionar")
+  let contatosNovoCliente = []; // Armazena contatos criados antes de salvar cliente
+  let modoNovoCliente = false;  // Flag para saber se estamos adicionando novo cliente
+
   const tblClientes = $('#tblClientes').DataTable({
     ajax: { url: '/listar-clientes', dataSrc: json => json },
     order: [[1, 'asc']],
@@ -58,6 +62,12 @@ $(function () {
             $('#cliente_id').val('');
             $('#slcClienteTabelaPrecos').val(null).trigger('change');
             $('#txtClienteContato').empty().append(new Option('', '', true, true)).trigger('change');
+
+            // Ativar modo novo cliente
+            modoNovoCliente = true;
+            contatosNovoCliente = [];
+            atualizarBadgeContatos();
+
             $('#modalClienteLabel').text('Adicionar Cliente');
             $('#modalCliente').modal('show');
           }
@@ -93,6 +103,28 @@ $(function () {
     });
   }
 
+  // Função para atualizar badge de contatos
+  function atualizarBadgeContatos() {
+    const $badge = $('#badgeContatoCount');
+    if (modoNovoCliente && contatosNovoCliente.length > 0) {
+      $badge.text(contatosNovoCliente.length + ' contato' + (contatosNovoCliente.length === 1 ? '' : 's')).show();
+    } else {
+      $badge.hide();
+    }
+  }
+
+  // Função para carregar contatos do novo cliente no select
+  function carregarContatosNovoCliente() {
+    const $sel = $('#txtClienteContato');
+    $sel.empty().append(new Option('', '', true, true));
+
+    contatosNovoCliente.forEach(contato => {
+      $sel.append(new Option(contato.nome, contato.nome, false, false));
+    });
+
+    $sel.trigger('change');
+  }
+
   // ==== EDITAR ====
   $('#tblClientes').on('click', '.exibir-modal-edicao', function () {
     const r = tblClientes.row($(this).closest('tr')).data();
@@ -101,6 +133,11 @@ $(function () {
     if (!$form.find('input[name="id"]').length) {
       $form.append('<input type="hidden" name="id" id="cliente_id">');
     }
+
+    // Desativar modo novo cliente ao editar
+    modoNovoCliente = false;
+    contatosNovoCliente = [];
+    atualizarBadgeContatos();
 
     $('#cliente_id').val(r.id || '');
     $('#txtClienteCodigo').val(r.codigo || '');
@@ -136,6 +173,11 @@ $(function () {
     if (!$form.find('input[name="id"]').length) {
       $form.append('<input type="hidden" name="id" id="cliente_id">');
     }
+
+    // Desativar modo novo cliente ao visualizar
+    modoNovoCliente = false;
+    contatosNovoCliente = [];
+    atualizarBadgeContatos();
 
     $('#cliente_id').val(r.id || '');
     $('#txtClienteCodigo').val(r.codigo || '').prop('disabled', true);
@@ -173,11 +215,42 @@ $(function () {
     const form = $('#formCliente');
     if (!validateFormRequired(form)) return;
 
+    // Validação extra: em modo novo cliente, exigir pelo menos um contato
+    if (modoNovoCliente && contatosNovoCliente.length === 0) {
+      Toast.fire({
+        icon: 'warning',
+        title: 'Adicione pelo menos um contato antes de salvar'
+      });
+      return;
+    }
+
+    // Validação extra: Contato Principal é obrigatório
+    if (!$('#txtClienteContato').val()) {
+      Toast.fire({
+        icon: 'warning',
+        title: 'Selecione um Contato Principal'
+      });
+      return;
+    }
+
+    // Preparar dados para enviar
+    let formData = new FormData(form[0]);
+
+    // Se em modo novo cliente, adicionar contatos ao payload
+    if (modoNovoCliente && contatosNovoCliente.length > 0) {
+      formData.append('contatos_novos', JSON.stringify(contatosNovoCliente));
+    }
+
     $.ajax({
       url: '/salvar-cliente',
       type: 'POST',
-      data: form.serialize(),
+      data: formData,
+      processData: false,
+      contentType: false,
       success: function (resp) {
+        modoNovoCliente = false;
+        contatosNovoCliente = [];
+        atualizarBadgeContatos();
         tblClientes.ajax.reload(null, false);
         $('#modalCliente').modal('hide');
         Toast.fire({ icon: 'success', title: resp.message || 'Salvo' });
@@ -284,63 +357,18 @@ $(function () {
     });
   });
 
-  // Salvar contato
-  $('.btn-salvar-contato').on('click', function () {
-    const form = $('#formContato');
-    if (!validateFormRequired(form)) return;
 
-    $.ajax({
-      url: '/salvar-contato',
-      type: 'POST',
-      data: form.serialize(),
-      success: function (resp) {
-        tblContatos.ajax.reload(null, false);
-        $('#modalContato').modal('hide');
-        $('#formContato')[0].reset();
-        Toast.fire({ icon: 'success', title: resp.message || 'Contato salvo com sucesso!' });
-      },
-      error: function (jqXHR, textStatus, errorThrown) {
-        if (jqXHR.status === 422 && jqXHR.responseJSON?.errors) {
-          let html = '';
-          $.each(jqXHR.responseJSON.errors, function (_, arr) {
-            $.each(arr, function (_, err) { html += html ? '<br>'+err : err; });
-          });
-          Toast.fire({ icon: 'error', title: html });
-        } else {
-          console.error('Error:', textStatus, errorThrown);
-          Toast.fire({ icon: 'error', title: errorThrown || 'Erro ao salvar contato' });
-        }
-      }
-    });
-  });
-
-  // Botão para adicionar contato direto no modal do cliente
+  // Botão "Adicionar Contato Rápido" (dentro do modal cliente para novo cadastro)
   $('#btnAdicionarContatoRapido').on('click', function () {
-    const clienteId = $('#cliente_id').val();
+    // Se estamos em modo novo cliente, preparar para adicionar contato
+    if (modoNovoCliente) {
+      $('#formContato')[0].reset();
+      $('#contato_id').remove();
+      $('#chkContatoRecebeEmailOS').prop('checked', true);
+      $('#txtContatoClienteId').val(''); // Será adicionado ao cliente quando salvar
 
-    if (!clienteId) {
-      Toast.fire({ icon: 'warning', title: 'Salve o cliente primeiro antes de adicionar contatos' });
-      return;
+      $('#modalContatoLabel').text('Adicionar Contato (Novo Cliente)');
     }
-
-    // Limpar o formulário e remover o ID se existir
-    $('#formContato')[0].reset();
-    $('#contato_id').remove();
-    $('#chkContatoRecebeEmailOS').prop('checked', true);
-
-    // Obter nome do cliente do modal
-    const nomeCliente = $('#txtClienteNome').val() || 'Cliente';
-
-    $('#modalContatoLabel').text(nomeCliente + ' - Adicionar Contato');
-    $('#txtContatoClienteId').val(clienteId);
-
-    // Fechar modal do cliente e abrir modal do contato
-    $('#modalCliente').modal('hide');
-
-    // Esperar um pouco para fechar antes de abrir o novo modal
-    setTimeout(() => {
-      $('#modalContato').modal('show');
-    }, 300);
   });
 
   $('#tblClientes').on('click', '.adicionar-contato', function () {
@@ -362,6 +390,73 @@ $(function () {
     $('#formContato')[0].reset();
     $('#contato_id').remove();
     $('#chkContatoRecebeEmailOS').prop('checked', true);
+  });
+
+  // ==== Salvar Contato ====
+  $('.btn-salvar-contato').on('click', function () {
+    const form = $('#formContato');
+    const clienteId = $('#txtContatoClienteId').val();
+    const contatoId = $('#contato_id').val();
+
+    // Validação básica
+    if (!$('#txtContatoNome').val().trim()) {
+      Toast.fire({ icon: 'error', title: 'Nome do contato é obrigatório' });
+      return;
+    }
+
+    // Se estamos em modo novo cliente (adicionar contato sem salvar cliente ainda)
+    if (modoNovoCliente && !clienteId) {
+      const novoContato = {
+        nome: $('#txtContatoNome').val().trim(),
+        email: $('#txtContatoEmail').val().trim(),
+        telefone: $('#txtContatoTelefone').val().trim(),
+        aniversario: $('#txtContatoAniversario').val().trim(),
+        recebe_email_os: $('#chkContatoRecebeEmailOS').is(':checked')
+      };
+
+      contatosNovoCliente.push(novoContato);
+      atualizarBadgeContatos();
+      carregarContatosNovoCliente();
+
+      form[0].reset();
+      $('#chkContatoRecebeEmailOS').prop('checked', true);
+      $('#modalContato').modal('hide');
+
+      Toast.fire({ icon: 'success', title: 'Contato adicionado!' });
+      return;
+    }
+
+    // Se cliente já existe, salvar normalmente via API
+    if (!clienteId) {
+      Toast.fire({ icon: 'error', title: 'Cliente não identificado' });
+      return;
+    }
+
+    const url = contatoId ? '/salvar-contato/' + contatoId : '/salvar-contato';
+    const method = contatoId ? 'PUT' : 'POST';
+
+    $.ajax({
+      url: url,
+      type: method,
+      data: form.serialize(),
+      success: function (resp) {
+        tblContatos.ajax.reload(null, false);
+        $('#modalContato').modal('hide');
+        Toast.fire({ icon: 'success', title: resp.message || 'Salvo' });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        if (jqXHR.status === 422 && jqXHR.responseJSON?.errors) {
+          let html = '';
+          $.each(jqXHR.responseJSON.errors, function (_, arr) {
+            $.each(arr, function (_, err) { html += html ? '<br>'+err : err; });
+          });
+          Toast.fire({ icon: 'error', title: html });
+        } else {
+          console.error('Error:', textStatus, errorThrown);
+          Toast.fire({ icon: 'error', title: errorThrown || 'Erro ao salvar' });
+        }
+      }
+    });
   });
 
   // ===== Select2 Tabela de Preços =====

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Models\Contato;
 use Illuminate\Http\Request;
 
 class ClienteController extends Controller
@@ -63,10 +64,29 @@ class ClienteController extends Controller
                 return response()->json(['ok'=>false, 'msg'=>'Cliente não encontrado'], 404);
             }
             $cli->update($mappedData);
+
             return response()->json(['ok'=>true, 'msg'=>'Cliente atualizado', 'data'=>$cli], 200);
         }
 
         $cliente = Cliente::create($mappedData);
+
+        // Processar contatos novos se houver
+        if ($request->filled('contatos_novos')) {
+            $contatosNovos = json_decode($request->input('contatos_novos'), true);
+
+            if (is_array($contatosNovos)) {
+                foreach ($contatosNovos as $contatoData) {
+                    Contato::create([
+                        'cliente_id' => $cliente->id,
+                        'nome' => $contatoData['nome'] ?? null,
+                        'email' => $contatoData['email'] ?? null,
+                        'telefone' => $contatoData['telefone'] ?? null,
+                        'aniversario' => $contatoData['aniversario'] ?? null,
+                        'recebe_email_os' => $contatoData['recebe_email_os'] ?? false
+                    ]);
+                }
+            }
+        }
 
         return response()->json([
             'ok'      => true,
