@@ -25,6 +25,9 @@ $(function () {
     });
   }
 
+  // Cache para estados para evitar múltiplas requisições
+  let estadosCache = null;
+
   // Função para carregar cidades baseado no estado selecionado
   function carregarCidadesPorEstado(estadoNome) {
     if (!estadoNome) {
@@ -32,8 +35,8 @@ $(function () {
       return;
     }
 
-    // Buscar o ID do estado pelo nome
-    $.get('/listar-estados').then(function (estados) {
+    // Função auxiliar para buscar cidades
+    function buscarCidades(estados) {
       const estado = (estados || []).find(e => e.nome === estadoNome);
       if (!estado) {
         $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
@@ -52,7 +55,17 @@ $(function () {
       }).fail(function() {
         $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
       });
-    });
+    }
+
+    // Usar cache se disponível
+    if (estadosCache) {
+      buscarCidades(estadosCache);
+    } else {
+      $.get('/listar-estados').then(function (estados) {
+        estadosCache = estados; // Guardar em cache
+        buscarCidades(estados);
+      });
+    }
   }
 
   // Event listener para estado mudar
@@ -83,12 +96,27 @@ $(function () {
           // Preencher os campos com os dados retornados
           $('#txtClienteCEP').val(resp.data.cep);
           $('#txtClienteEndereco').val(resp.data.endereco);
-          $('#slcClienteEstado').val(resp.data.estado).trigger('change');
+
+          // Selecionar Estado
+          const $estadoSelect = $('#slcClienteEstado');
+          $estadoSelect.val(resp.data.estado).trigger('change');
 
           // Aguardar o carregamento das cidades e depois selecionar
-          setTimeout(() => {
-            $('#slcClienteCidade').val(resp.data.cidade).trigger('change');
-          }, 300);
+          // Usar um loop com verificação para garantir que as cidades foram carregadas
+          let tentativas = 0;
+          const maxTentativas = 10;
+
+          const selecionarCidade = setInterval(() => {
+            tentativas++;
+            const cidadeOption = $('#slcClienteCidade option[value="' + resp.data.cidade + '"]');
+
+            if (cidadeOption.length > 0 || tentativas >= maxTentativas) {
+              clearInterval(selecionarCidade);
+              if (cidadeOption.length > 0) {
+                $('#slcClienteCidade').val(resp.data.cidade).trigger('change');
+              }
+            }
+          }, 100);
 
           Toast.fire({
             icon: 'success',
