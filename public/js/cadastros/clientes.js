@@ -61,6 +61,61 @@ $(function () {
     carregarCidadesPorEstado(estadoNome);
   });
 
+  // ===== CEP =====
+  // Função para buscar endereço por CEP
+  function buscarPorCEP(cep) {
+    const cepLimpo = cep.replace(/\D/g, '');
+
+    if (cepLimpo.length !== 8) {
+      Toast.fire({ icon: 'warning', title: 'CEP deve conter 8 dígitos' });
+      return;
+    }
+
+    $.ajax({
+      url: '/buscar-cep',
+      type: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      data: { cep: cepLimpo },
+      success: function (resp) {
+        if (resp.success) {
+          // Preencher os campos com os dados retornados
+          $('#txtClienteCEP').val(resp.data.cep);
+          $('#txtClienteEndereco').val(resp.data.endereco);
+          $('#slcClienteEstado').val(resp.data.estado).trigger('change');
+
+          // Aguardar o carregamento das cidades e depois selecionar
+          setTimeout(() => {
+            $('#slcClienteCidade').val(resp.data.cidade).trigger('change');
+          }, 300);
+
+          Toast.fire({
+            icon: 'success',
+            title: 'CEP encontrado com sucesso!'
+          });
+        } else {
+          Toast.fire({
+            icon: 'error',
+            title: resp.message || 'CEP não encontrado'
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        const message = jqXHR.responseJSON?.message || 'Erro ao consultar CEP';
+        Toast.fire({ icon: 'error', title: message });
+      }
+    });
+  }
+
+  // Event listener para blur no campo CEP
+  $(document).on('blur', '#txtClienteCEP', function () {
+    const cep = $(this).val();
+    if (cep && cep.replace(/\D/g, '').length === 8) {
+      buscarPorCEP(cep);
+    }
+  });
+
   const tblClientes = $('#tblClientes').DataTable({
     ajax: { url: '/listar-clientes', dataSrc: json => json },
     order: [[1, 'asc']],
@@ -212,6 +267,7 @@ $(function () {
     $('#txtClienteNomeFantasia').val(r.nome_fantasia || '');
     $('#slcClienteTipo').val(r.tipo || '');
     $('#txtClienteCGC').val(r.cgc || '');
+    $('#txtClienteCEP').val(r.cep || '');
     $('#txtClienteEndereco').val(r.endereco || '');
     $('#slcClienteEstado').val(r.estado || '').trigger('change');
     $('#slcClienteCidade').val(r.municipio || '');
@@ -259,6 +315,7 @@ $(function () {
     $('#txtClienteNomeFantasia').val(r.nome_fantasia || '').prop('disabled', true);
     $('#slcClienteTipo').val(r.tipo || '').prop('disabled', true);
     $('#txtClienteCGC').val(r.cgc || '').prop('disabled', true);
+    $('#txtClienteCEP').val(r.cep || '').prop('disabled', true);
     $('#txtClienteEndereco').val(r.endereco || '').prop('disabled', true);
     $('#slcClienteEstado').val(r.estado || '').trigger('change').prop('disabled', true);
     $('#slcClienteCidade').val(r.municipio || '').prop('disabled', true);

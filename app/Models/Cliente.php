@@ -20,6 +20,7 @@ class Cliente extends Model
         'nome_fantasia',
         'tipo',
         'cgc',
+        'cep',
         'contato',
         'endereco',
         'municipio',

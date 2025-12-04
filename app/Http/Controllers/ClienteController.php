@@ -48,6 +48,7 @@ class ClienteController extends Controller
             'txtClienteNomeFantasia'    => 'nullable|string|max:255',
             'txtClienteTipo'            => 'nullable|string|max:255',
             'txtClienteCGC'             => 'nullable|string|max:255',
+            'txtClienteCEP'             => 'nullable|string|max:10',
             'txtClienteContato'         => 'nullable|string|max:255',  // Opcional - pode ser preenchido após criar contatos
             'txtClienteEndereco'        => 'nullable|string|max:255',
             'slcClienteCidade'          => 'nullable|string|max:255',
@@ -65,6 +66,7 @@ class ClienteController extends Controller
             'nome_fantasia'     => $validatedData['txtClienteNomeFantasia'] ?? null,
             'tipo'              => $validatedData['txtClienteTipo'] ?? null,
             'cgc'               => $validatedData['txtClienteCGC'] ?? null,
+            'cep'               => $validatedData['txtClienteCEP'] ?? null,
             'contato'           => $validatedData['txtClienteContato'] ?? null,
             'endereco'          => $validatedData['txtClienteEndereco'] ?? null,
             'municipio'         => $validatedData['slcClienteCidade'] ?? null,

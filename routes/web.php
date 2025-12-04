@@ -179,6 +179,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/listar-cidades/{estadoId}', [EstadoCidadeController::class, 'listarCidades']);
     Route::get('/buscar-cidades', [EstadoCidadeController::class, 'buscarCidades']);
     Route::get('/buscar-estado', [EstadoCidadeController::class, 'buscarEstado']);
+    Route::post('/buscar-cep', [EstadoCidadeController::class, 'buscarCEP']);
 
     // PRODUTO
     Route::get('/listar-produtos', [ProdutoController::class, 'list']);

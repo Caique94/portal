@@ -80,7 +80,11 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="form-floating mb-3 col-md-12">
+                            <div class="form-floating mb-3 col-md-3">
+                                <input type="text" name="txtClienteCEP" id="txtClienteCEP" class="form-control mask-cep" placeholder="CEP" data-bs-toggle="tooltip" data-bs-title="Digite o CEP para preencher automaticamente os dados de endere&ccedil;o" data-bs-trigger="hover" data-bs-placement="top" />
+                                <label for="txtClienteCEP">CEP</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-9">
                                 <input type="text" name="txtClienteEndereco" id="txtClienteEndereco" class="form-control" placeholder="Endere&ccedil;o" />
                                 <label for="txtClienteEndereco">Endere&ccedil;o</label>
                             </div>
