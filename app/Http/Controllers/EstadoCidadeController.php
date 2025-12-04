@@ -13,8 +13,16 @@ class EstadoCidadeController extends Controller
      */
     public function listarEstados()
     {
-        $estados = Estado::orderBy('nome', 'asc')->get();
-        return response()->json($estados);
+        try {
+            $estados = Estado::orderBy('nome', 'asc')->get();
+            return response()->json($estados);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao listar estados: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar estados: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -22,10 +30,18 @@ class EstadoCidadeController extends Controller
      */
     public function listarCidades($estadoId)
     {
-        $cidades = Cidade::where('estado_id', $estadoId)
-            ->orderBy('nome', 'asc')
-            ->get();
-        return response()->json($cidades);
+        try {
+            $cidades = Cidade::where('estado_id', $estadoId)
+                ->orderBy('nome', 'asc')
+                ->get();
+            return response()->json($cidades);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao listar cidades: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar cidades'
+            ], 500);
+        }
     }
 
     /**
@@ -33,21 +49,29 @@ class EstadoCidadeController extends Controller
      */
     public function buscarCidades(Request $request)
     {
-        $search = $request->input('q', '');
-        $estadoId = $request->input('estado_id');
+        try {
+            $search = $request->input('q', '');
+            $estadoId = $request->input('estado_id');
 
-        $query = Cidade::query();
+            $query = Cidade::query();
 
-        if ($estadoId) {
-            $query->where('estado_id', $estadoId);
+            if ($estadoId) {
+                $query->where('estado_id', $estadoId);
+            }
+
+            if ($search) {
+                $query->where('nome', 'ilike', '%' . $search . '%');
+            }
+
+            $cidades = $query->orderBy('nome', 'asc')->limit(20)->get();
+            return response()->json($cidades);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao buscar cidades: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao buscar cidades'
+            ], 500);
         }
-
-        if ($search) {
-            $query->where('nome', 'ilike', '%' . $search . '%');
-        }
-
-        $cidades = $query->orderBy('nome', 'asc')->limit(20)->get();
-        return response()->json($cidades);
     }
 
     /**
@@ -55,17 +79,25 @@ class EstadoCidadeController extends Controller
      */
     public function buscarEstado(Request $request)
     {
-        $search = $request->input('q', '');
+        try {
+            $search = $request->input('q', '');
 
-        $estado = Estado::where('sigla', 'ilike', $search)
-            ->orWhere('nome', 'ilike', '%' . $search . '%')
-            ->first();
+            $estado = Estado::where('sigla', 'ilike', $search)
+                ->orWhere('nome', 'ilike', '%' . $search . '%')
+                ->first();
 
-        if ($estado) {
-            return response()->json(['success' => true, 'data' => $estado]);
+            if ($estado) {
+                return response()->json(['success' => true, 'data' => $estado]);
+            }
+
+            return response()->json(['success' => false], 404);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao buscar estado: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao buscar estado'
+            ], 500);
         }
-
-        return response()->json(['success' => false], 404);
     }
 
     /**
