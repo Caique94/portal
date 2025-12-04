@@ -1,0 +1,214 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # ==========================================
+    # FORÇAR HTTPS (Produção)
+    # ==========================================
+    # Descomente em produção:
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # ==========================================
+    # REMOVER WWW (Opcional)
+    # ==========================================
+    # Descomente para remover www:
+    # RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+    # RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+    # ==========================================
+    # LARAVEL ROUTING
+    # ==========================================
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# ==========================================
+# SEGURANÇA - Headers
+# ==========================================
+<IfModule mod_headers.c>
+    # XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Prevenir Clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Prevenir MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Remover headers que expõem informações
+    Header unset X-Powered-By
+    Header unset Server
+
+    # HSTS (descomente em produção com HTTPS)
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>
+
+# ==========================================
+# SEGURANÇA - Proteger arquivos sensíveis
+# ==========================================
+<FilesMatch "\.(env|log|sql|md|sh|json|lock|yml|yaml|git|gitignore|gitattributes)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Proteger diretórios
+RedirectMatch 404 /\.git
+RedirectMatch 404 /\.env
+RedirectMatch 404 /composer\.json
+RedirectMatch 404 /composer\.lock
+RedirectMatch 404 /package\.json
+RedirectMatch 404 /package-lock\.json
+
+# ==========================================
+# PERFORMANCE - Compressão
+# ==========================================
+<IfModule mod_deflate.c>
+    # Comprimir HTML, CSS, JavaScript, Text, XML
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/atom+xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+
+    # Navegadores antigos
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
+
+    # Não comprimir imagens
+    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|ico|webp)$ no-gzip
+</IfModule>
+
+# ==========================================
+# PERFORMANCE - Cache
+# ==========================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Imagens
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
+
+    # Vídeo
+    ExpiresByType video/mp4 "access plus 1 year"
+    ExpiresByType video/webm "access plus 1 year"
+
+    # Fontes
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+
+    # CSS e JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+
+    # Outros
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Cache-Control para assets
+    <FilesMatch "\.(ico|jpg|jpeg|png|gif|webp|svg|css|js|woff|woff2|ttf|otf)$">
+        Header set Cache-Control "max-age=31536000, public"
+    </FilesMatch>
+
+    # Não cachear HTML
+    <FilesMatch "\.(html|htm|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires 0
+    </FilesMatch>
+</IfModule>
+
+# ==========================================
+# PHP - Configurações
+# ==========================================
+<IfModule mod_php8.c>
+    # Limites de upload
+    php_value upload_max_filesize 20M
+    php_value post_max_size 20M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value memory_limit 256M
+
+    # Timezone
+    php_value date.timezone "America/Sao_Paulo"
+
+    # Display errors (APENAS EM DESENVOLVIMENTO)
+    # php_flag display_errors Off
+    # php_flag display_startup_errors Off
+    # php_value error_reporting 0
+</IfModule>
+
+# ==========================================
+# MIME TYPES
+# ==========================================
+<IfModule mod_mime.c>
+    AddType application/javascript js
+    AddType text/css css
+    AddType image/svg+xml svg svgz
+    AddType font/woff woff
+    AddType font/woff2 woff2
+    AddType font/ttf ttf
+    AddType font/otf otf
+    AddType image/webp webp
+</IfModule>
+
+# ==========================================
+# CHARSET UTF-8
+# ==========================================
+AddDefaultCharset UTF-8
+<IfModule mod_mime.c>
+    AddCharset UTF-8 .html .css .js .xml .json .rss .atom
+</IfModule>
+
+# ==========================================
+# DESABILITAR DIRECTORY LISTING
+# ==========================================
+Options -Indexes
+
+# ==========================================
+# PROTEÇÃO CONTRA HOTLINKING (Opcional)
+# ==========================================
+# Descomente para proteger imagens:
+# RewriteEngine on
+# RewriteCond %{HTTP_REFERER} !^$
+# RewriteCond %{HTTP_REFERER} !^https://(www\.)?seudominio\.com\.br [NC]
+# RewriteRule \.(jpg|jpeg|png|gif|webp)$ - [F,NC]

@@ -34,6 +34,8 @@ api_keys.json
 config/database.local.php
 config/services.local.php
 config/mail.local.php
+CREDENCIAIS_HOSTINGER.md
+.env.hostinger
 
 # Dependencies
 /node_modules
@@ -81,3 +83,7 @@ dist/
 build/
 .cache/
 nul
+
+# Deploy files
+deploy-hostinger/
+*.deploy.zip
