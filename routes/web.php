@@ -29,6 +29,7 @@ use App\Http\Controllers\ManagerialDashboardController;
 use App\Http\Controllers\ReportFilterController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ClientHistoryController;
+use App\Http\Controllers\EstadoCidadeController;
 
 // ========== AUTH ==========
 Route::get('/login', [LoginController::class, 'login'])->name('login');
@@ -172,6 +173,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/listar-contatos', [ContatoController::class, 'list']);
     Route::post('/salvar-contato', [ContatoController::class, 'store']);
     Route::delete('/remover-contato/{id}', [ContatoController::class, 'delete']);
+
+    // ESTADOS E CIDADES
+    Route::get('/listar-estados', [EstadoCidadeController::class, 'listarEstados']);
+    Route::get('/listar-cidades/{estadoId}', [EstadoCidadeController::class, 'listarCidades']);
+    Route::get('/buscar-cidades', [EstadoCidadeController::class, 'buscarCidades']);
+    Route::get('/buscar-estado', [EstadoCidadeController::class, 'buscarEstado']);
 
     // PRODUTO
     Route::get('/listar-produtos', [ProdutoController::class, 'list']);

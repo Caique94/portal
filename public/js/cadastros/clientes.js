@@ -8,6 +8,59 @@ $(function () {
   let modoNovoCliente = false;  // Flag para saber se estamos adicionando novo cliente
   let adicionandoContatosAposeSalvar = false;  // Flag para saber se estamos adicionando contatos após salvar cliente
 
+  // ===== ESTADO E CIDADE =====
+  // Função para carregar estados
+  function carregarEstados() {
+    $.get('/listar-estados').then(function (data) {
+      const $sel = $('#slcClienteEstado');
+      $sel.empty().append(new Option('', '', true, true));
+
+      (data || []).forEach(estado => {
+        $sel.append(new Option(estado.nome, estado.nome));
+      });
+
+      $sel.trigger('change');
+    }).fail(function() {
+      console.error('Erro ao carregar estados');
+    });
+  }
+
+  // Função para carregar cidades baseado no estado selecionado
+  function carregarCidadesPorEstado(estadoNome) {
+    if (!estadoNome) {
+      $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
+      return;
+    }
+
+    // Buscar o ID do estado pelo nome
+    $.get('/listar-estados').then(function (estados) {
+      const estado = (estados || []).find(e => e.nome === estadoNome);
+      if (!estado) {
+        $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
+        return;
+      }
+
+      $.get('/listar-cidades/' + estado.id).then(function (data) {
+        const $sel = $('#slcClienteCidade');
+        $sel.empty().append(new Option('', '', true, true));
+
+        (data || []).forEach(cidade => {
+          $sel.append(new Option(cidade.nome, cidade.nome));
+        });
+
+        $sel.trigger('change');
+      }).fail(function() {
+        $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
+      });
+    });
+  }
+
+  // Event listener para estado mudar
+  $(document).on('change', '#slcClienteEstado', function () {
+    const estadoNome = $(this).val();
+    carregarCidadesPorEstado(estadoNome);
+  });
+
   const tblClientes = $('#tblClientes').DataTable({
     ajax: { url: '/listar-clientes', dataSrc: json => json },
     order: [[1, 'asc']],
@@ -63,6 +116,8 @@ $(function () {
             $('#cliente_id').val('');
             $('#slcClienteTabelaPrecos').val(null).trigger('change');
             $('#txtClienteContato').empty().append(new Option('', '', true, true)).trigger('change');
+            $('#slcClienteEstado').val(null).trigger('change');
+            $('#slcClienteCidade').val(null).trigger('change');
 
             // Ativar modo novo cliente
             modoNovoCliente = true;
@@ -75,6 +130,9 @@ $(function () {
             }).fail(function () {
               $('#txtClienteCodigo').val('');
             });
+
+            // Carregar estados para o novo cliente
+            carregarEstados();
 
             $('#modalClienteLabel').text('Adicionar Cliente');
             $('#modalCliente').modal('show');
@@ -155,8 +213,8 @@ $(function () {
     $('#slcClienteTipo').val(r.tipo || '');
     $('#txtClienteCGC').val(r.cgc || '');
     $('#txtClienteEndereco').val(r.endereco || '');
-    $('#txtClienteCidade').val(r.municipio || '');
-    $('#txtClienteEstado').val(r.estado || '');
+    $('#slcClienteEstado').val(r.estado || '').trigger('change');
+    $('#slcClienteCidade').val(r.municipio || '');
     $('#txtClienteKm').val(r.km || '');
     $('#txtClienteDeslocamento').val(r.deslocamento || '');
     $('#txtClienteValorHora').val(r.valor_hora || '');
@@ -164,6 +222,13 @@ $(function () {
       $('#slcClienteTabelaPrecos').val(r.tabela_preco_id).trigger('change');
     } else {
       $('#slcClienteTabelaPrecos').val(null).trigger('change');
+    }
+
+    // Carregar cidades após carregar estado (para preencher dropdown)
+    if (r.estado) {
+      carregarCidadesPorEstado(r.estado);
+    } else {
+      $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
     }
 
     // Carregar contatos para o select
@@ -195,12 +260,18 @@ $(function () {
     $('#slcClienteTipo').val(r.tipo || '').prop('disabled', true);
     $('#txtClienteCGC').val(r.cgc || '').prop('disabled', true);
     $('#txtClienteEndereco').val(r.endereco || '').prop('disabled', true);
-    $('#txtClienteCidade').val(r.municipio || '').prop('disabled', true);
-    $('#txtClienteEstado').val(r.estado || '').prop('disabled', true);
+    $('#slcClienteEstado').val(r.estado || '').trigger('change').prop('disabled', true);
+    $('#slcClienteCidade').val(r.municipio || '').prop('disabled', true);
     $('#txtClienteKm').val(r.km || '').prop('disabled', true);
     $('#txtClienteDeslocamento').val(r.deslocamento || '').prop('disabled', true);
     $('#txtClienteValorHora').val(r.valor_hora || '').prop('disabled', true);
     $('#slcClienteTabelaPrecos').val(r.tabela_preco_id || null).trigger('change').prop('disabled', true);
+
+    // Carregar cidades após carregar estado
+    if (r.estado) {
+      carregarCidadesPorEstado(r.estado);
+      setTimeout(() => $('#slcClienteCidade').prop('disabled', true), 100);
+    }
 
     // Carregar contatos para o select e desabilitar
     carregarContatosCliente(r.id, r.contato);
@@ -220,6 +291,8 @@ $(function () {
     $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', false).val('');
     $('#slcClienteTipo').prop('disabled', false);
     $('#slcClienteTabelaPrecos').prop('disabled', false).val(null).trigger('change');
+    $('#slcClienteEstado').prop('disabled', false).val(null).trigger('change');
+    $('#slcClienteCidade').prop('disabled', false).val(null).trigger('change');
     $('#txtClienteContato').prop('disabled', false).empty().append(new Option('', '', true, true)).trigger('change');
     $('.btn-salvar-cliente').prop('disabled', false);
     $('.btn-fechar-modal').show();
@@ -263,6 +336,8 @@ $(function () {
           $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', true);
           $('#slcClienteTipo').prop('disabled', true);
           $('#slcClienteTabelaPrecos').prop('disabled', true);
+          $('#slcClienteEstado').prop('disabled', true);
+          $('#slcClienteCidade').prop('disabled', true);
           $('.btn-salvar-cliente').prop('disabled', true);
 
           // Carregar contatos já criados (os que foram salvos)
@@ -299,6 +374,8 @@ $(function () {
           $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', true);
           $('#slcClienteTipo').prop('disabled', true);
           $('#slcClienteTabelaPrecos').prop('disabled', true);
+          $('#slcClienteEstado').prop('disabled', true);
+          $('#slcClienteCidade').prop('disabled', true);
           $('#txtClienteContato').prop('disabled', true);
           $('.btn-salvar-cliente').prop('disabled', true);
 
