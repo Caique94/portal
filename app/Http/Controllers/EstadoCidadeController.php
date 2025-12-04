@@ -80,41 +80,56 @@ class EstadoCidadeController extends Controller
         }
 
         try {
-            $response = \Http::get("https://viacep.com.br/ws/{$cep}/json/");
+            $response = \Http::withoutVerifying()->get("https://viacep.com.br/ws/{$cep}/json/");
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao consultar ViaCEP: ' . $response->status()
+                ], 500);
+            }
+
             $data = $response->json();
 
             if (isset($data['erro'])) {
                 return response()->json(['success' => false, 'message' => 'CEP não encontrado'], 404);
             }
 
+            if (!isset($data['uf']) || !isset($data['localidade']) || !isset($data['logradouro'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Resposta inválida da API de CEP'
+                ], 400);
+            }
+
             // Buscar o estado pelo UF retornado
-            $estado = Estado::where('sigla', $data['uf'])->first();
+            $estado = Estado::where('sigla', strtoupper($data['uf']))->first();
 
             if (!$estado) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Estado não encontrado no banco de dados'
+                    'message' => 'Estado não encontrado no banco de dados: ' . $data['uf']
                 ], 404);
             }
 
             // Buscar a cidade pelo nome e estado
             $cidade = Cidade::where('estado_id', $estado->id)
-                ->where('nome', 'ilike', $data['localidade'])
+                ->where('nome', 'ilike', trim($data['localidade']))
                 ->first();
 
             if (!$cidade) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Cidade não encontrada no banco de dados'
+                    'message' => 'Cidade não encontrada no banco de dados: ' . $data['localidade']
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'cep' => $cep,
-                    'endereco' => $data['logradouro'],
-                    'bairro' => $data['bairro'],
+                    'cep' => preg_replace('/^(\d{5})(\d{3})$/', '$1-$2', $cep),
+                    'endereco' => trim($data['logradouro']),
+                    'bairro' => trim($data['bairro']),
                     'cidade' => $cidade->nome,
                     'estado' => $estado->nome,
                     'estado_id' => $estado->id,
