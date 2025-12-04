@@ -209,7 +209,7 @@ $(function () {
     $('#txtClienteLoja').val(r.loja || '');
     $('#txtClienteNome').val(r.nome || '');
     $('#txtClienteNomeFantasia').val(r.nome_fantasia || '');
-    $('#slcClienteTipo').val(r.tipo || '');
+    $('#txtClienteTipo').val(r.tipo || '');
     $('#txtClienteCGC').val(r.cgc || '');
     $('#txtClienteCEP').val(r.cep || '');
     $('#txtClienteEndereco').val(r.endereco || '');
@@ -252,7 +252,7 @@ $(function () {
     $('#txtClienteLoja').val(r.loja || '').prop('disabled', true);
     $('#txtClienteNome').val(r.nome || '').prop('disabled', true);
     $('#txtClienteNomeFantasia').val(r.nome_fantasia || '').prop('disabled', true);
-    $('#slcClienteTipo').val(r.tipo || '').prop('disabled', true);
+    $('#txtClienteTipo').val(r.tipo || '').prop('disabled', true);
     $('#txtClienteCGC').val(r.cgc || '').prop('disabled', true);
     $('#txtClienteCEP').val(r.cep || '').prop('disabled', true);
     $('#txtClienteEndereco').val(r.endereco || '').prop('disabled', true);
