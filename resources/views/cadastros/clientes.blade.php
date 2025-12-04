@@ -101,11 +101,11 @@
                         </div>
                         <div class="row">
                             <div class="form-floating mb-3 col-md-6">
-                                <input type="text" name="txtClienteEstado" id="txtClienteEstado" class="form-control" placeholder="Estado" />
+                                <input type="text" name="txtClienteEstado" id="txtClienteEstado" class="form-control" placeholder="Estado" maxlength="255" />
                                 <label for="txtClienteEstado">Estado</label>
                             </div>
                             <div class="form-floating mb-3 col-md-6">
-                                <input type="text" name="txtClienteCidade" id="txtClienteCidade" class="form-control" placeholder="Munic&iacute;pio" />
+                                <input type="text" name="txtClienteCidade" id="txtClienteCidade" class="form-control" placeholder="Munic&iacute;pio" maxlength="255" />
                                 <label for="txtClienteCidade">Munic&iacute;pio</label>
                             </div>
                         </div>

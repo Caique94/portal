@@ -277,7 +277,7 @@ class UserController extends Controller
             'txtPJComplemento'       => 'nullable|string|max:100',
             'txtPJBairro'            => 'nullable|string|max:100',
             'txtPJCidade'            => 'nullable|string|max:100',
-            'txtPJEstado'            => 'nullable|string|max:2',
+            'txtPJEstado'            => 'nullable|string|max:255',
             'txtPJCEP'               => 'nullable|string|max:10',
             'txtPJTelefone'          => 'nullable|string|max:20',
             'txtPJEmail'             => 'nullable|email|max:255',

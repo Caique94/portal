@@ -164,11 +164,11 @@
                                         <label for="txtPJBairro">Bairro</label>
                                     </div>
                                     <div class="form-floating mb-3 col-md-5">
-                                        <input type="text" name="txtPJCidade" id="txtPJCidade" class="form-control" placeholder="Cidade/Município" />
+                                        <input type="text" name="txtPJCidade" id="txtPJCidade" class="form-control" placeholder="Cidade/Município" maxlength="255" />
                                         <label for="txtPJCidade">Cidade/Município</label>
                                     </div>
                                     <div class="form-floating mb-3 col-md-3">
-                                        <input type="text" name="txtPJEstado" id="txtPJEstado" class="form-control" placeholder="Estado" />
+                                        <input type="text" name="txtPJEstado" id="txtPJEstado" class="form-control" placeholder="Estado" maxlength="255" />
                                         <label for="txtPJEstado">Estado</label>
                                     </div>
                                 </div>
