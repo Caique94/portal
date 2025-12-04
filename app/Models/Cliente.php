@@ -23,6 +23,8 @@ class Cliente extends Model
         'cep',
         'contato',
         'endereco',
+        'numero',
+        'complemento',
         'municipio',
         'estado',
         'km',

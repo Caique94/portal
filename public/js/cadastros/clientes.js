@@ -213,6 +213,8 @@ $(function () {
     $('#txtClienteCGC').val(r.cgc || '');
     $('#txtClienteCEP').val(r.cep || '');
     $('#txtClienteEndereco').val(r.endereco || '');
+    $('#txtClienteNumero').val(r.numero || '');
+    $('#txtClienteComplemento').val(r.complemento || '');
     $('#txtClienteEstado').val(r.estado || '');
     $('#txtClienteCidade').val(r.municipio || '');
     $('#txtClienteKm').val(r.km || '');
@@ -254,6 +256,8 @@ $(function () {
     $('#txtClienteCGC').val(r.cgc || '').prop('disabled', true);
     $('#txtClienteCEP').val(r.cep || '').prop('disabled', true);
     $('#txtClienteEndereco').val(r.endereco || '').prop('disabled', true);
+    $('#txtClienteNumero').val(r.numero || '').prop('disabled', true);
+    $('#txtClienteComplemento').val(r.complemento || '').prop('disabled', true);
     $('#txtClienteEstado').val(r.estado || '').prop('disabled', true);
     $('#txtClienteCidade').val(r.municipio || '').prop('disabled', true);
     $('#txtClienteKm').val(r.km || '').prop('disabled', true);
