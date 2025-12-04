@@ -67,8 +67,8 @@
                                 <label for="txtClienteCGC">CPF/CNPJ</label>
                             </div>
                             <div class="form-floating mb-3 col-md-5">
-                                <select name="txtClienteContato" id="txtClienteContato" class="form-select" required></select>
-                                <label for="txtClienteContato">Contato Principal <span class="text-danger">*</span></label>
+                                <select name="txtClienteContato" id="txtClienteContato" class="form-select"></select>
+                                <label for="txtClienteContato">Contato Principal</label>
                             </div>
                             <div class="col-md-2 d-flex align-items-end mb-3">
                                 <button type="button" class="btn btn-outline-primary btn-sm w-100" id="btnAdicionarContatoRapido" data-bs-toggle="modal" data-bs-target="#modalContato">

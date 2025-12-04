@@ -48,7 +48,7 @@ class ClienteController extends Controller
             'txtClienteNomeFantasia'    => 'nullable|string|max:255',
             'txtClienteTipo'            => 'nullable|string|max:255',
             'txtClienteCGC'             => 'nullable|string|max:255',
-            'txtClienteContato'         => 'nullable|string|max:255',
+            'txtClienteContato'         => 'nullable|string|max:255',  // Opcional - pode ser preenchido após criar contatos
             'txtClienteEndereco'        => 'nullable|string|max:255',
             'txtClienteCidade'          => 'nullable|string|max:255',
             'txtClienteEstado'          => 'nullable|string|max:255',
