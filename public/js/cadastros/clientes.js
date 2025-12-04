@@ -281,7 +281,7 @@ $(function () {
   // Reset modal ao fechar
   $('#modalCliente').on('hidden.bs.modal', function () {
     $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', false).val('');
-    $('#slcClienteTipo').prop('disabled', false);
+    $('#txtClienteTipo').prop('disabled', false);
     $('#slcClienteTabelaPrecos').prop('disabled', false).val(null).trigger('change');
     $('#txtClienteContato').prop('disabled', false).empty().append(new Option('', '', true, true)).trigger('change');
     $('.btn-salvar-cliente').prop('disabled', false);
@@ -324,7 +324,7 @@ $(function () {
 
           // Desabilitar campos do cliente (não pode editar após salvar)
           $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', true);
-          $('#slcClienteTipo').prop('disabled', true);
+          $('#txtClienteTipo').prop('disabled', true);
           $('#slcClienteTabelaPrecos').prop('disabled', true);
           $('.btn-salvar-cliente').prop('disabled', true);
 
@@ -360,7 +360,7 @@ $(function () {
           adicionandoContatosAposeSalvar = false;
 
           $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', true);
-          $('#slcClienteTipo').prop('disabled', true);
+          $('#txtClienteTipo').prop('disabled', true);
           $('#slcClienteTabelaPrecos').prop('disabled', true);
           $('#txtClienteContato').prop('disabled', true);
           $('.btn-salvar-cliente').prop('disabled', true);

@@ -1,5 +1,62 @@
 $(function () {
 
+  // ===== CEP PESSOA JURÍDICA =====
+  // Função para buscar endereço por CEP
+  function buscarCEPPJ(cep) {
+    const cepLimpo = cep.replace(/\D/g, '');
+
+    if (cepLimpo.length !== 8) {
+      Toast.fire({ icon: 'warning', title: 'CEP deve conter 8 dígitos' });
+      return;
+    }
+
+    $.ajax({
+      url: '/buscar-cep',
+      type: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      data: { cep: cepLimpo },
+      success: function (resp) {
+        if (resp.success) {
+          // Preencher os campos com os dados retornados da API
+          const cepFormatado = resp.data.cep || cepLimpo.replace(/^(\d{5})(\d{3})$/, '$1-$2');
+          $('#txtPJCEP').val(cepFormatado);
+          $('#txtPJEndereco').val(resp.data.endereco || '');
+          $('#txtPJEstado').val(resp.data.estado || '');
+
+          // Importante: Usar setTimeout para garantir que o valor seja setado após o DOM atualizar
+          setTimeout(() => {
+            $('#txtPJCidade').val(resp.data.cidade || '');
+            console.log('Cidade PJ preenchida:', resp.data.cidade);
+          }, 50);
+
+          Toast.fire({
+            icon: 'success',
+            title: 'CEP encontrado com sucesso!'
+          });
+        } else {
+          Toast.fire({
+            icon: 'error',
+            title: resp.message || 'CEP não encontrado'
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        const message = jqXHR.responseJSON?.message || 'Erro ao consultar CEP';
+        Toast.fire({ icon: 'error', title: message });
+      }
+    });
+  }
+
+  // Event listener para blur no campo CEP PJ
+  $(document).on('blur', '#txtPJCEP', function () {
+    const cep = $(this).val();
+    if (cep && cep.replace(/\D/g, '').length === 8) {
+      buscarCEPPJ(cep);
+    }
+  });
+
   const $tbl = $('#tblUsuarios');
 
   const tblUsuarios = $tbl.DataTable({
@@ -164,7 +221,7 @@ $(function () {
       $('#txtPJComplemento').val(r.complemento || '');
       $('#txtPJBairro').val(r.bairro || '');
       $('#txtPJCidade').val(r.cidade || '');
-      $('#slcPJEstado').val(r.estado || '');
+      $('#txtPJEstado').val(r.estado || '');
       $('#txtPJCEP').val(r.cep || '').trigger('input');
       $('#txtPJTelefone').val(r.telefone || '').trigger('input');
       $('#txtPJEmail').val(r.email_pj || '');
@@ -230,7 +287,7 @@ $(function () {
       $('#txtPJComplemento').val(r.complemento || '');
       $('#txtPJBairro').val(r.bairro || '');
       $('#txtPJCidade').val(r.cidade || '');
-      $('#slcPJEstado').val(r.estado || '');
+      $('#txtPJEstado').val(r.estado || '');
       $('#txtPJCEP').val(r.cep || '').trigger('input');
       $('#txtPJTelefone').val(r.telefone || '').trigger('input');
       $('#txtPJEmail').val(r.email_pj || '');

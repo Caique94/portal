@@ -139,15 +139,21 @@
                                     </div>
                                 </div>
                                 <div class="row">
+                                    <div class="form-floating mb-3 col-md-3">
+                                        <input type="text" name="txtPJCEP" id="txtPJCEP" class="form-control mask-cep" placeholder="CEP" />
+                                        <label for="txtPJCEP">CEP</label>
+                                    </div>
                                     <div class="form-floating mb-3 col-md-6">
                                         <input type="text" name="txtPJEndereco" id="txtPJEndereco" class="form-control" placeholder="Endereço" />
                                         <label for="txtPJEndereco">Endereço</label>
                                     </div>
-                                    <div class="form-floating mb-3 col-md-2">
+                                    <div class="form-floating mb-3 col-md-3">
                                         <input type="text" name="txtPJNumero" id="txtPJNumero" class="form-control" placeholder="Número" />
                                         <label for="txtPJNumero">Número</label>
                                     </div>
-                                    <div class="form-floating mb-3 col-md-4">
+                                </div>
+                                <div class="row">
+                                    <div class="form-floating mb-3 col-md-12">
                                         <input type="text" name="txtPJComplemento" id="txtPJComplemento" class="form-control" placeholder="Complemento" />
                                         <label for="txtPJComplemento">Complemento</label>
                                     </div>
@@ -158,22 +164,15 @@
                                         <label for="txtPJBairro">Bairro</label>
                                     </div>
                                     <div class="form-floating mb-3 col-md-5">
-                                        <input type="text" name="txtPJCidade" id="txtPJCidade" class="form-control" placeholder="Cidade" />
-                                        <label for="txtPJCidade">Cidade</label>
+                                        <input type="text" name="txtPJCidade" id="txtPJCidade" class="form-control" placeholder="Cidade/Município" />
+                                        <label for="txtPJCidade">Cidade/Município</label>
                                     </div>
-                                    <div class="form-floating mb-3 col-md-2">
-                                        <select name="slcPJEstado" id="slcPJEstado" class="form-select">
-                                            <option value="">UF</option>
-                                            <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option><option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option><option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
-                                        </select>
-                                        <label for="slcPJEstado">UF</label>
+                                    <div class="form-floating mb-3 col-md-3">
+                                        <input type="text" name="txtPJEstado" id="txtPJEstado" class="form-control" placeholder="Estado" />
+                                        <label for="txtPJEstado">Estado</label>
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="form-floating mb-3 col-md-3">
-                                        <input type="text" name="txtPJCEP" id="txtPJCEP" class="form-control cep" placeholder="CEP" />
-                                        <label for="txtPJCEP">CEP</label>
-                                    </div>
                                     <div class="form-floating mb-3 col-md-3">
                                         <input type="text" name="txtPJTelefone" id="txtPJTelefone" class="form-control phone" placeholder="Telefone" />
                                         <label for="txtPJTelefone">Telefone</label>
