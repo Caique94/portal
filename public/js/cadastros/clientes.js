@@ -397,15 +397,24 @@ $(function () {
   });
 
 
-  // Botão "Adicionar Contato Rápido" (dentro do modal cliente para novo cadastro)
+  // Botão "Adicionar Contato Rápido" (dentro do modal cliente para novo cadastro ou após salvar)
   $('#btnAdicionarContatoRapido').on('click', function () {
-    // Se estamos em modo novo cliente, preparar para adicionar contato
-    if (modoNovoCliente) {
-      $('#formContato')[0].reset();
-      $('#contato_id').remove();
-      $('#chkContatoRecebeEmailOS').prop('checked', true);
-      $('#txtContatoClienteId').val(''); // Será adicionado ao cliente quando salvar
+    // Limpar o formulário e remover o ID se existir
+    $('#formContato')[0].reset();
+    $('#contato_id').remove();
+    $('#chkContatoRecebeEmailOS').prop('checked', true);
 
+    // Verificar se temos ID do cliente já salvo
+    const clienteId = $('#cliente_id').val();
+    const clienteNome = $('#txtClienteNome').val();
+
+    if (clienteId) {
+      // Cliente já foi salvo, adicionar contato normalmente
+      $('#txtContatoClienteId').val(clienteId);
+      $('#modalContatoLabel').text(clienteNome + ' - Adicionar Contato');
+    } else {
+      // Novo cliente não salvo ainda
+      $('#txtContatoClienteId').val('');
       $('#modalContatoLabel').text('Adicionar Contato (Novo Cliente)');
     }
   });
@@ -480,6 +489,13 @@ $(function () {
       data: form.serialize(),
       success: function (resp) {
         tblContatos.ajax.reload(null, false);
+
+        // Recarregar lista de contatos para seleção no dropdown
+        const clienteId = $('#txtContatoClienteId').val();
+        if (clienteId) {
+          carregarContatosCliente(clienteId, null);
+        }
+
         $('#modalContato').modal('hide');
         Toast.fire({ icon: 'success', title: resp.message || 'Salvo' });
       },
