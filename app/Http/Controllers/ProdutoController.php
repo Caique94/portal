@@ -163,4 +163,25 @@ class ProdutoController extends Controller
         DB::table('produto')->where('id',$id)->delete();
         return response()->json(['ok'=>true,'msg'=>'Produto excluído']);
     }
+
+    // GET /gerar-proximo-codigo-produto
+    public function gerarProximoCodigo()
+    {
+        // Busca o maior código numérico existente
+        $maxCodigo = DB::table('produto')
+            ->selectRaw('MAX(CAST(codigo AS INTEGER)) as max_codigo')
+            ->whereRaw('codigo ~ \'^[0-9]+$\'') // Apenas códigos numéricos
+            ->value('max_codigo');
+
+        // Se não houver nenhum código, começa do 1, senão incrementa
+        $proximoCodigo = $maxCodigo ? (int)$maxCodigo + 1 : 1;
+
+        // Formata com zeros à esquerda (exemplo: 0001, 0002, etc.)
+        $codigoFormatado = str_pad($proximoCodigo, 4, '0', STR_PAD_LEFT);
+
+        return response()->json([
+            'ok' => true,
+            'codigo' => $codigoFormatado
+        ]);
+    }
 }

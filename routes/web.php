@@ -184,6 +184,7 @@ Route::middleware('auth')->group(function () {
     // PRODUTO
     Route::get('/listar-produtos', [ProdutoController::class, 'list']);
     Route::get('/listar-produtos-ativos', [ProdutoController::class, 'active_list']);
+    Route::get('/gerar-proximo-codigo-produto', [ProdutoController::class, 'gerarProximoCodigo']);
     Route::post('/salvar-produto', [ProdutoController::class, 'store']);
     Route::get('/toggle-produto/{id}', [ProdutoController::class, 'toggle']);
     Route::delete('/excluir-produto/{id}', [ProdutoController::class, 'delete']);

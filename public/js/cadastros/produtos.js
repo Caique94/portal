@@ -62,6 +62,23 @@ $(document).ready(function () {
           } else {
             $('#formProduto input[name="id"]').val('');
           }
+
+          // Buscar próximo código automaticamente
+          $.ajax({
+            url: '/gerar-proximo-codigo-produto',
+            type: 'GET',
+            dataType: 'json',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+          })
+          .done(resp => {
+            if (resp.ok && resp.codigo) {
+              $('#txtProdutoCodigo').val(resp.codigo);
+            }
+          })
+          .fail(() => {
+            Toast.fire({ icon: 'error', title: 'Erro ao gerar código do produto.' });
+          });
+
           $('#modalProduto').modal('show');
         }
       }]
