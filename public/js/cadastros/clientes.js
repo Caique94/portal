@@ -155,7 +155,7 @@ $(function () {
     $('#slcClienteTipo').val(r.tipo || '');
     $('#txtClienteCGC').val(r.cgc || '');
     $('#txtClienteEndereco').val(r.endereco || '');
-    $('#txtClienteMunicipio').val(r.municipio || '');
+    $('#txtClienteCidade').val(r.municipio || '');
     $('#txtClienteEstado').val(r.estado || '');
     $('#txtClienteKm').val(r.km || '');
     $('#txtClienteDeslocamento').val(r.deslocamento || '');
@@ -195,7 +195,7 @@ $(function () {
     $('#slcClienteTipo').val(r.tipo || '').prop('disabled', true);
     $('#txtClienteCGC').val(r.cgc || '').prop('disabled', true);
     $('#txtClienteEndereco').val(r.endereco || '').prop('disabled', true);
-    $('#txtClienteMunicipio').val(r.municipio || '').prop('disabled', true);
+    $('#txtClienteCidade').val(r.municipio || '').prop('disabled', true);
     $('#txtClienteEstado').val(r.estado || '').prop('disabled', true);
     $('#txtClienteKm').val(r.km || '').prop('disabled', true);
     $('#txtClienteDeslocamento').val(r.deslocamento || '').prop('disabled', true);
