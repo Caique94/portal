@@ -113,7 +113,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-salvar-cliente">Salvar</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-secondary btn-fechar-e-concluir" style="display:none;">Fechar e Concluir</button>
+                    <button type="button" class="btn btn-secondary btn-fechar-modal" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>

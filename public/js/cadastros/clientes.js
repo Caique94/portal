@@ -209,36 +209,26 @@ $(function () {
     $('#modalCliente').modal('show');
   });
 
+  // Botão "Fechar e Concluir"
+  $('.btn-fechar-e-concluir').on('click', function () {
+    $('#modalCliente').modal('hide');
+  });
+
   // Reset modal ao fechar
   $('#modalCliente').on('hidden.bs.modal', function () {
     $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', false).val('');
     $('#slcClienteTipo').prop('disabled', false);
     $('#slcClienteTabelaPrecos').prop('disabled', false).val(null).trigger('change');
     $('#txtClienteContato').prop('disabled', false).empty().append(new Option('', '', true, true)).trigger('change');
+    $('.btn-salvar-cliente').prop('disabled', false);
+    $('.btn-fechar-modal').show();
+    $('.btn-fechar-e-concluir').hide();
   });
 
   // ==== Salvar (add/editar) ====
   $('.btn-salvar-cliente').on('click', function () {
     const form = $('#formCliente');
     if (!validateFormRequired(form)) return;
-
-    // Validação extra: em modo novo cliente, exigir pelo menos um contato
-    if (modoNovoCliente && contatosNovoCliente.length === 0) {
-      Toast.fire({
-        icon: 'warning',
-        title: 'Adicione pelo menos um contato antes de salvar'
-      });
-      return;
-    }
-
-    // Validação extra: Contato Principal é obrigatório
-    if (!$('#txtClienteContato').val()) {
-      Toast.fire({
-        icon: 'warning',
-        title: 'Selecione um Contato Principal'
-      });
-      return;
-    }
 
     // Preparar dados para enviar
     let formData = new FormData(form[0]);
@@ -255,12 +245,54 @@ $(function () {
       processData: false,
       contentType: false,
       success: function (resp) {
-        modoNovoCliente = false;
-        contatosNovoCliente = [];
-        atualizarBadgeContatos();
-        tblClientes.ajax.reload(null, false);
-        $('#modalCliente').modal('hide');
-        Toast.fire({ icon: 'success', title: resp.message || 'Salvo' });
+        // Atualizar ID do cliente para modo novo cliente
+        const clienteId = resp.data?.id;
+
+        if (modoNovoCliente && clienteId) {
+          // Modo novo cliente: manter modal aberto após salvar
+          $('#cliente_id').val(clienteId);
+
+          // Desabilitar campos do cliente (não pode editar após salvar)
+          $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', true);
+          $('#slcClienteTipo').prop('disabled', true);
+          $('#slcClienteTabelaPrecos').prop('disabled', true);
+          $('.btn-salvar-cliente').prop('disabled', true);
+
+          // Carregar contatos já criados (os que foram salvos)
+          carregarContatosCliente(clienteId, null);
+
+          // Mudar modo para edição
+          modoNovoCliente = false;
+          contatosNovoCliente = [];
+          atualizarBadgeContatos();
+
+          // Mostrar mensagem de sucesso
+          Toast.fire({
+            icon: 'success',
+            title: 'Cliente salvo! Agora você pode adicionar contatos.'
+          });
+
+          // Atualizar label do modal
+          $('#modalClienteLabel').text('Editar Cliente - Adicionar Contatos');
+
+          // Atualizar tabela
+          tblClientes.ajax.reload(null, false);
+
+          // Mostrar botão "Fechar e Concluir" e esconder "Fechar"
+          $('.btn-fechar-modal').hide();
+          $('.btn-fechar-e-concluir').show();
+
+          // Habilitar o botão de adicionar contato
+          $('#btnAdicionarContatoRapido').prop('disabled', false);
+        } else {
+          // Modo edição: fechar modal normalmente
+          modoNovoCliente = false;
+          contatosNovoCliente = [];
+          atualizarBadgeContatos();
+          tblClientes.ajax.reload(null, false);
+          $('#modalCliente').modal('hide');
+          Toast.fire({ icon: 'success', title: resp.message || 'Salvo' });
+        }
       },
       error: function (jqXHR, textStatus, errorThrown) {
         if (jqXHR.status === 422 && jqXHR.responseJSON?.errors) {
