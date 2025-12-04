@@ -8,72 +8,6 @@ $(function () {
   let modoNovoCliente = false;  // Flag para saber se estamos adicionando novo cliente
   let adicionandoContatosAposeSalvar = false;  // Flag para saber se estamos adicionando contatos após salvar cliente
 
-  // ===== ESTADO E CIDADE =====
-  // Função para carregar estados
-  function carregarEstados() {
-    $.get('/listar-estados').then(function (data) {
-      const $sel = $('#slcClienteEstado');
-      $sel.empty().append(new Option('', '', true, true));
-
-      (data || []).forEach(estado => {
-        $sel.append(new Option(estado.nome, estado.nome));
-      });
-
-      $sel.trigger('change');
-    }).fail(function() {
-      console.error('Erro ao carregar estados');
-    });
-  }
-
-  // Cache para estados para evitar múltiplas requisições
-  let estadosCache = null;
-
-  // Função para carregar cidades baseado no estado selecionado
-  function carregarCidadesPorEstado(estadoNome) {
-    if (!estadoNome) {
-      $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
-      return;
-    }
-
-    // Função auxiliar para buscar cidades
-    function buscarCidades(estados) {
-      const estado = (estados || []).find(e => e.nome === estadoNome);
-      if (!estado) {
-        $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
-        return;
-      }
-
-      $.get('/listar-cidades/' + estado.id).then(function (data) {
-        const $sel = $('#slcClienteCidade');
-        $sel.empty().append(new Option('', '', true, true));
-
-        (data || []).forEach(cidade => {
-          $sel.append(new Option(cidade.nome, cidade.nome));
-        });
-
-        $sel.trigger('change');
-      }).fail(function() {
-        $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
-      });
-    }
-
-    // Usar cache se disponível
-    if (estadosCache) {
-      buscarCidades(estadosCache);
-    } else {
-      $.get('/listar-estados').then(function (estados) {
-        estadosCache = estados; // Guardar em cache
-        buscarCidades(estados);
-      });
-    }
-  }
-
-  // Event listener para estado mudar
-  $(document).on('change', '#slcClienteEstado', function () {
-    const estadoNome = $(this).val();
-    carregarCidadesPorEstado(estadoNome);
-  });
-
   // ===== CEP =====
   // Função para buscar endereço por CEP
   function buscarPorCEP(cep) {
@@ -93,30 +27,11 @@ $(function () {
       data: { cep: cepLimpo },
       success: function (resp) {
         if (resp.success) {
-          // Preencher os campos com os dados retornados
+          // Preencher os campos com os dados retornados da API
           $('#txtClienteCEP').val(resp.data.cep);
           $('#txtClienteEndereco').val(resp.data.endereco);
-
-          // Selecionar Estado
-          const $estadoSelect = $('#slcClienteEstado');
-          $estadoSelect.val(resp.data.estado).trigger('change');
-
-          // Aguardar o carregamento das cidades e depois selecionar
-          // Usar um loop com verificação para garantir que as cidades foram carregadas
-          let tentativas = 0;
-          const maxTentativas = 10;
-
-          const selecionarCidade = setInterval(() => {
-            tentativas++;
-            const cidadeOption = $('#slcClienteCidade option[value="' + resp.data.cidade + '"]');
-
-            if (cidadeOption.length > 0 || tentativas >= maxTentativas) {
-              clearInterval(selecionarCidade);
-              if (cidadeOption.length > 0) {
-                $('#slcClienteCidade').val(resp.data.cidade).trigger('change');
-              }
-            }
-          }, 100);
+          $('#txtClienteEstado').val(resp.data.estado);
+          $('#txtClienteCidade').val(resp.data.cidade);
 
           Toast.fire({
             icon: 'success',
@@ -199,8 +114,6 @@ $(function () {
             $('#cliente_id').val('');
             $('#slcClienteTabelaPrecos').val(null).trigger('change');
             $('#txtClienteContato').empty().append(new Option('', '', true, true)).trigger('change');
-            $('#slcClienteEstado').val(null).trigger('change');
-            $('#slcClienteCidade').val(null).trigger('change');
 
             // Ativar modo novo cliente
             modoNovoCliente = true;
@@ -213,9 +126,6 @@ $(function () {
             }).fail(function () {
               $('#txtClienteCodigo').val('');
             });
-
-            // Carregar estados para o novo cliente
-            carregarEstados();
 
             $('#modalClienteLabel').text('Adicionar Cliente');
             $('#modalCliente').modal('show');
@@ -297,8 +207,8 @@ $(function () {
     $('#txtClienteCGC').val(r.cgc || '');
     $('#txtClienteCEP').val(r.cep || '');
     $('#txtClienteEndereco').val(r.endereco || '');
-    $('#slcClienteEstado').val(r.estado || '').trigger('change');
-    $('#slcClienteCidade').val(r.municipio || '');
+    $('#txtClienteEstado').val(r.estado || '');
+    $('#txtClienteCidade').val(r.municipio || '');
     $('#txtClienteKm').val(r.km || '');
     $('#txtClienteDeslocamento').val(r.deslocamento || '');
     $('#txtClienteValorHora').val(r.valor_hora || '');
@@ -306,13 +216,6 @@ $(function () {
       $('#slcClienteTabelaPrecos').val(r.tabela_preco_id).trigger('change');
     } else {
       $('#slcClienteTabelaPrecos').val(null).trigger('change');
-    }
-
-    // Carregar cidades após carregar estado (para preencher dropdown)
-    if (r.estado) {
-      carregarCidadesPorEstado(r.estado);
-    } else {
-      $('#slcClienteCidade').empty().append(new Option('', '', true, true)).trigger('change');
     }
 
     // Carregar contatos para o select
@@ -345,18 +248,12 @@ $(function () {
     $('#txtClienteCGC').val(r.cgc || '').prop('disabled', true);
     $('#txtClienteCEP').val(r.cep || '').prop('disabled', true);
     $('#txtClienteEndereco').val(r.endereco || '').prop('disabled', true);
-    $('#slcClienteEstado').val(r.estado || '').trigger('change').prop('disabled', true);
-    $('#slcClienteCidade').val(r.municipio || '').prop('disabled', true);
+    $('#txtClienteEstado').val(r.estado || '').prop('disabled', true);
+    $('#txtClienteCidade').val(r.municipio || '').prop('disabled', true);
     $('#txtClienteKm').val(r.km || '').prop('disabled', true);
     $('#txtClienteDeslocamento').val(r.deslocamento || '').prop('disabled', true);
     $('#txtClienteValorHora').val(r.valor_hora || '').prop('disabled', true);
     $('#slcClienteTabelaPrecos').val(r.tabela_preco_id || null).trigger('change').prop('disabled', true);
-
-    // Carregar cidades após carregar estado
-    if (r.estado) {
-      carregarCidadesPorEstado(r.estado);
-      setTimeout(() => $('#slcClienteCidade').prop('disabled', true), 100);
-    }
 
     // Carregar contatos para o select e desabilitar
     carregarContatosCliente(r.id, r.contato);
@@ -376,8 +273,6 @@ $(function () {
     $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', false).val('');
     $('#slcClienteTipo').prop('disabled', false);
     $('#slcClienteTabelaPrecos').prop('disabled', false).val(null).trigger('change');
-    $('#slcClienteEstado').prop('disabled', false).val(null).trigger('change');
-    $('#slcClienteCidade').prop('disabled', false).val(null).trigger('change');
     $('#txtClienteContato').prop('disabled', false).empty().append(new Option('', '', true, true)).trigger('change');
     $('.btn-salvar-cliente').prop('disabled', false);
     $('.btn-fechar-modal').show();
@@ -421,8 +316,6 @@ $(function () {
           $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', true);
           $('#slcClienteTipo').prop('disabled', true);
           $('#slcClienteTabelaPrecos').prop('disabled', true);
-          $('#slcClienteEstado').prop('disabled', true);
-          $('#slcClienteCidade').prop('disabled', true);
           $('.btn-salvar-cliente').prop('disabled', true);
 
           // Carregar contatos já criados (os que foram salvos)
@@ -459,8 +352,6 @@ $(function () {
           $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', true);
           $('#slcClienteTipo').prop('disabled', true);
           $('#slcClienteTabelaPrecos').prop('disabled', true);
-          $('#slcClienteEstado').prop('disabled', true);
-          $('#slcClienteCidade').prop('disabled', true);
           $('#txtClienteContato').prop('disabled', true);
           $('.btn-salvar-cliente').prop('disabled', true);
 

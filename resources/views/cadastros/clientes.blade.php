@@ -90,13 +90,13 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="form-floating mb-3 col-md-4">
-                                <select name="slcClienteEstado" id="slcClienteEstado" class="form-select"></select>
-                                <label for="slcClienteEstado">Estado</label>
+                            <div class="form-floating mb-3 col-md-6">
+                                <input type="text" name="txtClienteEstado" id="txtClienteEstado" class="form-control" placeholder="Estado" />
+                                <label for="txtClienteEstado">Estado</label>
                             </div>
-                            <div class="form-floating mb-3 col-md-8">
-                                <select name="slcClienteCidade" id="slcClienteCidade" class="form-select"></select>
-                                <label for="slcClienteCidade">Munic&iacute;pio</label>
+                            <div class="form-floating mb-3 col-md-6">
+                                <input type="text" name="txtClienteCidade" id="txtClienteCidade" class="form-control" placeholder="Munic&iacute;pio" />
+                                <label for="txtClienteCidade">Munic&iacute;pio</label>
                             </div>
                         </div>
                         <div class="row">
