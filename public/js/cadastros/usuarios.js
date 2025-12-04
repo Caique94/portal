@@ -10,6 +10,8 @@ $(function () {
       return;
     }
 
+    console.log('Enviando requisição para /buscar-cep com CEP:', cepLimpo);
+
     $.ajax({
       url: '/buscar-cep',
       type: 'POST',
@@ -18,9 +20,17 @@ $(function () {
       },
       data: { cep: cepLimpo },
       success: function (resp) {
+        console.log('Resposta da API CEP:', resp);
         if (resp.success) {
           // Preencher os campos com os dados retornados da API
           const cepFormatado = resp.data.cep || cepLimpo.replace(/^(\d{5})(\d{3})$/, '$1-$2');
+          console.log('Preenchendo campos PJ:', {
+            cep: cepFormatado,
+            endereco: resp.data.endereco,
+            estado: resp.data.estado,
+            cidade: resp.data.cidade
+          });
+
           $('#txtPJCEP').val(cepFormatado);
           $('#txtPJEndereco').val(resp.data.endereco || '');
           $('#txtPJEstado').val(resp.data.estado || '');
@@ -36,6 +46,7 @@ $(function () {
             title: 'CEP encontrado com sucesso!'
           });
         } else {
+          console.error('Erro na resposta da API:', resp.message);
           Toast.fire({
             icon: 'error',
             title: resp.message || 'CEP não encontrado'
@@ -44,6 +55,7 @@ $(function () {
       },
       error: function (jqXHR, textStatus, errorThrown) {
         const message = jqXHR.responseJSON?.message || 'Erro ao consultar CEP';
+        console.error('Erro AJAX ao buscar CEP:', { status: jqXHR.status, message, errorThrown });
         Toast.fire({ icon: 'error', title: message });
       }
     });
@@ -52,8 +64,12 @@ $(function () {
   // Event listener para blur no campo CEP PJ
   $(document).on('blur', '#txtPJCEP', function () {
     const cep = $(this).val();
+    console.log('Blur no CEP PJ, valor:', cep);
     if (cep && cep.replace(/\D/g, '').length === 8) {
+      console.log('Iniciando busca por CEP:', cep);
       buscarCEPPJ(cep);
+    } else {
+      console.log('CEP inválido ou vazio');
     }
   });
 
