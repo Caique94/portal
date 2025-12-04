@@ -732,6 +732,12 @@ $(document).ready(function() {
 
     // Função para buscar dados do consultor e atualizar totalizador
     async function atualizarTotalizadorComValoresConsultor(osId, precoProduto, horas, despesas, km, horasDeslocamento) {
+        // Se não há ID válido (nova OS ainda não salva), não tenta buscar dados
+        if (!osId || osId === 0 || osId === '0') {
+            console.log('OS ainda não foi salva (ID inválido), pulando atualização do totalizador');
+            return;
+        }
+
         try {
             const response = await $.ajax({
                 url: `/os/${osId}/totalizador-data`,
