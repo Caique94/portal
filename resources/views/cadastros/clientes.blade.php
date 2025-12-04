@@ -39,7 +39,7 @@
                     <form id="formCliente" action="#" method="post">
                         <div class="row">
                             <div class="form-floating mb-3 col-md-2">
-                                <input type="text" name="txtClienteCodigo" id="txtClienteCodigo" class="form-control" placeholder="C&oacute;digo" required />
+                                <input type="text" name="txtClienteCodigo" id="txtClienteCodigo" class="form-control" placeholder="C&oacute;digo" readonly />
                                 <label for="txtClienteCodigo">C&oacute;digo</label>
                             </div>
                             <div class="form-floating mb-3 col-md-2">

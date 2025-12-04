@@ -20,11 +20,29 @@ class ClienteController extends Controller
         return response()->json($data);
     }
 
+    // GERAR PRÓXIMO CÓDIGO
+    public function gerarProximoCodigo()
+    {
+        $sequence = \App\Models\Sequence::getSequence('cliente');
+        $nextNumber = $sequence->current_number + 1;
+
+        $paddedNumber = str_pad(
+            (string) $nextNumber,
+            $sequence->min_digits,
+            '0',
+            STR_PAD_LEFT
+        );
+
+        $proximoCodigo = $sequence->prefix . $paddedNumber;
+
+        return response()->json(['codigo' => $proximoCodigo]);
+    }
+
     // SALVAR (mantido com os MESMOS nomes de campos do seu front: txtCliente...)
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'txtClienteCodigo'          => 'required|string|max:255',
+            'txtClienteCodigo'          => 'nullable|string|max:255',
             'txtClienteLoja'            => 'required|string|max:255',
             'txtClienteNome'            => 'required|string|max:255',
             'txtClienteNomeFantasia'    => 'nullable|string|max:255',

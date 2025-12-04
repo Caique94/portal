@@ -151,6 +151,7 @@ Route::middleware('auth')->group(function () {
 
     // CLIENTE
     Route::get('/listar-clientes', [ClienteController::class, 'list']);
+    Route::get('/gerar-proximo-codigo-cliente', [ClienteController::class, 'gerarProximoCodigo']);
     Route::post('/salvar-cliente', [ClienteController::class, 'store']);
     Route::delete('/excluir-cliente/{id}', [ClienteController::class, 'delete']);
 

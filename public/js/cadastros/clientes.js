@@ -68,6 +68,13 @@ $(function () {
             contatosNovoCliente = [];
             atualizarBadgeContatos();
 
+            // Fetch próximo código
+            $.get('/gerar-proximo-codigo-cliente').then(function (data) {
+              $('#txtClienteCodigo').val(data.codigo || '');
+            }).fail(function () {
+              $('#txtClienteCodigo').val('');
+            });
+
             $('#modalClienteLabel').text('Adicionar Cliente');
             $('#modalCliente').modal('show');
           }
