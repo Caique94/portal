@@ -144,16 +144,34 @@ class EstadoCidadeController extends Controller
                 ], 404);
             }
 
-            // Buscar a cidade pelo nome e estado
+            // Buscar a cidade pelo nome e estado (com busca flexível)
+            $nomeCidade = trim($data['localidade']);
             $cidade = Cidade::where('estado_id', $estado->id)
-                ->where('nome', 'ilike', trim($data['localidade']))
+                ->where('nome', 'ilike', $nomeCidade)
                 ->first();
 
+            // Se não encontrar exatamente, tentar buscar com LIKE (menos rigoroso)
+            if (!$cidade) {
+                $cidade = Cidade::where('estado_id', $estado->id)
+                    ->where('nome', 'like', '%' . addslashes($nomeCidade) . '%')
+                    ->first();
+            }
+
+            // Se ainda não encontrar, retornar a resposta com o nome da ViaCEP mesmo assim
+            // (o usuário pode estar fora de uma cidade cadastrada ou a API retorna nome genérico)
             if (!$cidade) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Cidade não encontrada no banco de dados: ' . $data['localidade']
-                ], 404);
+                    'success' => true,
+                    'data' => [
+                        'cep' => preg_replace('/^(\d{5})(\d{3})$/', '$1-$2', $cep),
+                        'endereco' => trim($data['logradouro']),
+                        'bairro' => trim($data['bairro']),
+                        'cidade' => $nomeCidade,  // Usar nome da ViaCEP
+                        'estado' => $estado->nome,
+                        'estado_id' => $estado->id,
+                        'cidade_id' => null  // Sem ID porque não encontrou no banco
+                    ]
+                ]);
             }
 
             return response()->json([

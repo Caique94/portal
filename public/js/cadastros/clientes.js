@@ -28,10 +28,16 @@ $(function () {
       success: function (resp) {
         if (resp.success) {
           // Preencher os campos com os dados retornados da API
-          $('#txtClienteCEP').val(resp.data.cep);
-          $('#txtClienteEndereco').val(resp.data.endereco);
-          $('#txtClienteEstado').val(resp.data.estado);
-          $('#txtClienteCidade').val(resp.data.cidade);
+          const cepFormatado = resp.data.cep || cepLimpo.replace(/^(\d{5})(\d{3})$/, '$1-$2');
+          $('#txtClienteCEP').val(cepFormatado);
+          $('#txtClienteEndereco').val(resp.data.endereco || '');
+          $('#txtClienteEstado').val(resp.data.estado || '');
+
+          // Importante: Usar setTimeout para garantir que o valor seja setado após o DOM atualizar
+          setTimeout(() => {
+            $('#txtClienteCidade').val(resp.data.cidade || '');
+            console.log('Cidade preenchida:', resp.data.cidade);
+          }, 50);
 
           Toast.fire({
             icon: 'success',
