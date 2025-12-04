@@ -6,6 +6,7 @@ $(function () {
   // Gerenciamento de contatos para novo cadastro (modo "adicionar")
   let contatosNovoCliente = []; // Armazena contatos criados antes de salvar cliente
   let modoNovoCliente = false;  // Flag para saber se estamos adicionando novo cliente
+  let adicionandoContatosAposeSalvar = false;  // Flag para saber se estamos adicionando contatos após salvar cliente
 
   const tblClientes = $('#tblClientes').DataTable({
     ajax: { url: '/listar-clientes', dataSrc: json => json },
@@ -223,6 +224,12 @@ $(function () {
     $('.btn-salvar-cliente').prop('disabled', false);
     $('.btn-fechar-modal').show();
     $('.btn-fechar-e-concluir').hide();
+
+    // Reset das flags
+    modoNovoCliente = false;
+    adicionandoContatosAposeSalvar = false;
+    contatosNovoCliente = [];
+    atualizarBadgeContatos();
   });
 
   // ==== Salvar (add/editar) ====
@@ -284,11 +291,29 @@ $(function () {
 
           // Habilitar o botão de adicionar contato
           $('#btnAdicionarContatoRapido').prop('disabled', false);
+        } else if (adicionandoContatosAposeSalvar) {
+          // Modo adicionar contatos após salvar: manter modal aberto
+          // mas desabilitar campos novamente e esconder botão de salvar
+          adicionandoContatosAposeSalvar = false;
+
+          $('#modalCliente input[type="text"], #modalCliente input[type="date"]').prop('disabled', true);
+          $('#slcClienteTipo').prop('disabled', true);
+          $('#slcClienteTabelaPrecos').prop('disabled', true);
+          $('#txtClienteContato').prop('disabled', true);
+          $('.btn-salvar-cliente').prop('disabled', true);
+
+          tblClientes.ajax.reload(null, false);
+
+          Toast.fire({
+            icon: 'success',
+            title: 'Contato Principal atualizado!'
+          });
         } else {
-          // Modo edição: fechar modal normalmente
+          // Modo edição normal: fechar modal
           modoNovoCliente = false;
           contatosNovoCliente = [];
           atualizarBadgeContatos();
+          adicionandoContatosAposeSalvar = false;
           tblClientes.ajax.reload(null, false);
           $('#modalCliente').modal('hide');
           Toast.fire({ icon: 'success', title: resp.message || 'Salvo' });
@@ -494,6 +519,22 @@ $(function () {
         const clienteId = $('#txtContatoClienteId').val();
         if (clienteId) {
           carregarContatosCliente(clienteId, null);
+
+          // Habilitar select de Contato Principal e botão de salvar
+          // para que o usuário possa selecionar contato principal e salvar novamente
+          $('#txtClienteContato').prop('disabled', false);
+          $('#slcClienteTabelaPrecos').prop('disabled', false);
+          $('.btn-salvar-cliente').prop('disabled', false);
+
+          // Setar flag indicando que estamos adicionando contatos após salvar cliente
+          adicionandoContatosAposeSalvar = true;
+
+          // Toast informando que pode salvar novamente
+          Toast.fire({
+            icon: 'info',
+            title: 'Contato adicionado! Selecione como principal e salve novamente.',
+            timer: 3000
+          });
         }
 
         $('#modalContato').modal('hide');
