@@ -65,7 +65,7 @@
                                 <label for="txtUsuarioNome">Nome</label>
                             </div>
                             <div class="form-floating mb-3 col-md-2">
-                                <input type="date" name="txtUsuarioDataNasc" id="txtUsuarioDataNasc" class="form-control" placeholder="Data Nasc." required />
+                                <input type="date" name="txtUsuarioDataNasc" id="txtUsuarioDataNasc" class="form-control" placeholder="Data Nasc." />
                                 <label for="txtUsuarioDataNasc">Data Nasc.</label>
                             </div>
                         </div>

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,9 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cliente', function (Blueprint $table) {
-            $table->string('estado', 255)->nullable()->change();
-        });
+        DB::statement('ALTER TABLE cliente ALTER COLUMN estado TYPE varchar(255)');
     }
 
     /**
@@ -21,8 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('cliente', function (Blueprint $table) {
-            $table->string('estado', 2)->nullable()->change();
-        });
+        DB::statement('ALTER TABLE cliente ALTER COLUMN estado TYPE varchar(2)');
     }
 };

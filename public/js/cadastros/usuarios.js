@@ -208,7 +208,17 @@ $(function () {
 
       // ===== ABA 1: DADOS PESSOAIS =====
       $('#txtUsuarioNome').val(r.name || '');
-      $('#txtUsuarioDataNasc').val(r.data_nasc || '').trigger('change');
+
+      // Carregar data de nascimento com tratamento especial
+      if (r.data_nasc) {
+        console.log('Visualizar - Data de nascimento do banco:', r.data_nasc);
+        // Remover qualquer caractere inválido e garantir formato YYYY-MM-DD
+        const dataParts = r.data_nasc.trim().substring(0, 10); // Pega só os 10 primeiros caracteres
+        console.log('Visualizar - Data formatada para o campo:', dataParts);
+        $('#txtUsuarioDataNasc').val(dataParts);
+        // Forçar atualização visual do campo
+        $('#txtUsuarioDataNasc')[0].dispatchEvent(new Event('input', { bubbles: true }));
+      }
       $('#txtUsuarioEmail').val(r.email || '');
       $('#txtUsuarioCelular').val(r.celular || '').trigger('input');
       $('#slcUsuarioPapel').val(r.papel || '');
@@ -274,7 +284,17 @@ $(function () {
 
       // ===== ABA 1: DADOS PESSOAIS =====
       $('#txtUsuarioNome').val(r.name || '');
-      $('#txtUsuarioDataNasc').val(r.data_nasc || '').trigger('change');
+
+      // Carregar data de nascimento com tratamento especial
+      if (r.data_nasc) {
+        console.log('Editar - Data de nascimento do banco:', r.data_nasc);
+        // Remover qualquer caractere inválido e garantir formato YYYY-MM-DD
+        const dataParts = r.data_nasc.trim().substring(0, 10); // Pega só os 10 primeiros caracteres
+        console.log('Editar - Data formatada para o campo:', dataParts);
+        $('#txtUsuarioDataNasc').val(dataParts);
+        // Forçar atualização visual do campo
+        $('#txtUsuarioDataNasc')[0].dispatchEvent(new Event('input', { bubbles: true }));
+      }
       $('#txtUsuarioEmail').val(r.email || '');
       $('#txtUsuarioCelular').val(r.celular || '').trigger('input');
       $('#slcUsuarioPapel').val(r.papel || '');
