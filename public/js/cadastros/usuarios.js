@@ -369,6 +369,8 @@ $(function () {
           $.ajax({
             url: '/enviar-senha-usuario/' + r.id,
             type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({}),
             success: function(response) {
               Toast.fire({
                 icon: 'success',
