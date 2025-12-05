@@ -1,12 +1,14 @@
 #!/bin/bash
-
-# =================================
-# Script de Deploy - Hostinger
-# =================================
+# =====================================================
+# Script de Deploy Automatizado - Portal VPS
+# Uso no SSH: bash deploy.sh
+# =====================================================
 
 set -e  # Parar em caso de erro
 
-echo "🚀 Iniciando processo de deploy..."
+echo "========================================="
+echo "🚀 INICIANDO DEPLOY..."
+echo "========================================="
 
 # Cores para output
 RED='\033[0;31m'
