@@ -149,12 +149,16 @@ $(document).ready(function() {
     });
 
     $('.btn-adicionar-tabela-precos').on('click', function() {
-        $('#modalTabelaPrecos').modal('show');
+        // Limpar variável global para evitar que dados antigos sejam carregados
+        window.currentEditingRowData = null;
+
         $('#modalTabelaPrecosLabel').text('Adicionar Tabela de Preços');
         $('#txtTabelaPrecoDescricao').val('');
         $('#txtTabelaPrecoDataInicio').val('');
         $('#txtTabelaPrecoDataVencimento').val('');
         $('#txtTabelaPrecoId').val('');
+
+        $('#modalTabelaPrecos').modal('show');
     });
 
     $(document).on('click', '.editar-tabela-precos', function() {
