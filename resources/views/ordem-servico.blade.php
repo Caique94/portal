@@ -141,7 +141,7 @@ use Illuminate\Support\Facades\Auth;
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-6" style="display: none;">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text"><label for="chkOrdemPresencial">Presencial</label></span>
                                     <div class="input-group-text"><input class="form-check-input calculo-valor-total" type="checkbox" name="chkOrdemPresencial" id="chkOrdemPresencial" value="1"></div>
