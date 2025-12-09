@@ -18,13 +18,17 @@ class HandleOSRejected
         try {
             // Send rejection notification to consultant
             $notificationService = new NotificationService();
-            $rejector = \App\Models\User::find(auth()->id());
+
+            // Get rejector from auth or from the last status change
+            $rejectorId = auth()->id() ?? $os->ultima_alteracao_por;
+            $rejector = \App\Models\User::find($rejectorId);
 
             if ($rejector) {
                 $notificationService->notifyOsRejected($os, $rejector, $reason);
+                Log::info("Notificação de rejeição enviada para OS #{$os->id}");
+            } else {
+                Log::warning("Não foi possível identificar o rejeitador para OS #{$os->id}");
             }
-
-            Log::info("Notificação de rejeição enviada para OS #{$os->id}");
         } catch (\Exception $e) {
             Log::error("Erro ao processar rejeição da OS #{$os->id}: " . $e->getMessage());
         }

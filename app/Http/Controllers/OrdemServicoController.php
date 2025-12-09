@@ -359,7 +359,12 @@ class OrdemServicoController extends Controller
         $auditService->recordContestacao($motivo);
 
         // Dispatch OSRejected event to send notification
-        OSRejected::dispatch($ordem->refresh(), $motivo);
+        try {
+            OSRejected::dispatch($ordem->refresh(), $motivo);
+        } catch (\Exception $e) {
+            // Log error but don't fail the request since contestation was successful
+            \Log::error("Erro ao enviar notificação de contestação: " . $e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Ordem de Serviço contestada com sucesso',
