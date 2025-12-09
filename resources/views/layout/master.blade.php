@@ -54,9 +54,9 @@
                     <a class="sidebar-link" href="{{ url('/recibo-provisorio') }}">Recibo Provis&oacute;rio</a>
                 </li>
                 <li class="sidebar-item {{ (Request::is('relatorio-fechamento*') ? 'active' : '') }}">
-                    <a class="sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#menuFechamento" aria-expanded="false">
-                        Fechamento
-                        <i class="bi bi-chevron-down ms-auto"></i>
+                    <a class="sidebar-link collapsed d-flex justify-content-between align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#menuFechamento" aria-expanded="false">
+                        <span>Fechamento</span>
+                        <i class="bi bi-chevron-down"></i>
                     </a>
                     <ul class="sidebar-dropdown list-unstyled collapse {{ (Request::is('relatorio-fechamento*') ? 'show' : '') }}" id="menuFechamento">
                         <li class="sidebar-item {{ (Request::is('relatorio-fechamento-cliente*') ? 'active' : '') }}">
