@@ -44,7 +44,7 @@ class RelatorioFechamentoController extends Controller
         $relatorios = $query->paginate(15);
         $consultores = User::where('papel', 'consultor')->orderBy('name')->get();
 
-        return view('relatorio-fechamento.index', compact('relatorios', 'consultores'));
+        return view('relatorio-fechamento.index-cliente', compact('relatorios', 'consultores'));
     }
 
     /**
@@ -78,7 +78,7 @@ class RelatorioFechamentoController extends Controller
         $relatorios = $query->paginate(15);
         $consultores = User::where('papel', 'consultor')->orderBy('name')->get();
 
-        return view('relatorio-fechamento.index', compact('relatorios', 'consultores'));
+        return view('relatorio-fechamento.index-consultor', compact('relatorios', 'consultores'));
     }
 
     /**
