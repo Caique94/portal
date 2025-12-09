@@ -334,9 +334,22 @@ class OrdemServicoController extends Controller
         // Check permissions
         $permissionService = new PermissionService();
         if (!$permissionService->canContestOS($ordem)) {
-            return response()->json([
+            \Log::warning("Contestação negada para usuário", [
+                'user_id' => auth()->id(),
+                'user_role' => $permissionService->getUserRole(),
+                'os_id' => $ordem->id,
+                'os_status' => $ordem->status
+            ]);
+
+            $debugInfo = config('app.debug') ? [
+                'user_role' => $permissionService->getUserRole(),
+                'os_status' => $ordem->status,
+                'allowed_statuses' => ['aguardando_aprovacao', 'aprovado']
+            ] : [];
+
+            return response()->json(array_merge([
                 'message' => 'Você não tem permissão para contestar ordens de serviço.'
-            ], 403);
+            ], $debugInfo), 403);
         }
 
         // Validate transition
