@@ -4,6 +4,10 @@ $(document).ready(function() {
     let produto_aux = '';
     let userRole = 'admin'; // Default role
 
+    // Ocultar campos de KM e Deslocamento ao carregar a página
+    $('#txtOrdemKM').parent().hide();
+    $('#txtOrdemDeslocamento').parent().hide();
+
     let tblOrdensServico = $('#tblOrdensServico').DataTable({
         ajax: {
             url: '/listar-ordens-servico',
@@ -662,18 +666,13 @@ $(document).ready(function() {
                         // Desabilitar para evitar alteração manual
                         $('#chkOrdemPresencial').prop('disabled', true);
 
-                        // Mostrar/ocultar campos de KM e Deslocamento baseado no is_presencial do produto
-                        if (response.produto.is_presencial) {
-                            console.log('Produto É presencial - mostrando campos');
-                            $('#txtOrdemKM').parent().show();
-                            $('#txtOrdemDeslocamento').parent().show();
-                        } else {
-                            console.log('Produto NÃO é presencial - ocultando campos');
-                            $('#txtOrdemKM').parent().hide();
-                            $('#txtOrdemDeslocamento').parent().hide();
-                            // Limpar valores quando não é presencial
+                        // Limpar valores quando não é presencial
+                        if (!response.produto.is_presencial) {
+                            console.log('Produto NÃO é presencial - limpando valores');
                             $('#txtOrdemKM').val('');
                             $('#txtOrdemDeslocamento').val('');
+                        } else {
+                            console.log('Produto É presencial - valores serão usados nos cálculos');
                         }
 
                         // Trigger para recalcular valores
