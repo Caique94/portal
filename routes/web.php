@@ -34,7 +34,7 @@ use App\Http\Controllers\EstadoCidadeController;
 // ========== AUTH ==========
 // Rate limit mais restritivo para login (5 tentativas por minuto)
 Route::get('/login', [LoginController::class, 'login'])->name('login');
-Route::post('/login', [LoginController::class, 'authenticate'])->middleware('rate.limit:5,1');
+Route::post('/login', [LoginController::class, 'authenticate'])->middleware('throttle:5,1');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // ========== HOME (redirect por papel) ==========
