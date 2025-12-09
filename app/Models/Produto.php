@@ -17,7 +17,13 @@ class Produto extends Model
         'codigo',
         'descricao',
         'narrativa',
+        'is_presencial',
         'ativo'
+    ];
+
+    protected $casts = [
+        'is_presencial' => 'boolean',
+        'ativo' => 'boolean'
     ];
 
 }

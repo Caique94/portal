@@ -42,9 +42,15 @@
                                 <input type="text" name="codigo" id="txtProdutoCodigo" class="form-control" placeholder="C&oacute;digo" readonly />
                                 <label for="txtProdutoCodigo">C&oacute;digo</label>
                             </div>
-                            <div class="form-floating mb-3 col-md-8">
+                            <div class="form-floating mb-3 col-md-6">
                                 <input type="text" name="nome" id="txtProdutoDescricao" class="form-control" placeholder="Descri&ccedil;&atilde;o" required />
                                 <label for="txtProdutoDescricao">Descri&ccedil;&atilde;o</label>
+                            </div>
+                            <div class="form-floating mb-3 col-md-2 d-flex align-items-center justify-content-center">
+                                <div class="form-check form-switch form-check-reverse">
+                                    <input class="form-check-input" type="checkbox" role="switch" name="is_presencial" id="chkProdutoPresencial" value="1">
+                                    <label class="form-check-label" for="chkProdutoPresencial">Presencial</label>
+                                </div>
                             </div>
                             <div class="form-floating mb-3 col-md-2 d-flex align-items-center justify-content-end">
                                 <div class="form-check form-switch form-check-reverse">

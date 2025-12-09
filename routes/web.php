@@ -201,6 +201,7 @@ Route::middleware('auth')->group(function () {
     // PRODUTO X TABELA
     Route::get('/listar-produtos-tabela', [ProdutoTabelaController::class, 'list']);
     Route::post('/salvar-produto-tabela', [ProdutoTabelaController::class, 'store']);
+    Route::get('/produto-tabela/{id}', [ProdutoTabelaController::class, 'show']);
     Route::get('/toggle-produto-tabela/{id}', [ProdutoTabelaController::class, 'toggle']);
     Route::get('/listar-produtos-por-cliente/{id}', [ProdutoTabelaController::class, 'list_by_client']);
 

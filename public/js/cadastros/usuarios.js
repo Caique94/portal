@@ -491,6 +491,16 @@ $(function () {
           // Erro de conexão
           errorMsg = 'Erro de conexão com o servidor';
           errorDetails = 'Verifique se o servidor está rodando';
+        } else if (jqXHR.status === 419) {
+          // CSRF token expirado
+          Toast.fire({
+            icon: 'warning',
+            title: 'Sessão expirada. Recarregando a página...'
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+          return;
         } else if (jqXHR.status === 422) {
           // Erro de validação
           errorMsg = 'Erro de validação dos dados';

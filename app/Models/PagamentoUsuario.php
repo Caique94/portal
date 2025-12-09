@@ -18,11 +18,6 @@ class PagamentoUsuario extends Model
         'conta',
         'tipo_conta',
         'pix_key',
-        'ativo',
-    ];
-
-    protected $casts = [
-        'ativo' => 'boolean',
     ];
 
     /**

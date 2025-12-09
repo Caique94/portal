@@ -39,6 +39,19 @@ class ProdutoTabelaController extends Controller
         return response()->json($data);
     }
 
+    public function show(string $id)
+    {
+        $produtoTabela = ProdutoTabela::with('produto')->find($id);
+
+        if (!$produtoTabela) {
+            return response()->json([
+                'message' => 'Produto não encontrado'
+            ], 404);
+        }
+
+        return response()->json($produtoTabela);
+    }
+
     public function toggle(Request $request, string $id)
     {
         $produto = ProdutoTabela::find($id);

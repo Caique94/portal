@@ -69,7 +69,8 @@ $(document).ready(function() {
             render: function(data, type, row) {
                 if (!data) return 'R$ 0,00';
                 var valor = parseFloat(data);
-                return 'R$ ' + valor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                // Formatar manualmente para evitar problema com separador de milhar
+                return 'R$ ' + valor.toFixed(2).replace('.', ',');
             }
         },{
             title: 'Status',
@@ -642,6 +643,58 @@ $(document).ready(function() {
     $('#slcProdutoOrdemId').on('change', function() {
         var preco = $(this).find(':selected').data('custom');
         $('#txtOrdemPrecoProduto').val(preco).trigger('change');
+
+        // Buscar is_presencial do produto selecionado
+        var produtoTabelaId = $(this).val();
+        if (produtoTabelaId) {
+            $.ajax({
+                url: '/produto-tabela/' + produtoTabelaId,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    console.log('Resposta do produto-tabela:', response);
+                    console.log('Produto:', response.produto);
+                    console.log('is_presencial:', response.produto ? response.produto.is_presencial : 'produto não encontrado');
+
+                    if (response.produto && response.produto.is_presencial !== undefined) {
+                        // Marcar checkbox baseado no produto
+                        $('#chkOrdemPresencial').prop('checked', response.produto.is_presencial);
+                        // Desabilitar para evitar alteração manual
+                        $('#chkOrdemPresencial').prop('disabled', true);
+
+                        // Mostrar/ocultar campos de KM e Deslocamento baseado no is_presencial do produto
+                        if (response.produto.is_presencial) {
+                            console.log('Produto É presencial - mostrando campos');
+                            $('#txtOrdemKM').parent().show();
+                            $('#txtOrdemDeslocamento').parent().show();
+                        } else {
+                            console.log('Produto NÃO é presencial - ocultando campos');
+                            $('#txtOrdemKM').parent().hide();
+                            $('#txtOrdemDeslocamento').parent().hide();
+                            // Limpar valores quando não é presencial
+                            $('#txtOrdemKM').val('');
+                            $('#txtOrdemDeslocamento').val('');
+                        }
+
+                        // Trigger para recalcular valores
+                        $('#chkOrdemPresencial').trigger('change');
+                    } else {
+                        console.log('PROBLEMA: response.produto ou is_presencial está undefined');
+                    }
+                },
+                error: function() {
+                    // Em caso de erro, permitir alteração manual
+                    $('#chkOrdemPresencial').prop('disabled', false);
+                }
+            });
+        } else {
+            // Se não há produto selecionado, permitir alteração manual
+            $('#chkOrdemPresencial').prop('disabled', false);
+            $('#chkOrdemPresencial').prop('checked', false);
+            // Ocultar campos de KM e Deslocamento
+            $('#txtOrdemKM').parent().hide();
+            $('#txtOrdemDeslocamento').parent().hide();
+        }
     });
 
     $('#slcOrdemClienteId, #slcProdutoOrdemId').parent('div').children('span').children('span').children('span').css('height', ' calc(3.5rem + 2px)');
@@ -674,37 +727,41 @@ $(document).ready(function() {
         var despesas = $('#txtOrdemDespesas').val() != '' ? parseFloat($('#txtOrdemDespesas').val().replace(/\./g, '').replace(/,/g, '.')) : 0;
 
         // Verificar se precisa deslocamento / km no valor da ordem
-        var km = 0;
-        var deslocamento = 0;
-        var horasDeslocamento = 0;
+        var kmQuantidade = 0;  // Quantidade de KM (do cliente)
+        var horasDeslocamento = 0;  // Horas de deslocamento (do cliente)
 
         if ($('#chkOrdemPresencial').is(':checked')) {
-            km = $('#txtOrdemKM').val() != '' ? parseFloat($('#txtOrdemKM').val().replace(/\./g, '').replace(/,/g, '.')) : 0;
+            // txtOrdemKM armazena a QUANTIDADE de km (ex: 44)
+            kmQuantidade = $('#txtOrdemKM').val() != '' ? parseFloat($('#txtOrdemKM').val().replace(/\./g, '').replace(/,/g, '.')) : 0;
 
             // Processar deslocamento: pode ser HH:MM ou valor decimal com vírgula
+            // txtOrdemDeslocamento armazena o TEMPO em horas (ex: 1:20 = 1.33 horas)
             var deslocamentoStr = $('#txtOrdemDeslocamento').val();
             if (deslocamentoStr) {
                 deslocamentoStr = deslocamentoStr.trim();
                 if (deslocamentoStr.includes(':')) {
                     // Formato HH:MM - converter para horas decimais
                     horasDeslocamento = calcularHorasDesdeTexto(deslocamentoStr);
-                    deslocamento = 0; // Será calculado depois
                 } else {
                     // Formato decimal - converter vírgula para ponto
                     horasDeslocamento = parseFloat(deslocamentoStr.replace(/\./g, '').replace(/,/g, '.')) || 0;
-                    deslocamento = 0; // Será calculado depois
                 }
             }
         }
 
-        valor_total = (preco * horas) + despesas + km + deslocamento;
+        // IMPORTANTE: Os valores de KM e Deslocamento serão calculados na função
+        // atualizarTotalizadorComValoresConsultor multiplicando pelas tarifas do consultor
+        // Aqui só calculamos o valor básico (serviço + despesas)
+        valor_total = (preco * horas) + despesas;
 
         $('#txtOrdemValorTotal').val(Number.isNaN(valor_total) ? 0 : valor_total.toFixed(2));
 
         // Buscar dados do consultor e atualizar totalizador
+        // A função vai calcular: KM = kmQuantidade × valor_km_consultor
+        //                        Deslocamento = horasDeslocamento × valor_hora_consultor
         var osId = $('#txtOrdemId').val();
         if (osId) {
-            await atualizarTotalizadorComValoresConsultor(osId, preco, horas, despesas, km, horasDeslocamento);
+            await atualizarTotalizadorComValoresConsultor(osId, preco, horas, despesas, kmQuantidade, horasDeslocamento);
         }
     });
 

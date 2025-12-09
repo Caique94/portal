@@ -22,6 +22,7 @@ class ProdutoController extends Controller
         $hasNarrativa = $this->has('narrativa');
 
         $select = ['id','codigo','ativo'];
+        if ($this->has('is_presencial')) $select[] = 'is_presencial';
         if ($hasNome)      $select[] = 'nome';
         elseif ($hasDescricao) $select[] = DB::raw('descricao AS nome');
         if ($hasNarrativa) $select[] = 'narrativa';
@@ -52,6 +53,7 @@ class ProdutoController extends Controller
         $hasNarrativa = $this->has('narrativa');
 
         $select = ['id','codigo','ativo'];
+        if ($this->has('is_presencial')) $select[] = 'is_presencial';
         if ($hasNome)      $select[] = 'nome';
         elseif ($hasDescricao) $select[] = DB::raw('descricao AS nome');
         if ($hasNarrativa) $select[] = 'narrativa';
@@ -69,6 +71,12 @@ class ProdutoController extends Controller
     public function store(Request $request)
     {
         $in = array_change_key_case(($request->json()->all() ?: []) + $request->all(), CASE_LOWER);
+
+        // Log temporário para debug
+        \Log::info('ProdutoController::store - Dados recebidos', [
+            'is_presencial' => $in['is_presencial'] ?? 'não enviado',
+            'all_data' => $in
+        ]);
 
         // aliases do form
         $codigo = null;
@@ -98,6 +106,9 @@ class ProdutoController extends Controller
         $ativo   = array_key_exists('ativo',$in)
             ? in_array($in['ativo'], [true,1,'1','true','on','yes','sim'], true)
             : true;
+        $is_presencial = array_key_exists('is_presencial',$in)
+            ? in_array($in['is_presencial'], [true,1,'1','true','on','yes','sim'], true)
+            : false;
 
         // monta payload SOMENTE com colunas existentes (evita "column does not exist" -> 500)
         $data = ['codigo'=>$codigo];
@@ -106,8 +117,15 @@ class ProdutoController extends Controller
         if ($this->has('narrativa') && $narrativa !== null) $data['narrativa'] = $narrativa;
         if ($this->has('unidade') && $unidade !== null)     $data['unidade']   = $unidade;
         if ($this->has('preco_base') && $preco_base !== null) $data['preco_base'] = (float)$preco_base;
+        if ($this->has('is_presencial')) $data['is_presencial'] = $is_presencial;
         if ($this->has('ativo'))     $data['ativo']     = $ativo;
         if ($this->has('updated_at'))$data['updated_at']= now();
+
+        \Log::info('ProdutoController::store - Dados que serão salvos', [
+            'data' => $data,
+            'is_presencial_value' => $is_presencial,
+            'has_is_presencial' => $this->has('is_presencial')
+        ]);
 
         $id = $in['id'] ?? null;
 

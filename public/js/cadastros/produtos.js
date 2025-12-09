@@ -30,9 +30,18 @@ $(document).ready(function () {
       }
     },
     columns: [
-      { title: 'C&oacute;digo', data: 'codigo', className: 'dt-center', width: '120px' },
-      { title: 'Descri&ccedil;&atilde;o', data: 'nome', width: '40%' },
+      { title: 'C&oacute;digo', data: 'codigo', className: 'dt-center', width: '100px' },
+      { title: 'Descri&ccedil;&atilde;o', data: 'nome', width: '35%' },
       { title: 'Narrativa', data: 'narrativa', defaultContent: '' },
+      {
+        title: 'Presencial', className: 'dt-center', orderable: false, width: '100px',
+        render: (_, __, row) => {
+          const isPresencial = (row.is_presencial === true || row.is_presencial === 1 || row.is_presencial === '1');
+          return isPresencial
+            ? '<span class="badge bg-success">Sim</span>'
+            : '<span class="badge bg-secondary">Não</span>';
+        }
+      },
       {
         title: 'Ativo', className: 'dt-center', orderable: false, width: '80px',
         render: (_, __, row) => {
@@ -43,6 +52,19 @@ $(document).ready(function () {
                              id="chkProdutosAtivo${row.id}"
                              class="form-check-input toggle-produto" ${checked}>
                     </div>
+                  </div>`;
+        }
+      },
+      {
+        title: 'A&ccedil;&otilde;es', className: 'dt-center', orderable: false, width: '120px',
+        render: (_, __, row) => {
+          return `<div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-sm btn-primary btn-editar-produto" data-id="${row.id}">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger btn-excluir-produto" data-id="${row.id}">
+                      <i class="bi bi-trash"></i>
+                    </button>
                   </div>`;
         }
       }
@@ -62,6 +84,9 @@ $(document).ready(function () {
           } else {
             $('#formProduto input[name="id"]').val('');
           }
+
+          // Resetar título do modal
+          $('#modalProdutoLabel').text('Adicionar Produto');
 
           // Buscar próximo código automaticamente
           $.ajax({
@@ -103,6 +128,59 @@ $(document).ready(function () {
           Toast.fire({ icon: 'error', title: msg });
         });
       });
+
+      // Editar produto
+      $('#tblProdutos tbody').on('click', '.btn-editar-produto', function () {
+        const rowData = tblProdutos.row($(this).closest('tr')).data();
+
+        // Preencher o formulário com os dados do produto
+        $('#produto_id').val(rowData.id);
+        $('#txtProdutoCodigo').val(rowData.codigo || '');
+        $('#txtProdutoDescricao').val(rowData.nome || '');
+        $('#txtProdutoNarrativa').val(rowData.narrativa || '');
+        $('#chkProdutoPresencial').prop('checked', rowData.is_presencial === true || rowData.is_presencial === 1 || rowData.is_presencial === '1');
+        $('#chkProdutoAtivo').prop('checked', rowData.ativo === true || rowData.ativo === 1 || rowData.ativo === '1');
+
+        // Mudar título do modal
+        $('#modalProdutoLabel').text('Editar Produto');
+
+        // Abrir modal
+        $('#modalProduto').modal('show');
+      });
+
+      // Excluir produto
+      $('#tblProdutos tbody').on('click', '.btn-excluir-produto', function () {
+        const rowData = tblProdutos.row($(this).closest('tr')).data();
+
+        Swal.fire({
+          title: 'Tem certeza?',
+          text: `Deseja realmente excluir o produto "${rowData.nome}"?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Sim, excluir!',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            $.ajax({
+              url: `/excluir-produto/${rowData.id}`,
+              type: 'DELETE',
+              headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .done(resp => {
+              tblProdutos.ajax.reload(null, false);
+              Toast.fire({ icon: 'success', title: resp?.msg || 'Produto excluído com sucesso.' });
+            })
+            .fail(jq => {
+              const msg = jq.responseJSON?.msg
+                || (jq.responseJSON?.errors ? Object.values(jq.responseJSON.errors).flat().join('<br>') : '')
+                || 'Falha ao excluir.';
+              Toast.fire({ icon: 'error', title: msg });
+            });
+          }
+        });
+      });
     }
   });
 
@@ -119,13 +197,20 @@ $(document).ready(function () {
     const descricao = pickVal($form, ['nome','descricao','descrição','txtdescricao','txt_produto_descricao','txtprodutodescricao']);
     const narrativa = pickVal($form, ['narrativa','obs','observacao','observação','txtnarrativa']);
 
+    const isPresencialChecked = $form.find('input[name="is_presencial"]').is(':checked');
+    console.log('is_presencial checkbox encontrado:', $form.find('input[name="is_presencial"]').length);
+    console.log('is_presencial está marcado:', isPresencialChecked);
+
     const payload = {
       id: $form.find('input[name="id"]').val() || '',
       codigo: codigo,
       nome: descricao,                 // backend espera "nome"
       narrativa: narrativa || '',
+      is_presencial: isPresencialChecked ? 1 : 0,
       ativo: $form.find('input[name="ativo"]').is(':checked') ? 1 : 0
     };
+
+    console.log('Payload sendo enviado:', payload);
 
     $.ajax({
       url: '/salvar-produto',
