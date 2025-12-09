@@ -280,11 +280,9 @@ Route::middleware('auth')->group(function () {
     // PROJETOS API
     Route::get('/cliente/{clienteId}/projetos', [ProjetoController::class, 'getClienteProjetos']);
 
-    // RELATÓRIOS API
-    Route::get('/relatorio-fechamento-cliente', [RelatorioController::class, 'fechamentoCliente']);
-    Route::get('/relatorio-fechamento-consultor', [RelatorioController::class, 'fechamentoConsultor']);
-    Route::get('/relatorio-fechamento-geral', [RelatorioController::class, 'fechamentoGeral']);
-    Route::get('/relatorio-ordem-por-status', [RelatorioController::class, 'ordemPorStatus']);
+    // RELATÓRIOS API (endpoints JSON para dashboard)
+    Route::get('/api/relatorio-fechamento-geral', [RelatorioController::class, 'fechamentoGeral']);
+    Route::get('/api/relatorio-ordem-por-status', [RelatorioController::class, 'ordemPorStatus']);
 
     // NOTIFICATIONS API
     Route::get('/api/notifications/unread', [NotificationController::class, 'getUnread']);
