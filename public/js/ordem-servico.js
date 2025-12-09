@@ -73,9 +73,15 @@ $(document).ready(function() {
             visible: papel == 'admin' || papel == 'consultor' ? true : false,
             render: function(data, type, row) {
                 if (!data) return 'R$ 0,00';
-                var valor = parseFloat(data);
+                // Garantir que o valor é numérico
+                var valor = typeof data === 'number' ? data : parseFloat(data);
+                if (isNaN(valor)) return 'R$ 0,00';
                 // Formatar manualmente para evitar problema com separador de milhar
-                return 'R$ ' + valor.toFixed(2).replace('.', ',');
+                var valorFormatado = valor.toFixed(2).replace('.', ',');
+                // Adicionar separador de milhares se necessário
+                var partes = valorFormatado.split(',');
+                partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                return 'R$ ' + partes.join(',');
             }
         },{
             title: 'Status',
