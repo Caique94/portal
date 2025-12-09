@@ -118,17 +118,29 @@ Route::middleware(['auth', RoleMiddleware::class.':admin,financeiro'])->group(fu
     Route::get('/faturamento', [FaturamentoController::class, 'view'])->name('faturamento');
     Route::get('/recibo-provisorio', [ReciboProvisorioController::class, 'view'])->name('recibo-provisorio');
 
-    // Relatórios de Fechamento para Consultores
-    Route::get('/relatorio-fechamento', [RelatorioFechamentoController::class, 'index'])->name('relatorio-fechamento.index');
-    Route::get('/relatorio-fechamento/criar', [RelatorioFechamentoController::class, 'create'])->name('relatorio-fechamento.create');
-    Route::post('/relatorio-fechamento', [RelatorioFechamentoController::class, 'store'])->name('relatorio-fechamento.store');
-    Route::get('/relatorio-fechamento/{relatorioFechamento}', [RelatorioFechamentoController::class, 'show'])->name('relatorio-fechamento.show');
-    Route::get('/relatorio-fechamento/{relatorioFechamento}/pdf', [RelatorioFechamentoController::class, 'pdf'])->name('relatorio-fechamento.pdf');
-    Route::post('/relatorio-fechamento/{relatorioFechamento}/enviar-aprovacao', [RelatorioFechamentoController::class, 'enviarAprovacao'])->name('relatorio-fechamento.enviar-aprovacao');
-    Route::post('/relatorio-fechamento/{relatorioFechamento}/aprovar', [RelatorioFechamentoController::class, 'aprovar'])->name('relatorio-fechamento.aprovar');
-    Route::post('/relatorio-fechamento/{relatorioFechamento}/rejeitar', [RelatorioFechamentoController::class, 'rejeitar'])->name('relatorio-fechamento.rejeitar');
-    Route::post('/relatorio-fechamento/{relatorioFechamento}/enviar-email', [RelatorioFechamentoController::class, 'enviarEmail'])->name('relatorio-fechamento.enviar-email');
-    Route::delete('/relatorio-fechamento/{relatorioFechamento}', [RelatorioFechamentoController::class, 'destroy'])->name('relatorio-fechamento.destroy');
+    // Relatórios de Fechamento - Cliente (usa totalizador administrativo)
+    Route::get('/relatorio-fechamento-cliente', [RelatorioFechamentoController::class, 'indexCliente'])->name('relatorio-fechamento-cliente.index');
+    Route::get('/relatorio-fechamento-cliente/criar', [RelatorioFechamentoController::class, 'createCliente'])->name('relatorio-fechamento-cliente.create');
+    Route::post('/relatorio-fechamento-cliente', [RelatorioFechamentoController::class, 'storeCliente'])->name('relatorio-fechamento-cliente.store');
+    Route::get('/relatorio-fechamento-cliente/{relatorioFechamento}', [RelatorioFechamentoController::class, 'showCliente'])->name('relatorio-fechamento-cliente.show');
+    Route::get('/relatorio-fechamento-cliente/{relatorioFechamento}/pdf', [RelatorioFechamentoController::class, 'pdf'])->name('relatorio-fechamento-cliente.pdf');
+    Route::post('/relatorio-fechamento-cliente/{relatorioFechamento}/enviar-aprovacao', [RelatorioFechamentoController::class, 'enviarAprovacao'])->name('relatorio-fechamento-cliente.enviar-aprovacao');
+    Route::post('/relatorio-fechamento-cliente/{relatorioFechamento}/aprovar', [RelatorioFechamentoController::class, 'aprovar'])->name('relatorio-fechamento-cliente.aprovar');
+    Route::post('/relatorio-fechamento-cliente/{relatorioFechamento}/rejeitar', [RelatorioFechamentoController::class, 'rejeitar'])->name('relatorio-fechamento-cliente.rejeitar');
+    Route::post('/relatorio-fechamento-cliente/{relatorioFechamento}/enviar-email', [RelatorioFechamentoController::class, 'enviarEmail'])->name('relatorio-fechamento-cliente.enviar-email');
+    Route::delete('/relatorio-fechamento-cliente/{relatorioFechamento}', [RelatorioFechamentoController::class, 'destroy'])->name('relatorio-fechamento-cliente.destroy');
+
+    // Relatórios de Fechamento - Consultor (usa totalizador consultor)
+    Route::get('/relatorio-fechamento-consultor', [RelatorioFechamentoController::class, 'indexConsultor'])->name('relatorio-fechamento-consultor.index');
+    Route::get('/relatorio-fechamento-consultor/criar', [RelatorioFechamentoController::class, 'createConsultor'])->name('relatorio-fechamento-consultor.create');
+    Route::post('/relatorio-fechamento-consultor', [RelatorioFechamentoController::class, 'storeConsultor'])->name('relatorio-fechamento-consultor.store');
+    Route::get('/relatorio-fechamento-consultor/{relatorioFechamento}', [RelatorioFechamentoController::class, 'showConsultor'])->name('relatorio-fechamento-consultor.show');
+    Route::get('/relatorio-fechamento-consultor/{relatorioFechamento}/pdf', [RelatorioFechamentoController::class, 'pdf'])->name('relatorio-fechamento-consultor.pdf');
+    Route::post('/relatorio-fechamento-consultor/{relatorioFechamento}/enviar-aprovacao', [RelatorioFechamentoController::class, 'enviarAprovacao'])->name('relatorio-fechamento-consultor.enviar-aprovacao');
+    Route::post('/relatorio-fechamento-consultor/{relatorioFechamento}/aprovar', [RelatorioFechamentoController::class, 'aprovar'])->name('relatorio-fechamento-consultor.aprovar');
+    Route::post('/relatorio-fechamento-consultor/{relatorioFechamento}/rejeitar', [RelatorioFechamentoController::class, 'rejeitar'])->name('relatorio-fechamento-consultor.rejeitar');
+    Route::post('/relatorio-fechamento-consultor/{relatorioFechamento}/enviar-email', [RelatorioFechamentoController::class, 'enviarEmail'])->name('relatorio-fechamento-consultor.enviar-email');
+    Route::delete('/relatorio-fechamento-consultor/{relatorioFechamento}', [RelatorioFechamentoController::class, 'destroy'])->name('relatorio-fechamento-consultor.destroy');
 });
 
 // ========== SÓ ADMIN → Cadastros (views) ==========

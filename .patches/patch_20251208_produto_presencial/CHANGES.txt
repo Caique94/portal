@@ -1,0 +1,171 @@
+================================================================================
+PATCH: PRODUTO PRESENCIAL FEATURE - 08/12/2025
+================================================================================
+
+RESUMO:
+-------
+Implementação da funcionalidade que vincula o campo "presencial" ao cadastro
+de produtos, removendo a seleção manual na geração de Ordem de Serviço (OS).
+
+ARQUIVOS INCLUÍDOS NO PATCH:
+-----------------------------
+
+Backend (PHP):
+  ✓ app/Http/Controllers/ProdutoController.php
+  ✓ app/Http/Controllers/ProdutoTabelaController.php
+  ✓ app/Models/PagamentoUsuario.php
+
+Frontend (Views):
+  ✓ resources/views/cadastros/produtos.blade.php
+
+Frontend (JavaScript):
+  ✓ public/js/cadastros/produtos.js
+  ✓ public/js/cadastros/usuarios.js
+  ✓ public/js/ordem-servico.js
+
+Database:
+  ✓ database/migrations/2025_12_08_140803_add_is_presencial_to_produto_table.php
+  ✓ sql/01_add_is_presencial_column.sql
+  ✓ sql/02_verify_produto_columns.sql
+
+Scripts Auxiliares:
+  ✓ scripts/check_produto_columns.php
+  ✓ scripts/fix_portal_db.php
+
+Documentação:
+  ✓ README.md (Instruções completas de deploy)
+  ✓ DEPLOY.sh (Script automatizado de deploy)
+  ✓ routes/web.php.diff (Alteração na rota)
+  ✓ CHANGES.txt (Este arquivo)
+
+TOTAL DE ARQUIVOS: 14
+
+ALTERAÇÕES POR ARQUIVO:
+-----------------------
+
+1. ProdutoController.php
+   - Adicionado is_presencial aos selects (list, active_list)
+   - Processamento de is_presencial no método store()
+   - Logs de debug para troubleshooting
+   - Validação usando has() antes de incluir no payload
+
+2. ProdutoTabelaController.php
+   - Novo método show() para retornar produto com relacionamentos
+   - Necessário para buscar is_presencial na geração de OS
+
+3. PagamentoUsuario.php
+   - CORREÇÃO: Removido campo 'ativo' do $fillable
+   - CORREÇÃO: Removido $casts para 'ativo'
+   - Motivo: Coluna não existe na tabela pagamento_usuario
+
+4. produtos.blade.php
+   - Adicionado checkbox "Presencial" no formulário modal
+   - Campo posicionado ao lado do switch "Ativo"
+
+5. produtos.js
+   - Nova coluna "Presencial" no DataTable com badges (Sim/Não)
+   - Nova coluna "Ações" com botões editar/excluir
+   - Handler btn-editar-produto: preenche modal com dados
+   - Handler btn-excluir-produto: confirmação com SweetAlert
+   - Payload inclui is_presencial (0 ou 1)
+   - Console.logs para debug
+
+6. usuarios.js
+   - CORREÇÃO: Tratamento de erro 419 (CSRF token expirado)
+   - Auto-reload da página com notificação ao usuário
+
+7. ordem-servico.js
+   - AJAX call ao selecionar produto em #slcProdutoOrdemId
+   - Busca dados do produto via /produto-tabela/{id}
+   - Preenche e desabilita #chkOrdemPresencial automaticamente
+   - Fallback se produto não tiver is_presencial
+
+8. Migration 2025_12_08_140803
+   - Adiciona coluna is_presencial BOOLEAN DEFAULT FALSE
+   - Método down() para rollback
+
+9. SQL Scripts
+   - 01_add_is_presencial_column.sql: Adiciona coluna com verificação
+   - 02_verify_produto_columns.sql: Verifica estrutura da tabela
+
+10. Helper Scripts
+    - check_produto_columns.php: Verifica colunas e conexão
+    - fix_portal_db.php: Força conexão 'portal' e cria coluna
+
+BANCO DE DADOS:
+---------------
+Tabela: produto
+Nova Coluna: is_presencial BOOLEAN DEFAULT FALSE
+Posição: Após coluna 'ativo'
+
+ROTAS ADICIONADAS:
+------------------
+GET /produto-tabela/{id} -> ProdutoTabelaController@show
+
+CORREÇÕES DE BUGS:
+------------------
+1. ✓ PagamentoUsuario: Erro 500 ao salvar usuário (campo 'ativo' inexistente)
+2. ✓ CSRF Token: Erro 419 sem feedback ao usuário
+3. ✓ Produtos: Botões de edição não aparecendo na tabela
+4. ✓ Database: Coluna criada em portal_dev ao invés de portal
+
+TESTES REALIZADOS:
+------------------
+✓ Cadastro de produto com is_presencial
+✓ Edição de produto (modal preenche corretamente)
+✓ Exclusão de produto (confirmação funciona)
+✓ Listagem mostra badge correto (Sim/Não)
+✓ OS preenche presencial automaticamente ao selecionar produto
+✓ Checkbox presencial fica read-only na OS
+✓ Salvamento persiste no banco 'portal'
+✓ CSRF expirado recarrega página automaticamente
+
+REQUISITOS:
+-----------
+- Laravel 12.25.0+
+- PHP 8.3.27+
+- PostgreSQL
+- Banco de dados: 'portal' (não 'portal_dev')
+
+COMANDOS DE DEPLOY:
+-------------------
+1. Backup:
+   pg_dump -U usuario -d portal > backup_$(date +%Y%m%d).sql
+
+2. Copiar arquivos (automático):
+   bash DEPLOY.sh /caminho/do/projeto
+
+3. OU manual:
+   cp -r app/ resources/ public/ database/ /caminho/do/projeto/
+   php artisan migrate
+   php artisan config:clear && php artisan cache:clear
+
+4. Verificar:
+   php scripts/check_produto_columns.php
+
+5. Reiniciar servidor:
+   sudo systemctl restart nginx php8.3-fpm
+
+ROLLBACK:
+---------
+php artisan migrate:rollback --step=1
+
+OU
+
+psql -U usuario -d portal
+ALTER TABLE produto DROP COLUMN IF EXISTS is_presencial;
+
+NOTAS IMPORTANTES:
+------------------
+⚠️  CRÍTICO: Usar banco 'portal', NÃO 'portal_dev'
+⚠️  Limpar caches após deploy
+⚠️  Reiniciar servidor web
+✅  Testado e funcionando
+
+SUPORTE:
+--------
+- Logs: storage/logs/laravel.log
+- Verificação: php scripts/check_produto_columns.php
+- Database: psql -U usuario -d portal
+
+================================================================================

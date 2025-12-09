@@ -53,8 +53,19 @@
                 <li class="sidebar-item {{ (Request::is('recibo-provisorio') ? 'active' : '') }}">
                     <a class="sidebar-link" href="{{ url('/recibo-provisorio') }}">Recibo Provis&oacute;rio</a>
                 </li>
-                <li class="sidebar-item {{ (Request::is('relatorio-fechamento') ? 'active' : '') }}">
-                    <a class="sidebar-link" href="{{ url('/relatorio-fechamento') }}">Fechamento Consultores</a>
+                <li class="sidebar-item {{ (Request::is('relatorio-fechamento*') ? 'active' : '') }}">
+                    <a class="sidebar-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#menuFechamento" aria-expanded="false">
+                        Fechamento
+                        <i class="bi bi-chevron-down ms-auto"></i>
+                    </a>
+                    <ul class="sidebar-dropdown list-unstyled collapse {{ (Request::is('relatorio-fechamento*') ? 'show' : '') }}" id="menuFechamento">
+                        <li class="sidebar-item {{ (Request::is('relatorio-fechamento-cliente*') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ url('/relatorio-fechamento-cliente') }}">Fechamento Cliente</a>
+                        </li>
+                        <li class="sidebar-item {{ (Request::is('relatorio-fechamento-consultor*') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ url('/relatorio-fechamento-consultor') }}">Fechamento Consultor</a>
+                        </li>
+                    </ul>
                 </li>
                 @endif
 

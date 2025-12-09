@@ -1,0 +1,995 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\OrdemServico;
+use App\Models\ReciboProvisorio;
+use App\Models\RPS;
+use App\Enums\OrdemServicoStatus;
+use App\Services\StateMachine;
+use App\Services\OSValidation;
+use App\Services\AuditService;
+use App\Services\PermissionService;
+use App\Services\ConsultorTotalizadorService;
+use App\Services\OrdemServicoEmailService;
+use App\Events\OSCreated;
+use App\Events\OSApproved;
+use App\Events\OSRejected;
+use App\Events\OSBilled;
+use App\Events\RPSEmitted;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+class OrdemServicoController extends Controller
+{
+
+    public function view()
+    {
+        $user = Auth::user();
+        return view('ordem-servico', compact('user'));
+    }
+
+    /**
+     * Store (create or update) an OS
+     */
+    public function store(Request $request)
+    {
+        $id = $request->input('txtOrdemId');
+
+        $validatedData = $request->validate([
+            'txtOrdemConsultorId'           => 'required|numeric|min:0',
+            'slcOrdemClienteId'             => 'required|numeric|min:0',
+            'txtOrdemDataEmissao'           => 'required|string|max:255',
+            'slcOrdemTipoDespesa'           => 'max:255',
+            'txtOrdemDespesas'              => 'max:255',
+            'txtOrdemDespesasDetalhamento'  => 'max:255',
+            'slcProdutoOrdemId'             => 'required|numeric|min:0',
+            'txtProdutoOrdemHoraInicio'     => 'max:255',
+            'txtProdutoOrdemHoraFinal'      => 'max:255',
+            'txtProdutoOrdemHoraDesconto'   => 'max:255',
+            'txtProdutoOrdemQtdeTotal'      => 'max:255',
+            'txtProdutoOrdemDetalhamento'   => 'max:65535',
+            'txtOrdemAssunto'               => 'max:255',
+            'projeto_id'                    => 'nullable|numeric|min:0',
+            'txtOrdemNrAtendimento'         => 'max:255',
+            'txtOrdemPrecoProduto'          => 'max:255',
+            'txtOrdemValorTotal'            => 'max:255',
+            'txtOrdemKM'                    => 'nullable|numeric|min:0',
+            'txtOrdemDeslocamento'          => 'nullable|string|max:255',
+            'chkOrdemPresencial'            => 'nullable'
+        ]);
+
+        $ordem = OrdemServico::find($id);
+        $isUpdate = $ordem !== null;
+
+        // Check permissions
+        if ($isUpdate) {
+            $permissionService = new PermissionService();
+            if (!$permissionService->canEditOS($ordem)) {
+                return response()->json([
+                    'message' => 'Você não tem permissão para editar esta Ordem de Serviço.'
+                ], 403);
+            }
+        } else {
+            $permissionService = new PermissionService();
+            if (!$permissionService->canCreateOS()) {
+                return response()->json([
+                    'message' => 'Você não tem permissão para criar Ordens de Serviço.'
+                ], 403);
+            }
+        }
+
+        // Buscar consultor e cliente para calcular o deslocamento
+        $consultor = \App\Models\User::find($validatedData['txtOrdemConsultorId']);
+        $cliente = \App\Models\Cliente::find($validatedData['slcOrdemClienteId']);
+
+        // Converter deslocamento para decimal (horas)
+        // Aceita: HH:MM (ex: 01:30) ou valor decimal com vírgula (ex: 1,5)
+        $deslocamento_decimal = 0;
+        if (isset($validatedData['txtOrdemDeslocamento']) && !empty($validatedData['txtOrdemDeslocamento'])) {
+            $deslocamento_str = trim($validatedData['txtOrdemDeslocamento']);
+
+            if (strpos($deslocamento_str, ':') !== false) {
+                // Formato HH:MM
+                list($horas, $minutos) = explode(':', $deslocamento_str);
+                $deslocamento_decimal = floatval($horas) + (floatval($minutos) / 60);
+            } else {
+                // Formato decimal (com vírgula ou ponto)
+                // Substitui vírgula por ponto para conversão correta
+                $deslocamento_str = str_replace(',', '.', $deslocamento_str);
+                $deslocamento_decimal = floatval($deslocamento_str);
+            }
+        }
+
+        $mappedData = [
+            'consultor_id'          => $validatedData['txtOrdemConsultorId'],
+            'cliente_id'            => $validatedData['slcOrdemClienteId'],
+            'data_emissao'          => $validatedData['txtOrdemDataEmissao'],
+            'tipo_despesa'          => $validatedData['slcOrdemTipoDespesa'],
+            'valor_despesa'         => $validatedData['txtOrdemDespesas'],
+            'detalhamento_despesa'  => isset($validatedData['txtOrdemDespesasDetalhamento']) ? $validatedData['txtOrdemDespesasDetalhamento'] : '',
+            'status'                => 1, // Legacy: 1 = Em Aberto
+            'produto_tabela_id'     => $validatedData['slcProdutoOrdemId'],
+            'hora_inicio'           => $validatedData['txtProdutoOrdemHoraInicio'],
+            'hora_final'            => $validatedData['txtProdutoOrdemHoraFinal'],
+            'hora_desconto'         => $validatedData['txtProdutoOrdemHoraDesconto'],
+            'qtde_total'            => isset($validatedData['txtProdutoOrdemQtdeTotal']) ? $validatedData['txtProdutoOrdemQtdeTotal'] : '',
+            'detalhamento'          => $validatedData['txtProdutoOrdemDetalhamento'],
+            'assunto'               => $validatedData['txtOrdemAssunto'],
+            'projeto_id'            => isset($validatedData['projeto_id']) ? $validatedData['projeto_id'] : null,
+            'nr_atendimento'        => $validatedData['txtOrdemNrAtendimento'],
+            'preco_produto'         => $validatedData['txtOrdemPrecoProduto'],
+            'valor_total'           => $validatedData['txtOrdemValorTotal'],
+            'km'                    => isset($validatedData['txtOrdemKM']) ? $validatedData['txtOrdemKM'] : null,
+            'deslocamento'          => $deslocamento_decimal > 0 ? $deslocamento_decimal : null,
+            'is_presencial'         => isset($validatedData['chkOrdemPresencial']) && $validatedData['chkOrdemPresencial'] ? 1 : 0
+        ];
+
+        if ($ordem) {
+            // Record old values for audit
+            $oldValues = $ordem->getAttributes();
+
+            // Update existing
+            $ordem->update($mappedData);
+
+            // Record audit
+            $auditService = new AuditService($ordem);
+            $auditService->recordUpdate($oldValues, $mappedData);
+
+            return response()->json([
+                'message' => 'Ordem de Serviço atualizada com sucesso',
+                'data' => $ordem->refresh(),
+            ], 200);
+        } else {
+            // Create new
+            $ordem = OrdemServico::create($mappedData);
+
+            // Record audit
+            $auditService = new AuditService($ordem);
+            $auditService->recordCreation($mappedData);
+
+            // Dispatch OSCreated event to notify admins
+            Log::info("store(): Despachando evento OSCreated para OS #{$ordem->id}");
+            OSCreated::dispatch($ordem);
+            Log::info("store(): Evento OSCreated despachado com sucesso para OS #{$ordem->id}");
+
+            return response()->json([
+                'message' => 'Ordem de Serviço criada com sucesso',
+                'data' => $ordem,
+            ], 201);
+        }
+    }
+
+    /**
+     * List OS based on user role
+     */
+    public function list(Request $request)
+    {
+        $user = Auth::user();
+        $papel = $user->papel;
+        $consultor_id = $user->id;
+        $data = null;
+
+        switch ($papel) {
+            case 'consultor':
+                // Consultores veem apenas suas próprias OS
+                $data = OrdemServico::join('cliente', 'ordem_servico.cliente_id', '=', 'cliente.id')
+                    ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
+                    ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
+                    ->where('ordem_servico.consultor_id', $consultor_id)
+                    ->orderByDesc('ordem_servico.created_at')
+                    ->get();
+                break;
+            case 'financeiro':
+                // Financeiro vê todas as OS em status de faturamento em diante
+                $data = OrdemServico::join('cliente', 'ordem_servico.cliente_id', '=', 'cliente.id')
+                    ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
+                    ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
+                    ->whereIn('ordem_servico.status', [4, 5, 6, 7]) // Aguardando Faturamento em diante
+                    ->orderByDesc('ordem_servico.created_at')
+                    ->get();
+                break;
+            case 'admin':
+                // Admin vê todas as OS
+                $data = OrdemServico::join('cliente','ordem_servico.cliente_id', '=', 'cliente.id')
+                    ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
+                    ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
+                    ->orderByDesc('ordem_servico.created_at')
+                    ->get();
+                break;
+        }
+
+        // Apply display status transformation for consultores and calculate consultant values
+        if ($papel === 'consultor' && $data) {
+            $data = $data->map(function ($item) {
+                // For consultores, if status is 6 or 7 (Aguardando RPS or RPS Emitida),
+                // display it as 5 (Faturada)
+                if (in_array($item->status, [6, 7])) {
+                    $item->display_status = 5; // Faturada
+                } else {
+                    $item->display_status = $item->status;
+                }
+
+                // Calculate consultant perspective value instead of client billing value
+                $item->valor_total = ConsultorTotalizadorService::calculateConsultantTotal($item);
+
+                return $item;
+            });
+        }
+
+        // Return in DataTables format with user role info
+        return response()->json([
+            'data' => $data ?? [],
+            'user_role' => $papel
+        ]);
+    }
+
+    /**
+     * Request approval for OS (EM_ABERTO -> AGUARDANDO_APROVACAO)
+     */
+    public function requestApproval(Request $request, $id)
+    {
+        $ordem = OrdemServico::findOrFail($id);
+
+        // Check permissions
+        $permissionService = new PermissionService();
+        if (!$permissionService->canRequestApproval($ordem)) {
+            return response()->json([
+                'message' => 'Você não tem permissão para solicitar aprovação desta OS.'
+            ], 403);
+        }
+
+        // Validate transition
+        $stateMachine = new StateMachine($ordem);
+        if (!$stateMachine->canTransition(OrdemServicoStatus::AGUARDANDO_APROVACAO)) {
+            return response()->json([
+                'message' => 'Transição de status não permitida.',
+                'current_status' => $ordem->getStatus()->label(),
+                'valid_transitions' => array_map(fn($s) => $s->label(), $ordem->getStatus()->validTransitions())
+            ], 422);
+        }
+
+        // Perform transition
+        $stateMachine->transition(OrdemServicoStatus::AGUARDANDO_APROVACAO);
+
+        // Record audit
+        $auditService = new AuditService($ordem);
+        $auditService->recordStatusTransition('em_aberto', 'aguardando_aprovacao');
+
+        return response()->json([
+            'message' => 'Ordem de Serviço enviada para aprovação',
+            'data' => $ordem->refresh()
+        ], 200);
+    }
+
+    /**
+     * Approve OS (AGUARDANDO_APROVACAO -> APROVADO)
+     */
+    public function approve(Request $request, $id)
+    {
+        $ordem = OrdemServico::findOrFail($id);
+
+        // Check permissions
+        $permissionService = new PermissionService();
+        if (!$permissionService->canApproveOS($ordem)) {
+            return response()->json([
+                'message' => 'Você não tem permissão para aprovar ordens de serviço.'
+            ], 403);
+        }
+
+        // Validate transition
+        $stateMachine = new StateMachine($ordem);
+        if (!$stateMachine->canTransition(OrdemServicoStatus::APROVADO)) {
+            return response()->json([
+                'message' => 'Transição de status não permitida.'
+            ], 422);
+        }
+
+        // Update status and approval fields
+        $ordem->status = 4; // APROVADO
+
+        $shouldDispatchEvent = false;
+        if ($ordem->approval_status !== 'approved') {
+            $ordem->approval_status = 'approved';
+            $ordem->approved_at = now();
+            $ordem->approved_by = Auth::id();
+            $shouldDispatchEvent = true;
+        }
+
+        $ordem->save();
+
+        // Record audit
+        $auditService = new AuditService($ordem);
+        $auditService->recordApproval();
+
+        // Dispatch OSApproved event to trigger PDF generation and email sending
+        // Dispatch if approval_status was changed
+        if ($shouldDispatchEvent) {
+            OSApproved::dispatch($ordem);
+        }
+
+        return response()->json([
+            'message' => 'Ordem de Serviço aprovada com sucesso',
+            'data' => $ordem
+        ], 200);
+    }
+
+
+    /**
+     * Contest OS (ANY -> CONTESTAR)
+     */
+    public function contest(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|numeric',
+            'motivo' => 'required|string|max:500',
+        ]);
+
+        $id = $request->input('id');
+        $motivo = $request->input('motivo');
+        $ordem = OrdemServico::findOrFail($id);
+
+        // Check permissions
+        $permissionService = new PermissionService();
+        if (!$permissionService->canContestOS($ordem)) {
+            \Log::warning("Contestação negada para usuário", [
+                'user_id' => auth()->id(),
+                'user_role' => $permissionService->getUserRole(),
+                'os_id' => $ordem->id,
+                'os_status' => $ordem->status
+            ]);
+
+            $debugInfo = config('app.debug') ? [
+                'user_role' => $permissionService->getUserRole(),
+                'os_status' => $ordem->status,
+                'allowed_statuses' => ['aguardando_aprovacao', 'aprovado']
+            ] : [];
+
+            return response()->json(array_merge([
+                'message' => 'Você não tem permissão para contestar ordens de serviço.'
+            ], $debugInfo), 403);
+        }
+
+        // Validate transition
+        $stateMachine = new StateMachine($ordem);
+        if (!$stateMachine->canTransition(OrdemServicoStatus::CONTESTAR)) {
+            return response()->json([
+                'message' => 'Transição de status não permitida.'
+            ], 422);
+        }
+
+        // Perform transition
+        $stateMachine->transition(
+            OrdemServicoStatus::CONTESTAR,
+            ['motivo_contestacao' => $motivo],
+            Auth::id()
+        );
+
+        // Record audit
+        $auditService = new AuditService($ordem);
+        $auditService->recordContestacao($motivo);
+
+        // Dispatch OSRejected event to send notification
+        try {
+            OSRejected::dispatch($ordem->refresh(), $motivo);
+        } catch (\Exception $e) {
+            // Log error but don't fail the request since contestation was successful
+            \Log::error("Erro ao enviar notificação de contestação: " . $e->getMessage());
+        }
+
+        return response()->json([
+            'message' => 'Ordem de Serviço contestada com sucesso',
+            'data' => $ordem->refresh()
+        ], 200);
+    }
+
+    /**
+     * Bill OS (APROVADO -> FATURADO)
+     */
+    public function bill(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|numeric',
+        ]);
+
+        $id = $request->input('id');
+        $ordem = OrdemServico::findOrFail($id);
+
+        // Check permissions
+        $permissionService = new PermissionService();
+        if (!$permissionService->canBillOS($ordem)) {
+            return response()->json([
+                'message' => 'Você não tem permissão para faturar ordens de serviço.'
+            ], 403);
+        }
+
+        // Validate billing requirements
+        $validationService = new OSValidation($ordem);
+        $errors = $validationService->validateForBilling();
+
+        if (!empty($errors)) {
+            return response()->json([
+                'message' => 'Não foi possível faturar a OS. Verifique os erros:',
+                'errors' => $errors
+            ], 422);
+        }
+
+        // Check concurrency - pessimistic locking
+        try {
+            DB::beginTransaction();
+
+            // Lock the row for update
+            $ordem = OrdemServico::lockForUpdate()->find($id);
+
+            // Validate transition again (safety check)
+            $stateMachine = new StateMachine($ordem);
+            if (!$stateMachine->canTransition(OrdemServicoStatus::FATURADO)) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Transição de status não permitida.'
+                ], 422);
+            }
+
+            // Perform transition
+            $stateMachine->transition(OrdemServicoStatus::FATURADO, [], Auth::id());
+
+            // Record audit
+            $auditService = new AuditService($ordem);
+            $auditService->recordBilling([
+                'valor_total' => $ordem->valor_total,
+                'faturado_em' => now(),
+                'faturado_por' => Auth::id(),
+            ]);
+
+            DB::commit();
+
+            // Dispatch OSBilled event to send notification
+            Log::info("bill(): Despachando evento OSBilled para OS #{$ordem->id}");
+            OSBilled::dispatch($ordem->refresh());
+            Log::info("bill(): Evento OSBilled despachado com sucesso para OS #{$ordem->id}");
+
+            return response()->json([
+                'message' => 'Ordem de Serviço faturada com sucesso',
+                'data' => $ordem->refresh()
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Erro ao faturar a Ordem de Serviço: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * List OS ready for RPS linking
+     */
+    public function listForRps(Request $request)
+    {
+        $data = OrdemServico::join('cliente', 'ordem_servico.cliente_id', '=', 'cliente.id')
+            ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
+            ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
+            ->byStatus(OrdemServicoStatus::AGUARDANDO_RPS)
+            ->get();
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Delete OS (only if EM_ABERTO)
+     */
+    public function destroy($id)
+    {
+        $ordem = OrdemServico::findOrFail($id);
+
+        // Check permissions
+        $permissionService = new PermissionService();
+        if (!$permissionService->canDeleteOS($ordem)) {
+            return response()->json([
+                'message' => 'Você não tem permissão para deletar esta Ordem de Serviço ou ela não está em status "Em Aberto".'
+            ], 403);
+        }
+
+        // Record audit before deletion
+        $auditService = new AuditService($ordem);
+        $auditService->recordDeletion('Deletado pelo usuário');
+
+        // Soft delete
+        $ordem->delete();
+
+        return response()->json([
+            'message' => 'Ordem de Serviço deletada com sucesso!'
+        ], 200);
+    }
+
+    /**
+     * Get audit history for OS
+     */
+    public function getAuditTrail($id)
+    {
+        $ordem = OrdemServico::findOrFail($id);
+
+        // Check permissions
+        $permissionService = new PermissionService();
+        if (!$permissionService->canViewAudit($ordem)) {
+            return response()->json([
+                'message' => 'Você não tem permissão para visualizar o histórico desta OS.'
+            ], 403);
+        }
+
+        $auditService = new AuditService($ordem);
+        $timeline = $auditService->getTimeline();
+
+        return response()->json([
+            'data' => $timeline
+        ], 200);
+    }
+
+    /**
+     * Get permission summary for current user
+     */
+    public function getPermissions($id)
+    {
+        $ordem = OrdemServico::findOrFail($id);
+        $permissionService = new PermissionService();
+
+        return response()->json([
+            'data' => $permissionService->getPermissionSummary($ordem)
+        ], 200);
+    }
+
+    // Legacy methods for backward compatibility
+    public function toggle_status(Request $request, string $id, int $status)
+    {
+        $ordem = OrdemServico::find($id);
+        $ordem->status = $status;
+
+        $shouldDispatchEvent = false;
+        if ($status == 4 && $ordem->approval_status !== 'approved') {
+            $ordem->approval_status = 'approved';
+            $ordem->approved_at = now();
+            $ordem->approved_by = Auth::id();
+            $shouldDispatchEvent = true;
+        }
+
+        $ordem->save();
+
+        if ($status == 4 && $shouldDispatchEvent) {
+            event(new \App\Events\OSApproved($ordem));
+        }
+
+        return response()->json([
+            'message'   => 'Ordem de Serviço atualizada com sucesso',
+            'data'      => $ordem
+        ], 201);
+    }
+
+    public function list_invoice()
+    {
+        $user = Auth::user();
+        $papel = $user->papel;
+
+        $query = OrdemServico::join('cliente','ordem_servico.cliente_id', '=', 'cliente.id')
+            ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
+            ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
+            ->whereIn('ordem_servico.status', [4, 5, 6, 7]); // Aguardando Faturamento, Faturada, Aguardando RPS, RPS Emitida
+
+        // Filtrar por papel
+        switch ($papel) {
+            case 'consultor':
+                // Consultores veem apenas suas próprias OS em status de faturamento
+                $query->where('ordem_servico.consultor_id', $user->id);
+                break;
+            case 'financeiro':
+                // Financeiro vê todas as OS em status de faturamento (sem filtro adicional)
+                break;
+            case 'admin':
+            default:
+                // Admin vê todas as OS (sem filtro adicional)
+                break;
+        }
+
+        $data = $query->orderByDesc('ordem_servico.created_at')->get();
+
+        return response()->json([
+            'data' => $data,
+            'user_role' => $papel
+        ]);
+    }
+
+    public function invoice_orders(Request $request)
+    {
+        $ordens = $request->input('id_list');
+        OrdemServico::whereIn('id', $ordens)->update(['status' => 6]);
+
+        return response()->json([
+            'message'   => 'Ordens de Serviço atualizadas com sucesso',
+            'data'      => $ordens
+        ], 201);
+    }
+
+    public function rps_orders(Request $request)
+    {
+        $cliente_id     = $request->input('txtEmissaoRPSClienteId');
+        $ordens_id      = $request->input('txtEmissaoRPSOrdens');
+        $numero         = $request->input('txtEmissaoRPSNumero');
+        $serie          = $request->input('txtEmissaoRPSSerie');
+        $data_emissao   = $request->input('txtEmissaoRPSEmissao');
+        $cond_pagto_id  = $request->input('slcEmissaoRPSCondPagto');
+        $valor          = $request->input('txtEmissaoRPSValor');
+
+        $data_primeira_parcela = $request->input('data_primeira_parcela');
+        $intervalo_dias = $request->input('intervalo_dias');
+        $total_parcelas = $request->input('total_parcelas');
+        $consolidada = $request->input('consolidada', 0);
+
+        $condicaoPagamento = \App\Models\CondicaoPagamento::find($cond_pagto_id);
+        $cond_pagto_descricao = $condicaoPagamento ? $condicaoPagamento->descricao : $cond_pagto_id;
+
+        $ordemArr = explode(',', $ordens_id);
+
+        $mappedData = [
+            'cliente_id'    => $cliente_id,
+            'numero'        => $numero,
+            'serie'         => $serie,
+            'data_emissao'  => $data_emissao,
+            'cond_pagto'    => $cond_pagto_descricao,
+            'valor'         => $valor,
+            'consolidada'   => ($consolidada == 1 || count($ordemArr) > 1) ? true : false,
+            'ordens_consolidadas' => json_encode($ordemArr)
+        ];
+
+        $recibo_provisorio = ReciboProvisorio::create($mappedData);
+
+        $ordens = OrdemServico::whereIn('id', $ordemArr)->update([
+            'nr_rps' => $recibo_provisorio->id,
+            'status' => 5
+        ]);
+
+        if ($condicaoPagamento && $condicaoPagamento->numero_parcelas > 1) {
+            $totalParcelas = $total_parcelas ?: $condicaoPagamento->numero_parcelas;
+            $interval = $intervalo_dias ?: $condicaoPagamento->intervalo_dias;
+
+            $this->criarParcelasRPS(
+                $recibo_provisorio->id,
+                $totalParcelas,
+                $valor,
+                $data_primeira_parcela,
+                $interval
+            );
+        }
+
+        return response()->json([
+            'message'   => 'RPS emitida com sucesso! Parcelas criadas automaticamente.',
+            'data'      => $ordens
+        ], 201);
+    }
+
+    private function criarParcelasRPS($reciboId, $totalParcelas, $valorTotal, $dataPrimeira, $intervaloDias)
+    {
+        $valorParcela = $valorTotal / $totalParcelas;
+        $dataPrimeira = \Carbon\Carbon::parse($dataPrimeira);
+
+        for ($i = 1; $i <= $totalParcelas; $i++) {
+            $dataVencimento = $dataPrimeira->copy()->addDays(($i - 1) * $intervaloDias);
+
+            \App\Models\PagamentoParcela::create([
+                'recibo_provisorio_id' => $reciboId,
+                'numero_parcela' => $i,
+                'total_parcelas' => $totalParcelas,
+                'valor' => round($valorParcela, 2),
+                'data_vencimento' => $dataVencimento->format('Y-m-d'),
+                'status' => 'pendente'
+            ]);
+        }
+    }
+
+    /**
+     * Endpoint: GET /clientes-com-ordens-rps
+     * Retorna lista de clientes que têm ordens aguardando RPS
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function clientesComOrdensRPS()
+    {
+        try {
+            // Buscar todos os clientes que têm ordens com status = 6 (AGUARDANDO_RPS)
+            $clientes = \App\Models\Cliente::whereHas('ordemServicos', function($query) {
+                    $query->where('status', 6);  // Status 6 = AGUARDANDO_RPS
+                })
+                ->with([
+                    'ordemServicos' => function($query) {
+                        $query->where('status', 6)
+                              ->select('id', 'cliente_id', 'status');
+                    }
+                ])
+                ->select('id', 'codigo', 'nome')
+                ->orderBy('nome')
+                ->get()
+                ->map(function($cliente) {
+                    return [
+                        'id'               => $cliente->id,
+                        'codigo'           => $cliente->codigo,
+                        'nome'             => $cliente->nome,
+                        'numero_ordens'    => $cliente->ordemServicos->count()
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data'    => $clientes
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar clientes para RPS', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar clientes'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all clients with pending orders to bill (status 4 - APROVADO)
+     * Used for client selection in billing (faturamento) workflow
+     */
+    public function clientesComOrdensParaFaturar()
+    {
+        try {
+            $clientes = \App\Models\Cliente::whereHas('ordemServicos', function($query) {
+                    $query->where('status', 4); // APROVADO - Ready for billing
+                })
+                ->with([
+                    'ordemServicos' => function($query) {
+                        $query->where('status', 4)
+                              ->select('id', 'cliente_id', 'status', 'valor_total');
+                    }
+                ])
+                ->select('id', 'codigo', 'nome')
+                ->orderBy('nome')
+                ->get()
+                ->map(function($cliente) {
+                    return [
+                        'id'               => $cliente->id,
+                        'codigo'           => $cliente->codigo,
+                        'nome'             => $cliente->nome,
+                        'numero_ordens'    => $cliente->ordemServicos->count()
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data'    => $clientes
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar clientes para faturamento', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar clientes'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get totalizer data for OS (consultant rates, not client rates)
+     * Returns consultant's hora, km, and displacement values
+     */
+    public function getTotalizadorData($id)
+    {
+        try {
+            $os = OrdemServico::with('consultor', 'cliente')->findOrFail($id);
+
+            // Check permissions
+            $user = auth()->user();
+            if ($user->papel === 'consultor' && $os->consultor_id !== $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Acesso negado'
+                ], 403);
+            }
+
+            $consultor = $os->consultor;
+            $cliente = $os->cliente;
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'os_id' => $os->id,
+                    'consultor_id' => $consultor->id,
+                    'consultor_nome' => $consultor->name,
+                    'valor_hora_consultor' => floatval($consultor->valor_hora ?? 0),
+                    'valor_km_consultor' => floatval($consultor->valor_km ?? 0),
+                    'valor_hora_cliente' => floatval($cliente->valor_hora ?? 0),
+                    'preco_produto' => floatval($os->preco_produto ?? 0),
+                    'papel_user_atual' => $user->papel,
+                    'cliente_id' => $os->cliente_id,
+                    'cliente_km' => floatval($cliente->km ?? 0)
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar dados do totalizador', [
+                'os_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar dados do totalizador'
+            ], 500);
+        }
+    }
+
+    /**
+     * Resend report emails for an order
+     */
+    public function resendEmail(Request $request, $id)
+    {
+        try {
+            // Carrega com eager loading dos relacionamentos necessários
+            $os = OrdemServico::with(['cliente', 'consultor'])
+                ->findOrFail($id);
+
+            // Validar permissão
+            $user = Auth::user();
+            if (!$user || !in_array($user->papel, ['admin', 'financeiro'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Você não tem permissão para reenviar emails.'
+                ], 403);
+            }
+
+            // Validar dados de entrada
+            $validated = $request->validate([
+                'recipient' => 'required|in:consultor,cliente,ambos'
+            ]);
+
+            // Executar reenvio usando novo serviço
+            $emailService = new OrdemServicoEmailService();
+            $recipient = $validated['recipient'];
+
+            $resultados = [
+                'consultor' => false,
+                'cliente' => false
+            ];
+
+            if ($recipient === 'consultor' || $recipient === 'ambos') {
+                $resultados['consultor'] = $emailService->enviarParaConsultor($os);
+            }
+
+            if ($recipient === 'cliente' || $recipient === 'ambos') {
+                $resultados['cliente'] = $emailService->enviarParaCliente($os);
+            }
+
+            $sucesso = array_filter($resultados);
+
+            if (!empty($sucesso)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Email(s) reenviado(s) com sucesso',
+                    'result' => $resultados
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao reenviar email(s). Verifique os logs para mais detalhes.',
+                    'result' => $resultados
+                ], 400);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao reenviar email de OS', [
+                'os_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao processar reenvio: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Enviar Ordem de Serviço por Email para Consultor
+     */
+    public function enviarParaConsultor(Request $request)
+    {
+        try {
+            $id = $request->input('id');
+            $ordemServico = OrdemServico::findOrFail($id);
+
+            $emailService = new OrdemServicoEmailService();
+            $sucesso = $emailService->enviarParaConsultor($ordemServico);
+
+            return response()->json([
+                'success' => $sucesso,
+                'message' => $sucesso
+                    ? 'Ordem de Serviço enviada para o Consultor com sucesso'
+                    : 'Erro ao enviar Ordem de Serviço para o Consultor'
+            ], $sucesso ? 200 : 400);
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar OS para Consultor', [
+                'os_id' => $request->input('id'),
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Enviar Ordem de Serviço por Email para Cliente
+     */
+    public function enviarParaCliente(Request $request)
+    {
+        try {
+            $id = $request->input('id');
+            $ordemServico = OrdemServico::findOrFail($id);
+
+            $emailService = new OrdemServicoEmailService();
+            $sucesso = $emailService->enviarParaCliente($ordemServico);
+
+            return response()->json([
+                'success' => $sucesso,
+                'message' => $sucesso
+                    ? 'Ordem de Serviço enviada para o Cliente com sucesso'
+                    : 'Erro ao enviar Ordem de Serviço para o Cliente'
+            ], $sucesso ? 200 : 400);
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar OS para Cliente', [
+                'os_id' => $request->input('id'),
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Enviar Ordem de Serviço para ambos (Consultor e Cliente)
+     */
+    public function enviarParaAmbos(Request $request)
+    {
+        try {
+            $id = $request->input('id');
+            $ordemServico = OrdemServico::findOrFail($id);
+
+            $emailService = new OrdemServicoEmailService();
+            $resultados = $emailService->enviarParaAmbos($ordemServico);
+
+            $ambosComSucesso = $resultados['consultor'] && $resultados['cliente'];
+
+            return response()->json([
+                'success' => $ambosComSucesso,
+                'message' => $ambosComSucesso
+                    ? 'Ordem de Serviço enviada com sucesso para Consultor e Cliente'
+                    : 'Erro ao enviar para um ou ambos os destinatários',
+                'detalhes' => $resultados
+            ], $ambosComSucesso ? 200 : 400);
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar OS para ambos', [
+                'os_id' => $request->input('id'),
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+}

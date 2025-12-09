@@ -1,0 +1,7 @@
+--- routes/web.php.original
++++ routes/web.php.modified
+@@ -XX,X +XX,X @@
+
++// Rota para buscar dados do produto (usado na OS para pegar is_presencial)
++Route::get('/produto-tabela/{id}', [ProdutoTabelaController::class, 'show']);
++

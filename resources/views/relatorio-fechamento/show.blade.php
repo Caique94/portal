@@ -38,6 +38,18 @@
                                 <p class="mb-0 h6">{{ $consultor->name }}</p>
                             </div>
                             <div class="mb-3">
+                                <label class="form-label text-muted">Tipo de Fechamento</label>
+                                <p class="mb-0">
+                                    @if($relatorioFechamento->tipo === 'consultor')
+                                        <span class="badge badge-primary h6">Consultor</span>
+                                        <small class="d-block text-muted mt-1">Baseado nos valores do consultor</small>
+                                    @else
+                                        <span class="badge badge-warning h6">Cliente</span>
+                                        <small class="d-block text-muted mt-1">Baseado nos valores administrativos</small>
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label text-muted">Período</label>
                                 <p class="mb-0 h6">
                                     {{ $relatorioFechamento->data_inicio->format('d/m/Y') }} até

@@ -1,0 +1,312 @@
+================================================================================
+PATCH COMPLETO - 08/12/2025
+Todas as Alterações do Dia
+================================================================================
+
+RESUMO EXECUTIVO:
+-----------------
+Este patch consolida TODAS as alterações realizadas em 08/12/2025:
+- 1 feature nova (Produto Presencial)
+- 6 bugs corrigidos
+- 9 arquivos modificados
+- 1 migration de banco de dados
+
+ARQUIVOS MODIFICADOS:
+---------------------
+Backend (4):
+  ✓ app/Http/Controllers/ProdutoController.php
+  ✓ app/Http/Controllers/ProdutoTabelaController.php
+  ✓ app/Models/Produto.php ⭐ CRÍTICO
+  ✓ app/Models/PagamentoUsuario.php
+
+Frontend - JavaScript (3):
+  ✓ public/js/cadastros/produtos.js
+  ✓ public/js/cadastros/usuarios.js
+  ✓ public/js/ordem-servico.js ⭐ MUITAS MUDANÇAS
+
+Frontend - Views (1):
+  ✓ resources/views/cadastros/produtos.blade.php
+
+Database (1):
+  ✓ database/migrations/2025_12_08_140803_add_is_presencial_to_produto_table.php
+
+TOTAL: 9 arquivos
+
+================================================================================
+FEATURE 1: PRODUTO PRESENCIAL
+================================================================================
+
+DESCRIÇÃO:
+Campo "Presencial" agora está vinculado ao PRODUTO, não à Ordem de Serviço.
+
+FLUXO:
+1. Admin cadastra produto → marca checkbox "Presencial"
+2. Usuário cria OS → seleciona produto
+3. Sistema verifica automaticamente se produto é presencial
+4. Checkbox presencial marcado/desmarcado automaticamente
+5. Campos KM/Deslocamento aparecem/desaparecem automaticamente
+6. Cálculos incluem/excluem KM e Deslocamento baseado no produto
+
+BANCO DE DADOS:
+Nova coluna: produto.is_presencial BOOLEAN DEFAULT FALSE
+
+ARQUIVOS ENVOLVIDOS:
+- database/migrations/2025_12_08_140803_add_is_presencial_to_produto_table.php
+- app/Models/Produto.php (fillable e casts)
+- app/Http/Controllers/ProdutoController.php (select e store)
+- app/Http/Controllers/ProdutoTabelaController.php (show method)
+- resources/views/cadastros/produtos.blade.php (checkbox)
+- public/js/cadastros/produtos.js (formulário e listagem)
+- public/js/ordem-servico.js (auto-preenchimento e validação)
+
+================================================================================
+BUG FIX 1: FORMATAÇÃO DE VALOR
+================================================================================
+
+PROBLEMA:
+- Valor R$ 730,00 aparecia como R$ 70.030,00 na listagem de OS
+
+CAUSA:
+- toLocaleString() interpretava o ponto decimal como separador de milhar
+
+SOLUÇÃO:
+- Linha 73 de ordem-servico.js
+- ANTES: valor.toLocaleString('pt-BR', {...})
+- DEPOIS: valor.toFixed(2).replace('.', ',')
+
+TESTE:
+- Listar OS com valor 730,00
+- Verificar exibição: R$ 730,00 ✅
+
+================================================================================
+BUG FIX 2: CÁLCULO DE KM
+================================================================================
+
+PROBLEMA:
+- KM não era multiplicado pela tarifa do consultor
+- Valor direto do campo era somado ao total
+
+LÓGICA CORRETA:
+valorKM = km_cliente × valor_km_consultor
+Exemplo: 44 km × R$ 1,50 = R$ 66,00
+
+MUDANÇAS:
+- Linha 706-711: txtOrdemKM armazena apenas QUANTIDADE
+- Linha 803: Cálculo correto implementado
+- Linha 731: Removida soma direta do valor
+
+TESTE:
+- Cliente com 44 km
+- Consultor com R$ 1,50/km
+- Verificar total KM = R$ 66,00 ✅
+
+================================================================================
+BUG FIX 3: CÁLCULO DE DESLOCAMENTO
+================================================================================
+
+PROBLEMA:
+- Deslocamento não era multiplicado pelo valor/hora do consultor
+
+LÓGICA CORRETA:
+valorDeslocamento = horas_deslocamento × valor_hora_consultor
+Exemplo: 1:20 (1,33h) × R$ 48,00 = R$ 64,00
+
+MUDANÇAS:
+- Linha 713-725: Aceita HH:MM ou decimal
+- Linha 718-720: Conversão HH:MM → horas decimais
+- Linha 806: Cálculo correto implementado
+- Linha 731: Removida soma direta do valor
+
+TESTE:
+- Cliente com 1:20 de deslocamento
+- Consultor com R$ 48,00/hora
+- Verificar total = R$ 64,00 ✅
+
+================================================================================
+BUG FIX 4: CHECKBOX PRESENCIAL NÃO AUTOMÁTICO ⭐ CRÍTICO
+================================================================================
+
+PROBLEMA:
+- Ao selecionar produto presencial, checkbox não era marcado automaticamente
+- API não retornava campo is_presencial do produto
+
+CAUSA RAIZ:
+- Modelo Produto NÃO tinha is_presencial no $fillable
+- Eloquent não retornava o campo no JSON
+
+SOLUÇÃO:
+app/Models/Produto.php:
+- Linha 20: Adicionado 'is_presencial' ao $fillable
+- Linha 24-27: Adicionado $casts para is_presencial e ativo
+
+public/js/ordem-servico.js:
+- Linha 647-695: AJAX busca is_presencial do produto
+- Linha 657: Checkbox marcado automaticamente
+- Linha 659: Checkbox desabilitado (read-only)
+- Linha 661-671: Campos KM/Deslocamento aparecem/desaparecem
+- Linha 655-657: Console.log para debug
+
+TESTE:
+1. Abrir console do navegador (F12)
+2. Criar OS → selecionar produto presencial
+3. Verificar no console:
+   - "Resposta do produto-tabela: {...}"
+   - "is_presencial: true"
+   - "Produto É presencial - mostrando campos"
+4. Verificar checkbox marcado e desabilitado ✅
+
+================================================================================
+BUG FIX 5: KM E DESLOCAMENTO CALCULADOS SEMPRE
+================================================================================
+
+PROBLEMA:
+- KM e Deslocamento eram calculados mesmo quando produto NÃO era presencial
+
+SOLUÇÃO:
+- Linha 725: if ($('#chkOrdemPresencial').is(':checked'))
+- Linha 662-671: Mostrar/ocultar campos baseado em is_presencial
+- Linha 833: Totalizador Admin só mostra linhas se presencial
+- Linha 885: Totalizador Consultor só mostra linhas se presencial
+
+TESTE:
+1. Criar OS com produto NÃO presencial
+2. Verificar campos KM/Deslocamento ocultos
+3. Verificar totalizador SEM linhas KM/Deslocamento
+4. Verificar total = apenas Serviço + Despesas ✅
+
+================================================================================
+BUG FIX 6: MODELO PAGAMENTOUSUARIO
+================================================================================
+
+PROBLEMA:
+- Erro 500 ao salvar usuário
+- Campo 'ativo' no fillable mas não existe na tabela
+
+SOLUÇÃO:
+app/Models/PagamentoUsuario.php:
+- Removido 'ativo' do $fillable
+- Removido $casts para 'ativo'
+
+TESTE:
+- Salvar usuário → sem erro 500 ✅
+
+================================================================================
+BUG FIX 7: CSRF TOKEN EXPIRADO
+================================================================================
+
+PROBLEMA:
+- Erro 419 ao salvar após página aberta muito tempo
+- Sem feedback ao usuário
+
+SOLUÇÃO:
+public/js/cadastros/usuarios.js:
+- Tratamento de erro 419
+- Toast de aviso
+- Auto-reload após 2 segundos
+
+TESTE:
+- Deixar página aberta > 2 horas
+- Tentar salvar
+- Verificar toast e reload automático ✅
+
+================================================================================
+EXEMPLO COMPLETO DE CÁLCULO
+================================================================================
+
+DADOS:
+- Produto: Consultoria Presencial (is_presencial = true)
+- Horas trabalhadas: 5h
+- Preço produto (cliente): R$ 120,00
+- Valor hora consultor: R$ 80,00
+- Despesas: R$ 50,00
+- Cliente: 44 km, 1:20 deslocamento
+- Consultor: R$ 1,50/km, R$ 48,00/hora
+
+CÁLCULO ADMIN:
+  Serviço:      5h × R$ 120,00    = R$ 600,00
+  Despesas:                         R$  50,00
+  KM:           44 × R$ 1,50       = R$  66,00  ← Calculado!
+  Deslocamento: 1,33h × R$ 48,00   = R$  64,00  ← Calculado!
+  ────────────────────────────────────────────
+  TOTAL ADMIN:                      R$ 780,00
+
+CÁLCULO CONSULTOR:
+  Serviço:      5h × R$ 80,00      = R$ 400,00
+  Despesas:                         R$  50,00
+  KM:           44 × R$ 1,50       = R$  66,00  ← Igual!
+  Deslocamento: 1,33h × R$ 48,00   = R$  64,00  ← Igual!
+  ────────────────────────────────────────────
+  TOTAL CONSULTOR:                  R$ 580,00
+
+OBSERVAÇÃO:
+- KM e Deslocamento são IGUAIS para Admin e Consultor
+- Diferença apenas no Valor do Serviço
+
+================================================================================
+COMPATIBILIDADE
+================================================================================
+
+✅ Laravel 12.25.0
+✅ PHP 8.3.27+
+✅ PostgreSQL
+✅ Não quebra funcionalidades existentes
+✅ Sem downtime necessário
+✅ Rollback disponível
+
+================================================================================
+DEPLOY CHECKLIST
+================================================================================
+
+PRÉ-DEPLOY:
+[ ] Backup do banco de dados
+[ ] Backup dos arquivos
+
+DEPLOY:
+[ ] Enviar patch para servidor
+[ ] Extrair patch
+[ ] Copiar arquivos
+[ ] Executar migration
+[ ] Verificar coluna is_presencial no banco
+[ ] Verificar rota produto-tabela/{id}
+[ ] Limpar caches Laravel
+[ ] Ajustar permissões
+[ ] Reiniciar nginx/apache e php-fpm
+
+PÓS-DEPLOY:
+[ ] Testar formatação de valor
+[ ] Testar cadastro de produto presencial
+[ ] Testar OS com produto presencial (automático)
+[ ] Testar cálculo de KM
+[ ] Testar cálculo de deslocamento
+[ ] Testar totalizadores
+[ ] Testar produto não presencial
+[ ] Verificar console do navegador (F12)
+[ ] Verificar logs (sem erros)
+
+================================================================================
+ROLLBACK
+================================================================================
+
+SE NECESSÁRIO:
+1. php artisan migrate:rollback --step=1
+2. tar -xzf backup_files_YYYYMMDD_HHMMSS.tar.gz -C /var/www/...
+3. sudo -u postgres psql portal < backup_portal_YYYYMMDD_HHMMSS.sql
+4. php artisan config:clear && php artisan cache:clear
+5. systemctl restart nginx php8.3-fpm
+
+================================================================================
+NOTAS CRÍTICAS
+================================================================================
+
+⚠️ MUITO IMPORTANTE:
+- Modelo Produto.php DEVE ter is_presencial no $fillable E $casts
+- Sem isso, API não retorna o campo e checkbox não funciona
+- Todos os comandos no banco 'portal' (não portal_dev)
+- Usuários devem limpar cache do navegador (Ctrl+Shift+R)
+
+✅ TESTADO E APROVADO:
+- Ambiente de desenvolvimento: ✅
+- Todas funcionalidades testadas: ✅
+- Pronto para produção: ✅
+
+================================================================================

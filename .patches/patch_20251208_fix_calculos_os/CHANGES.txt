@@ -1,0 +1,129 @@
+================================================================================
+PATCH: CORREÇÃO DE CÁLCULOS DE ORDEM DE SERVIÇO - 08/12/2025
+================================================================================
+
+RESUMO:
+-------
+Correção de 3 bugs críticos nos cálculos de Ordem de Serviço:
+1. Valor com zero a mais na listagem (730,00 → 70.030,00)
+2. KM não calculado corretamente (faltava multiplicar pela tarifa)
+3. Deslocamento não calculado corretamente (faltava multiplicar pelo valor/hora)
+
+ARQUIVOS MODIFICADOS:
+---------------------
+✓ public/js/ordem-servico.js
+
+TOTAL DE ARQUIVOS: 1
+
+DETALHAMENTO DAS CORREÇÕES:
+---------------------------
+
+1. BUG: Valor com Zero Extra (Linha 73)
+   ANTES: 'R$ ' + valor.toLocaleString('pt-BR', {...})
+   DEPOIS: 'R$ ' + valor.toFixed(2).replace('.', ',')
+
+   Exemplo:
+   - Valor no banco: 730.00
+   - Antes: R$ 70.030,00 ❌
+   - Depois: R$ 730,00 ✅
+
+2. CÁLCULO DE KM (Linhas 706-711, 803)
+   LÓGICA CORRETA: km_cliente × valor_km_consultor
+
+   Mudanças:
+   - Campo txtOrdemKM agora armazena apenas QUANTIDADE de km
+   - Cálculo: valorKM = kmQuantidade × valor_km_consultor
+   - Removida soma direta do valor de km no total básico
+
+   Exemplo:
+   - Cliente: 44 km
+   - Consultor: R$ 1,50/km
+   - Cálculo: 44 × 1,50 = R$ 66,00 ✅
+
+3. CÁLCULO DE DESLOCAMENTO (Linhas 713-725, 806)
+   LÓGICA CORRETA: horas_deslocamento × valor_hora_consultor
+
+   Mudanças:
+   - Campo txtOrdemDeslocamento aceita HH:MM ou decimal
+   - Conversão: 1:20 → 1,33 horas
+   - Cálculo: valorDeslocamento = horasDeslocamento × valor_hora_consultor
+   - Removida soma direta do valor de deslocamento no total básico
+
+   Exemplo:
+   - Cliente: 1:20 (1 hora 20 minutos = 1,33h)
+   - Consultor: R$ 48,00/hora
+   - Cálculo: 1,33 × 48,00 = R$ 64,00 ✅
+
+IMPACTO:
+--------
+✅ Valores exibidos corretamente na listagem
+✅ Cálculos de KM corretos em novas OS
+✅ Cálculos de Deslocamento corretos em novas OS
+✅ Total da OS reflete valores reais
+✅ Totalizador Admin e Consultor com valores corretos
+
+⚠️  OS antigas não são afetadas automaticamente
+    Para corrigir: editar e salvar novamente
+
+EXEMPLO COMPLETO DE CÁLCULO:
+-----------------------------
+
+DADOS:
+- Horas trabalhadas: 5h
+- Preço produto (cliente): R$ 120,00
+- Valor hora consultor: R$ 80,00
+- Despesas: R$ 50,00
+- KM cliente: 44
+- Valor KM consultor: R$ 1,50
+- Deslocamento cliente: 1:20 (1,33h)
+
+CÁLCULO ADMIN:
+  Serviço:      5h × R$ 120,00 = R$ 600,00
+  Despesas:                      R$  50,00
+  KM:          44 × R$ 1,50    = R$  66,00
+  Deslocamento: 1,33h × R$ 80  = R$ 106,40
+  ─────────────────────────────────────────
+  TOTAL ADMIN:                   R$ 822,40
+
+CÁLCULO CONSULTOR:
+  Serviço:      5h × R$ 80,00  = R$ 400,00
+  Despesas:                      R$  50,00
+  KM:          44 × R$ 1,50    = R$  66,00
+  Deslocamento: 1,33h × R$ 80  = R$ 106,40
+  ─────────────────────────────────────────
+  TOTAL CONSULTOR:               R$ 622,40
+
+OBSERVAÇÃO:
+- KM e Deslocamento são IGUAIS para Admin e Consultor
+- Diferença está apenas no Valor do Serviço (tabela cliente vs valor consultor)
+
+DEPLOY:
+-------
+1. Backup automático criado
+2. Copiar arquivo JavaScript
+3. Não requer alteração no banco
+4. Não requer reiniciar servidor
+5. Limpar cache do navegador
+
+ROLLBACK:
+---------
+cp .backups/ordem-servico.js.bak_YYYYMMDD_HHMMSS \
+   public/js/ordem-servico.js
+
+TESTES:
+-------
+[ ] Valor 730,00 aparece correto (não 70.030,00)
+[ ] KM calculado: 44 × 1,50 = R$ 66,00
+[ ] Deslocamento: 1:20 × 48 = R$ 64,00
+[ ] Total da OS está correto
+[ ] Totalizador Admin OK
+[ ] Totalizador Consultor OK
+
+COMPATIBILIDADE:
+----------------
+✅ Laravel 12.25.0
+✅ Não quebra funcionalidades existentes
+✅ Sem alterações no banco de dados
+✅ Deploy sem downtime
+
+================================================================================

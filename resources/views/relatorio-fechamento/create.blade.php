@@ -12,13 +12,14 @@
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('relatorio-fechamento.store') }}">
+                    <form method="POST" action="{{ isset($tipo) && $tipo === 'cliente' ? route('relatorio-fechamento-cliente.store') : route('relatorio-fechamento-consultor.store') }}">
                         @csrf
 
                         <div class="mb-3">
                             <label for="consultor_id" class="form-label">Consultor <span class="text-danger">*</span></label>
                             <select name="consultor_id" id="consultor_id" class="form-select @error('consultor_id') is-invalid @enderror" required>
                                 <option value="">Selecione um consultor...</option>
+                                <option value="todos" @selected(old('consultor_id') == 'todos')>Todos os Consultores</option>
                                 @foreach($consultores as $consultor)
                                     <option value="{{ $consultor->id }}" @selected(old('consultor_id') == $consultor->id)>
                                         {{ $consultor->name }}
@@ -26,6 +27,58 @@
                                 @endforeach
                             </select>
                             @error('consultor_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        @if(isset($tipo))
+                            <input type="hidden" name="tipo" value="{{ $tipo }}">
+                            <div class="alert alert-info mb-3">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Tipo de Fechamento:</strong>
+                                @if($tipo === 'cliente')
+                                    Fechamento de Cliente - Usa valores da tabela de preços do cliente (preco_produto)
+                                @else
+                                    Fechamento de Consultor - Usa valores cadastrados no consultor (valor_hora_consultor)
+                                @endif
+                            </div>
+                        @else
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo de Fechamento <span class="text-danger">*</span></label>
+                                <select name="tipo" id="tipo" class="form-select @error('tipo') is-invalid @enderror" required>
+                                    <option value="">Selecione o tipo...</option>
+                                    <option value="consultor" @selected(old('tipo') == 'consultor')>
+                                        Fechamento de Consultor (valores do consultor)
+                                    </option>
+                                    <option value="cliente" @selected(old('tipo') == 'cliente')>
+                                        Fechamento de Cliente (valores administrativos)
+                                    </option>
+                                </select>
+                                <div class="form-text">
+                                    <strong>Consultor:</strong> Usa valores cadastrados no consultor (valor/hora, valor/km do consultor).<br>
+                                    <strong>Cliente:</strong> Usa valores da tabela de preços do cliente (valor/hora da tabela, mas valor/km do consultor).
+                                </div>
+                                @error('tipo')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        @endif
+
+                        <div class="mb-3">
+                            <label for="cliente_id" class="form-label">Filtrar por Cliente (Opcional)</label>
+                            <select name="cliente_id" id="cliente_id" class="form-select @error('cliente_id') is-invalid @enderror">
+                                <option value="">Todos os Clientes</option>
+                                <option value="todos" @selected(old('cliente_id') == 'todos')>Gerar relatórios individuais para todos os clientes</option>
+                                @foreach($clientes as $cliente)
+                                    <option value="{{ $cliente->id }}" @selected(old('cliente_id') == $cliente->id)>
+                                        {{ $cliente->nome }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="form-text">
+                                Deixe vazio para incluir todos os clientes ou selecione um cliente específico.
+                            </div>
+                            @error('cliente_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -65,7 +118,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-check"></i> Gerar Relatório
                             </button>
-                            <a href="{{ route('relatorio-fechamento.index') }}" class="btn btn-outline-secondary">
+                            <a href="{{ isset($tipo) && $tipo === 'cliente' ? route('relatorio-fechamento-cliente.index') : route('relatorio-fechamento-consultor.index') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times"></i> Cancelar
                             </a>
                         </div>

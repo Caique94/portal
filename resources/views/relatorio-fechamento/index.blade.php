@@ -5,9 +5,17 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">Fechamento Consultores</h1>
+                <h1 class="h3 mb-0">
+                    @if(request()->is('relatorio-fechamento-cliente*'))
+                        Fechamento Cliente
+                    @elseif(request()->is('relatorio-fechamento-consultor*'))
+                        Fechamento Consultor
+                    @else
+                        Fechamento
+                    @endif
+                </h1>
                 @can('create', App\Models\RelatorioFechamento::class)
-                    <a href="{{ route('relatorio-fechamento.create') }}" class="btn btn-primary">
+                    <a href="{{ request()->is('relatorio-fechamento-cliente*') ? route('relatorio-fechamento-cliente.create') : route('relatorio-fechamento-consultor.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Novo Fechamento
                     </a>
                 @endcan
@@ -31,7 +39,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form method="GET" action="{{ route('relatorio-fechamento.index') }}" class="row g-3 mb-4">
+            <form method="GET" action="{{ request()->is('relatorio-fechamento-cliente*') ? route('relatorio-fechamento-cliente.index') : route('relatorio-fechamento-consultor.index') }}" class="row g-3 mb-4">
                 <div class="col-md-3">
                     <label for="consultor_id" class="form-label">Consultor</label>
                     <select name="consultor_id" id="consultor_id" class="form-select">
@@ -128,12 +136,12 @@
                                             <ul class="dropdown-menu dropdown-menu-end">
                                                 @can('view', $relatorio)
                                                     <li>
-                                                        <a class="dropdown-item" href="{{ route('relatorio-fechamento.show', $relatorio) }}">
+                                                        <a class="dropdown-item" href="{{ $relatorio->tipo === 'cliente' ? route('relatorio-fechamento-cliente.show', $relatorio) : route('relatorio-fechamento-consultor.show', $relatorio) }}">
                                                             <i class="fas fa-eye"></i> Visualizar
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a class="dropdown-item" href="{{ route('relatorio-fechamento.pdf', $relatorio) }}" target="_blank">
+                                                        <a class="dropdown-item" href="{{ $relatorio->tipo === 'cliente' ? route('relatorio-fechamento-cliente.pdf', $relatorio) : route('relatorio-fechamento-consultor.pdf', $relatorio) }}" target="_blank">
                                                             <i class="fas fa-file-pdf"></i> Baixar PDF
                                                         </a>
                                                     </li>
@@ -175,7 +183,7 @@
                                                     @if($relatorio->status === 'aprovado')
                                                         <li><hr class="dropdown-divider"></li>
                                                         <li>
-                                                            <form method="POST" action="{{ route('relatorio-fechamento.enviar-email', $relatorio) }}" style="display: contents;">
+                                                            <form method="POST" action="{{ $relatorio->tipo === 'cliente' ? route('relatorio-fechamento-cliente.enviar-email', $relatorio) : route('relatorio-fechamento-consultor.enviar-email', $relatorio) }}" style="display: contents;">
                                                                 @csrf
                                                                 <button type="submit"
                                                                         class="dropdown-item text-primary"
@@ -193,7 +201,7 @@
 
                                                     @if($relatorio->status === 'rascunho' || $relatorio->status === 'rejeitado')
                                                         <li class="mt-2">
-                                                            <form method="POST" action="{{ route('relatorio-fechamento.destroy', $relatorio) }}" style="display: contents;"
+                                                            <form method="POST" action="{{ $relatorio->tipo === 'cliente' ? route('relatorio-fechamento-cliente.destroy', $relatorio) : route('relatorio-fechamento-consultor.destroy', $relatorio) }}" style="display: contents;"
                                                                   onsubmit="return confirm('Tem certeza que deseja remover este relatório?');">
                                                                 @csrf
                                                                 @method('DELETE')
@@ -298,25 +306,28 @@
 </div>
 
 <script>
+const isClientePage = window.location.pathname.includes('relatorio-fechamento-cliente');
+const baseRoute = isClientePage ? '/relatorio-fechamento-cliente' : '/relatorio-fechamento-consultor';
+
 document.getElementById('enviarAprovacaoModal').addEventListener('show.bs.modal', function (e) {
     const button = e.relatedTarget;
     const relatorioid = button.getAttribute('data-relatorio');
     const form = document.getElementById('formEnviarAprovacao');
-    form.action = `/relatorio-fechamento/${relatorioid}/enviar-aprovacao`;
+    form.action = `${baseRoute}/${relatorioid}/enviar-aprovacao`;
 });
 
 document.getElementById('aprovarModal').addEventListener('show.bs.modal', function (e) {
     const button = e.relatedTarget;
     const relatorioid = button.getAttribute('data-relatorio');
     const form = document.getElementById('formAprovar');
-    form.action = `/relatorio-fechamento/${relatorioid}/aprovar`;
+    form.action = `${baseRoute}/${relatorioid}/aprovar`;
 });
 
 document.getElementById('rejeitarModal').addEventListener('show.bs.modal', function (e) {
     const button = e.relatedTarget;
     const relatorioid = button.getAttribute('data-relatorio');
     const form = document.getElementById('formRejeitar');
-    form.action = `/relatorio-fechamento/${relatorioid}/rejeitar`;
+    form.action = `${baseRoute}/${relatorioid}/rejeitar`;
 });
 </script>
 @endsection

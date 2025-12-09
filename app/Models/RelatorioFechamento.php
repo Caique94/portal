@@ -12,6 +12,7 @@ class RelatorioFechamento extends Model
 
     protected $fillable = [
         'consultor_id',
+        'tipo',
         'data_inicio',
         'data_fim',
         'valor_total',
