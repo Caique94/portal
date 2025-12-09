@@ -4,9 +4,10 @@ $(document).ready(function() {
     let produto_aux = '';
     let userRole = 'admin'; // Default role
 
-    // Ocultar campos de KM e Deslocamento ao carregar a página
+    // Ocultar campos de KM, Deslocamento e Presencial ao carregar a página
     $('#txtOrdemKM').parent().hide();
     $('#txtOrdemDeslocamento').parent().hide();
+    $('#chkOrdemPresencial').parent().hide();
 
     let tblOrdensServico = $('#tblOrdensServico').DataTable({
         ajax: {
