@@ -843,8 +843,12 @@ $(document).ready(function() {
                     $('#valorHoraConsultor').text(formatarMoeda(dados.preco_produto));
                     $('#valorKMConsultor').text(formatarMoeda(dados.valor_km_consultor));
 
-                    // Mostrar/ocultar linhas de KM e Deslocamento
-                    if ($('#chkOrdemPresencial').is(':checked') && (km > 0 || horasDeslocamento > 0)) {
+                    // Mostrar/ocultar linhas relacionadas a presencial
+                    if ($('#chkOrdemPresencial').is(':checked')) {
+                        // Mostrar linha de Valor KM Cliente
+                        $('#linhaValorKMCliente').show();
+
+                        // Mostrar linhas de KM e Deslocamento se tiver valores
                         if (km > 0) {
                             $('#linhaKM').show();
                             $('#totalKM').text(formatarMoeda(valorKM));
@@ -859,6 +863,8 @@ $(document).ready(function() {
                             $('#linhaDeslocamento').hide();
                         }
                     } else {
+                        // Ocultar todas as linhas relacionadas a presencial
+                        $('#linhaValorKMCliente').hide();
                         $('#linhaKM').hide();
                         $('#linhaDeslocamento').hide();
                     }
@@ -887,8 +893,12 @@ $(document).ready(function() {
                         $('#valorHoraConsultorConsultor').text(formatarMoeda(dados.valor_hora_consultor));
                         $('#valorKMConsultorConsultor').text(formatarMoeda(dados.valor_km_consultor));
 
-                        // Mostrar/ocultar linhas de KM e Deslocamento
-                        if ($('#chkOrdemPresencial').is(':checked') && (km > 0 || horasDeslocamento > 0)) {
+                        // Mostrar/ocultar linhas relacionadas a presencial
+                        if ($('#chkOrdemPresencial').is(':checked')) {
+                            // Mostrar linha de Valor KM Consultor
+                            $('#linhaValorKMConsultor').show();
+
+                            // Mostrar linhas de KM e Deslocamento se tiver valores
                             if (km > 0) {
                                 $('#linhaKMConsultor').show();
                                 $('#totalKMConsultor').text(formatarMoeda(valorKMConsultor));
@@ -903,6 +913,8 @@ $(document).ready(function() {
                                 $('#linhaDeslocamentoConsultor').hide();
                             }
                         } else {
+                            // Ocultar todas as linhas relacionadas a presencial
+                            $('#linhaValorKMConsultor').hide();
                             $('#linhaKMConsultor').hide();
                             $('#linhaDeslocamentoConsultor').hide();
                         }

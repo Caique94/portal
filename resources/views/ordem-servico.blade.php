@@ -188,7 +188,7 @@ use Illuminate\Support\Facades\Auth;
                                                             <td><strong>Valor Hora Cliente:</strong></td>
                                                             <td class="text-end" id="valorHoraConsultor">R$ 0,00</td>
                                                         </tr>
-                                                        <tr>
+                                                        <tr id="linhaValorKMCliente" style="display: none;">
                                                             <td><strong>Valor KM Cliente:</strong></td>
                                                             <td class="text-end" id="valorKMConsultor">R$ 0,00</td>
                                                         </tr>
@@ -240,7 +240,7 @@ use Illuminate\Support\Facades\Auth;
                                                             <td><strong>Valor Hora Consultor:</strong></td>
                                                             <td class="text-end" id="valorHoraConsultorConsultor">R$ 0,00</td>
                                                         </tr>
-                                                        <tr>
+                                                        <tr id="linhaValorKMConsultor" style="display: none;">
                                                             <td><strong>Valor KM Consultor:</strong></td>
                                                             <td class="text-end" id="valorKMConsultorConsultor">R$ 0,00</td>
                                                         </tr>
