@@ -193,7 +193,7 @@
                 </div>
                 <div class="card-body">
                     @can('view', $relatorioFechamento)
-                        <a href="{{ route('relatorio-fechamento.pdf', $relatorioFechamento) }}"
+                        <a href="{{ route($relatorioFechamento->tipo === 'cliente' ? 'relatorio-fechamento-cliente.pdf' : 'relatorio-fechamento-consultor.pdf', $relatorioFechamento) }}"
                            class="btn btn-outline-danger w-100 mb-2" target="_blank">
                             <i class="fas fa-file-pdf"></i> Baixar PDF
                         </a>
@@ -201,7 +201,7 @@
 
                     @if($relatorioFechamento->status === 'rascunho' || $relatorioFechamento->status === 'rejeitado')
                         @can('update', $relatorioFechamento)
-                            <form method="POST" action="{{ route('relatorio-fechamento.destroy', $relatorioFechamento) }}"
+                            <form method="POST" action="{{ route($relatorioFechamento->tipo === 'cliente' ? 'relatorio-fechamento-cliente.destroy' : 'relatorio-fechamento-consultor.destroy', $relatorioFechamento) }}"
                                   onsubmit="return confirm('Tem certeza que deseja remover este relatório?');">
                                 @csrf
                                 @method('DELETE')
@@ -231,7 +231,7 @@
 
                     @if($relatorioFechamento->status === 'aprovado')
                         @can('update', $relatorioFechamento)
-                            <form method="POST" action="{{ route('relatorio-fechamento.enviar-email', $relatorioFechamento) }}"
+                            <form method="POST" action="{{ route($relatorioFechamento->tipo === 'cliente' ? 'relatorio-fechamento-cliente.enviar-email' : 'relatorio-fechamento-consultor.enviar-email', $relatorioFechamento) }}"
                                   class="d-grid">
                                 @csrf
                                 <button type="submit" class="btn btn-primary"
@@ -290,7 +290,7 @@
                 <h5 class="modal-title">Aprovar Relatório</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ route('relatorio-fechamento.aprovar', $relatorioFechamento) }}">
+            <form method="POST" action="{{ route($relatorioFechamento->tipo === 'cliente' ? 'relatorio-fechamento-cliente.aprovar' : 'relatorio-fechamento-consultor.aprovar', $relatorioFechamento) }}">
                 @csrf
                 <div class="modal-body">
                     <p>Tem certeza que deseja <strong>aprovar</strong> este relatório?</p>
@@ -312,7 +312,7 @@
                 <h5 class="modal-title">Rejeitar Relatório</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ route('relatorio-fechamento.rejeitar', $relatorioFechamento) }}">
+            <form method="POST" action="{{ route($relatorioFechamento->tipo === 'cliente' ? 'relatorio-fechamento-cliente.rejeitar' : 'relatorio-fechamento-consultor.rejeitar', $relatorioFechamento) }}">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
