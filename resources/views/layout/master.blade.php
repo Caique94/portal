@@ -76,26 +76,31 @@
                 <li class="sidebar-item {{ (Request::is('projetos*') ? 'active' : '') }}">
                     <a class="sidebar-link" href="{{ url('/projetos') }}">Projetos</a>
                 </li>
-                <li class="sidebar-item">
-                    <span class="sidebar-cap">Cadastros</span>
-                </li>
-                <li class="sidebar-item {{ (Request::is('cadastros/usuarios') ? 'active' : '') }}">
-                    <a class="sidebar-link" href="{{ url('/cadastros/usuarios') }}">Usu&aacute;rios</a>
-                </li>
-                <li class="sidebar-item {{ (Request::is('cadastros/clientes') ? 'active' : '') }}">
-                    <a class="sidebar-link" href="{{ url('/cadastros/clientes') }}">Clientes</a>
-                </li>
-                {{-- <li class="sidebar-item {{ (Request::is('cadastros/fornecedores') ? 'active' : '') }}">
-                    <a class="sidebar-link" href="{{ url('/cadastros/fornecedores') }}">Fornecedores</a>
-                </li> --}}
-                <li class="sidebar-item {{ (Request::is('cadastros/produtos') ? 'active' : '') }}">
-                    <a class="sidebar-link" href="{{ url('/cadastros/produtos') }}">Produtos</a>
-                </li>
-                <li class="sidebar-item {{ (Request::is('cadastros/tabela-precos') ? 'active' : '') }}">
-                    <a class="sidebar-link" href="{{ url('/cadastros/tabela-precos') }}">Tabela de Pre&ccedil;os</a>
-                </li>
-                <li class="sidebar-item {{ (Request::is('cadastros/condicoes-pagamento') ? 'active' : '') }}">
-                    <a class="sidebar-link" href="{{ url('/cadastros/condicoes-pagamento') }}">Condi&ccedil;&otilde;es de Pagamento</a>
+                <li class="sidebar-item {{ (Request::is('cadastros*') ? 'active' : '') }}">
+                    <a class="sidebar-link collapsed d-flex justify-content-between align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#menuCadastros" aria-expanded="false">
+                        <span>Cadastros</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+                    <ul class="sidebar-dropdown list-unstyled collapse {{ (Request::is('cadastros*') ? 'show' : '') }}" id="menuCadastros">
+                        <li class="sidebar-item {{ (Request::is('cadastros/usuarios') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ url('/cadastros/usuarios') }}">Usu&aacute;rios</a>
+                        </li>
+                        <li class="sidebar-item {{ (Request::is('cadastros/clientes') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ url('/cadastros/clientes') }}">Clientes</a>
+                        </li>
+                        {{-- <li class="sidebar-item {{ (Request::is('cadastros/fornecedores') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ url('/cadastros/fornecedores') }}">Fornecedores</a>
+                        </li> --}}
+                        <li class="sidebar-item {{ (Request::is('cadastros/produtos') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ url('/cadastros/produtos') }}">Produtos</a>
+                        </li>
+                        <li class="sidebar-item {{ (Request::is('cadastros/tabela-precos') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ url('/cadastros/tabela-precos') }}">Tabela de Pre&ccedil;os</a>
+                        </li>
+                        <li class="sidebar-item {{ (Request::is('cadastros/condicoes-pagamento') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ url('/cadastros/condicoes-pagamento') }}">Condi&ccedil;&otilde;es de Pagamento</a>
+                        </li>
+                    </ul>
                 </li>
                 @endif
             </ul>
