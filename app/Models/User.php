@@ -21,6 +21,10 @@ class User extends Authenticatable
     protected $casts = [
         'data_nasc'     => 'date',
         'ativo'         => 'boolean',
+        'valor_hora'    => 'decimal:2',
+        'valor_desloc'  => 'decimal:2',
+        'valor_km'      => 'decimal:2',
+        'salario_base'  => 'decimal:2',
     ];
 
     /**
