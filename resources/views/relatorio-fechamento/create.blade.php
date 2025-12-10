@@ -15,6 +15,7 @@
                     <form method="POST" action="{{ isset($tipo) && $tipo === 'cliente' ? route('relatorio-fechamento-cliente.store') : route('relatorio-fechamento-consultor.store') }}">
                         @csrf
 
+                        @if(!isset($tipo) || $tipo !== 'cliente')
                         <div class="mb-3">
                             <label for="consultor_id" class="form-label">Consultor <span class="text-danger">*</span></label>
                             <select name="consultor_id" id="consultor_id" class="form-select @error('consultor_id') is-invalid @enderror" required>
@@ -30,6 +31,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        @endif
 
                         @if(isset($tipo))
                             <input type="hidden" name="tipo" value="{{ $tipo }}">
