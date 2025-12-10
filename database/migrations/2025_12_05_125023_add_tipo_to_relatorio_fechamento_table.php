@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('relatorio_fechamento', function (Blueprint $table) {
-            $table->enum('tipo', ['consultor', 'cliente'])->default('consultor')->after('consultor_id');
+            // Verifica se a coluna já existe antes de adicionar
+            if (!Schema::hasColumn('relatorio_fechamento', 'tipo')) {
+                $table->enum('tipo', ['consultor', 'cliente'])->default('consultor')->after('consultor_id');
+            }
         });
     }
 
