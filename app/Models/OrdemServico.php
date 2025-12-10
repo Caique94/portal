@@ -55,13 +55,6 @@ class OrdemServico extends Model
     protected $casts = [
         'approved_at' => 'datetime',
         'data_emissao' => 'date',
-        'horas_trabalhadas' => 'decimal:2',
-        'valor_despesa' => 'decimal:2',
-        'preco_produto' => 'decimal:2',
-        'valor_total' => 'decimal:2',
-        'km' => 'decimal:2',
-        'deslocamento' => 'decimal:2',
-        'is_presencial' => 'boolean',
         // Note: status is handled manually to support both legacy numeric and new enum string values
     ];
 
