@@ -189,7 +189,7 @@ class RelatorioFechamentoController extends Controller
 
             foreach ($clientes as $cliente) {
                 // Se consultor_id for 'todos', gerar para todos os consultores deste cliente
-                if ($validated['consultor_id'] === 'todos') {
+                if (!empty($validated['consultor_id']) && $validated['consultor_id'] === 'todos') {
                     $consultores = User::where('papel', 'consultor')->orderBy('name')->get();
 
                     foreach ($consultores as $consultor) {
@@ -228,7 +228,7 @@ class RelatorioFechamentoController extends Controller
 
                         $relatoriosGerados[] = $relatorio;
                     }
-                } else {
+                } elseif (!empty($validated['consultor_id'])) {
                     // Consultor específico, cliente atual do loop
                     $consultor = User::findOrFail($validated['consultor_id']);
 
@@ -257,6 +257,36 @@ class RelatorioFechamentoController extends Controller
 
                     $relatorio = RelatorioFechamento::create([
                         'consultor_id' => $consultor->id,
+                        'tipo' => $validated['tipo'],
+                        'data_inicio' => $validated['data_inicio'],
+                        'data_fim' => $validated['data_fim'],
+                        'valor_total' => $valorTotal,
+                        'total_os' => $totalOs,
+                        'status' => 'rascunho',
+                    ]);
+
+                    $relatoriosGerados[] = $relatorio;
+                } else {
+                    // Fechamento de cliente sem consultor específico (tipo=cliente)
+                    $query = \App\Models\OrdemServico::with(['cliente', 'produtoTabela.produto'])
+                        ->where('cliente_id', $cliente->id)
+                        ->where('status', '<=', 5)
+                        ->whereBetween('created_at', [
+                            Carbon::parse($validated['data_inicio'])->startOfDay(),
+                            Carbon::parse($validated['data_fim'])->endOfDay(),
+                        ]);
+
+                    $ordemServicos = $query->get();
+
+                    if ($ordemServicos->isEmpty()) {
+                        continue;
+                    }
+
+                    $valorTotal = $this->calcularValorCliente($ordemServicos, null);
+                    $totalOs = $ordemServicos->count();
+
+                    $relatorio = RelatorioFechamento::create([
+                        'consultor_id' => null,
                         'tipo' => $validated['tipo'],
                         'data_inicio' => $validated['data_inicio'],
                         'data_fim' => $validated['data_fim'],
@@ -475,7 +505,7 @@ class RelatorioFechamentoController extends Controller
             $valorKM = 0;
             $valorDeslocamento = 0;
 
-            if ($os->is_presencial) {
+            if ($os->is_presencial && $consultor) {
                 $km = $this->toFloat($os->km ?? 0);
                 $valorKmConsultor = $this->toFloat($consultor->valor_km ?? 0);
                 $valorKM = $km * $valorKmConsultor;
