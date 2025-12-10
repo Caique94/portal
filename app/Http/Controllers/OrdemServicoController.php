@@ -24,6 +24,45 @@ use Illuminate\Support\Facades\Log;
 
 class OrdemServicoController extends Controller
 {
+    /**
+     * Converter valor para float de forma segura, tratando vírgula e ponto
+     */
+    private function toFloat($value)
+    {
+        if (is_null($value) || $value === '') {
+            return null;
+        }
+
+        // Se já é numérico, retorna como float
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        // Se é string, remove espaços e trata vírgula/ponto
+        $value = trim((string) $value);
+
+        // Remove separadores de milhar (ponto no formato brasileiro, vírgula no americano)
+        // e mantém apenas o separador decimal
+        if (strpos($value, ',') !== false && strpos($value, '.') !== false) {
+            // Tem ambos: determinar qual é o separador decimal (último a aparecer)
+            $posVirgula = strrpos($value, ',');
+            $posPonto = strrpos($value, '.');
+
+            if ($posVirgula > $posPonto) {
+                // Vírgula é o decimal (formato BR: 1.234,56)
+                $value = str_replace('.', '', $value); // Remove pontos de milhar
+                $value = str_replace(',', '.', $value); // Troca vírgula por ponto
+            } else {
+                // Ponto é o decimal (formato US: 1,234.56)
+                $value = str_replace(',', '', $value); // Remove vírgulas de milhar
+            }
+        } else if (strpos($value, ',') !== false) {
+            // Só tem vírgula, assumir que é decimal (formato BR: 1234,56)
+            $value = str_replace(',', '.', $value);
+        }
+
+        return (float) $value;
+    }
 
     public function view()
     {
@@ -108,7 +147,7 @@ class OrdemServicoController extends Controller
             'cliente_id'            => $validatedData['slcOrdemClienteId'],
             'data_emissao'          => $validatedData['txtOrdemDataEmissao'],
             'tipo_despesa'          => $validatedData['slcOrdemTipoDespesa'],
-            'valor_despesa'         => $validatedData['txtOrdemDespesas'],
+            'valor_despesa'         => $this->toFloat($validatedData['txtOrdemDespesas']),
             'detalhamento_despesa'  => isset($validatedData['txtOrdemDespesasDetalhamento']) ? $validatedData['txtOrdemDespesasDetalhamento'] : '',
             'status'                => 1, // Legacy: 1 = Em Aberto
             'produto_tabela_id'     => $validatedData['slcProdutoOrdemId'],
@@ -120,9 +159,9 @@ class OrdemServicoController extends Controller
             'assunto'               => $validatedData['txtOrdemAssunto'],
             'projeto_id'            => isset($validatedData['projeto_id']) ? $validatedData['projeto_id'] : null,
             'nr_atendimento'        => $validatedData['txtOrdemNrAtendimento'],
-            'preco_produto'         => $validatedData['txtOrdemPrecoProduto'],
-            'valor_total'           => $validatedData['txtOrdemValorTotal'],
-            'km'                    => isset($validatedData['txtOrdemKM']) ? $validatedData['txtOrdemKM'] : null,
+            'preco_produto'         => $this->toFloat($validatedData['txtOrdemPrecoProduto']),
+            'valor_total'           => $this->toFloat($validatedData['txtOrdemValorTotal']),
+            'km'                    => isset($validatedData['txtOrdemKM']) ? $this->toFloat($validatedData['txtOrdemKM']) : null,
             'deslocamento'          => $deslocamento_decimal > 0 ? $deslocamento_decimal : null,
             'is_presencial'         => isset($validatedData['chkOrdemPresencial']) && $validatedData['chkOrdemPresencial'] ? 1 : 0
         ];
