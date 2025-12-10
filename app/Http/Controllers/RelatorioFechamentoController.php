@@ -15,6 +15,7 @@ class RelatorioFechamentoController extends Controller
 {
     /**
      * Listar relatórios de fechamento CLIENTE (usa totalizador administrativo)
+     * Nota: Não filtra por consultor, pois o foco é nos dados do cliente
      */
     public function indexCliente(Request $request)
     {
@@ -24,11 +25,7 @@ class RelatorioFechamentoController extends Controller
             ->where('tipo', 'cliente')
             ->orderByDesc('id');
 
-        // Filtros
-        if ($request->has('consultor_id') && $request->consultor_id) {
-            $query->where('consultor_id', $request->consultor_id);
-        }
-
+        // Filtros (sem filtro de consultor - foco no cliente)
         if ($request->has('status') && $request->status) {
             $query->where('status', $request->status);
         }
@@ -42,9 +39,8 @@ class RelatorioFechamentoController extends Controller
         }
 
         $relatorios = $query->paginate(15);
-        $consultores = User::where('papel', 'consultor')->orderBy('name')->get();
 
-        return view('relatorio-fechamento.index-cliente', compact('relatorios', 'consultores'));
+        return view('relatorio-fechamento.index-cliente', compact('relatorios'));
     }
 
     /**

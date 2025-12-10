@@ -33,18 +33,6 @@
         <div class="card-body">
             <form method="GET" action="{{ route('relatorio-fechamento-cliente.index') }}" class="row g-3 mb-4">
                 <div class="col-md-3">
-                    <label for="consultor_id" class="form-label">Consultor</label>
-                    <select name="consultor_id" id="consultor_id" class="form-select">
-                        <option value="">Todos</option>
-                        @foreach($consultores as $consultor)
-                            <option value="{{ $consultor->id }}" @selected(request('consultor_id') == $consultor->id)>
-                                {{ $consultor->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-3">
                     <label for="status" class="form-label">Status</label>
                     <select name="status" id="status" class="form-select">
                         <option value="">Todos</option>
@@ -55,19 +43,19 @@
                     </select>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label for="data_inicio" class="form-label">Data Início</label>
                     <input type="date" name="data_inicio" id="data_inicio" class="form-control"
                            value="{{ request('data_inicio') }}">
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label for="data_fim" class="form-label">Data Fim</label>
                     <input type="date" name="data_fim" id="data_fim" class="form-control"
                            value="{{ request('data_fim') }}">
                 </div>
 
-                <div class="col-md-2 d-flex align-items-end">
+                <div class="col-md-3 d-flex align-items-end">
                     <button type="submit" class="btn btn-outline-primary w-100">
                         <i class="fas fa-search"></i> Filtrar
                     </button>
