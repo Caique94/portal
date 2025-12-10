@@ -565,9 +565,14 @@ class RelatorioFechamentoController extends Controller
     {
         $this->authorize('delete', $relatorioFechamento);
 
+        $tipo = $relatorioFechamento->tipo;
         $relatorioFechamento->delete();
 
-        return redirect()->route('relatorio-fechamento.index')
+        $route = $tipo === 'cliente'
+            ? 'relatorio-fechamento-cliente.index'
+            : 'relatorio-fechamento-consultor.index';
+
+        return redirect()->route($route)
             ->with('success', 'Relatório removido com sucesso!');
     }
 }

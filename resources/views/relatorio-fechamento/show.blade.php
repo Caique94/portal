@@ -6,7 +6,7 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <h1 class="h3 mb-0">Relatório #{{ $relatorioFechamento->id }}</h1>
-                <a href="{{ route('relatorio-fechamento.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ $relatorioFechamento->tipo === 'cliente' ? route('relatorio-fechamento-cliente.index') : route('relatorio-fechamento-consultor.index') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left"></i> Voltar
                 </a>
             </div>
