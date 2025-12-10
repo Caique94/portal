@@ -161,15 +161,15 @@ class RelatorioFechamentoController extends Controller
         $this->authorize('create', RelatorioFechamento::class);
 
         $validated = $request->validate([
-            'consultor_id' => 'required',
+            'consultor_id' => $request->tipo === 'cliente' ? 'nullable' : 'required',
             'cliente_id' => 'nullable',
             'tipo' => 'required|in:consultor,cliente',
             'data_inicio' => 'required|date',
             'data_fim' => 'required|date|after_or_equal:data_inicio',
         ]);
 
-        // Validar consultor_id (pode ser 'todos' ou um ID válido)
-        if ($validated['consultor_id'] !== 'todos') {
+        // Validar consultor_id (pode ser 'todos' ou um ID válido) - apenas para consultor
+        if (!empty($validated['consultor_id']) && $validated['consultor_id'] !== 'todos') {
             $request->validate([
                 'consultor_id' => 'exists:users,id',
             ]);
@@ -274,8 +274,8 @@ class RelatorioFechamentoController extends Controller
                 ->with('success', count($relatoriosGerados) . ' relatórios gerados com sucesso!');
         }
 
-        // Se for "todos", gerar relatórios individuais para cada consultor
-        if ($validated['consultor_id'] === 'todos') {
+        // Se for "todos" consultores (apenas para tipo consultor), gerar relatórios individuais
+        if (!empty($validated['consultor_id']) && $validated['consultor_id'] === 'todos') {
             $consultores = User::where('papel', 'consultor')->orderBy('name')->get();
             $relatoriosGerados = [];
 
@@ -329,17 +329,24 @@ class RelatorioFechamentoController extends Controller
                 ->with('success', count($relatoriosGerados) . ' relatórios gerados com sucesso!');
         }
 
-        // Buscar consultor específico
-        $consultor = User::findOrFail($validated['consultor_id']);
+        // Caso específico: um consultor ou fechamento de cliente
+        $consultor = null;
+        if (!empty($validated['consultor_id'])) {
+            $consultor = User::findOrFail($validated['consultor_id']);
+        }
 
-        // Buscar todas as OS do período para o consultor
+        // Buscar todas as OS do período
         $query = \App\Models\OrdemServico::with(['cliente', 'produtoTabela.produto'])
-            ->where('consultor_id', $validated['consultor_id'])
             ->where('status', '<=', 5)
             ->whereBetween('created_at', [
                 Carbon::parse($validated['data_inicio'])->startOfDay(),
                 Carbon::parse($validated['data_fim'])->endOfDay(),
             ]);
+
+        // Para fechamento de consultor, filtrar por consultor
+        if ($validated['tipo'] === 'consultor' && !empty($validated['consultor_id'])) {
+            $query->where('consultor_id', $validated['consultor_id']);
+        }
 
         // Filtrar por cliente se especificado
         if (!empty($validated['cliente_id']) && $validated['cliente_id'] !== 'todos') {
@@ -359,7 +366,7 @@ class RelatorioFechamentoController extends Controller
 
         // Salvar relatório
         $relatorio = RelatorioFechamento::create([
-            'consultor_id' => $validated['consultor_id'],
+            'consultor_id' => $validated['consultor_id'] ?? null,
             'tipo' => $validated['tipo'],
             'data_inicio' => $validated['data_inicio'],
             'data_fim' => $validated['data_fim'],
