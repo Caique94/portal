@@ -57,14 +57,18 @@ class RelatorioFechamento extends Model
             return collect();
         }
 
-        return OrdemServico::with('cliente')
-            ->where('consultor_id', $this->consultor_id)
+        $query = OrdemServico::with('cliente')
             ->where('status', '<=', 5)
             ->whereBetween('created_at', [
                 \Carbon\Carbon::parse($this->data_inicio)->startOfDay(),
                 \Carbon\Carbon::parse($this->data_fim)->endOfDay(),
-            ])
-            ->orderByDesc('id')
-            ->get();
+            ]);
+
+        // Para fechamento de consultor, filtrar por consultor
+        if ($this->tipo === 'consultor' && $this->consultor_id) {
+            $query->where('consultor_id', $this->consultor_id);
+        }
+
+        return $query->orderByDesc('id')->get();
     }
 }
