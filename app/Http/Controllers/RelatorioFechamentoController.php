@@ -381,6 +381,46 @@ class RelatorioFechamentoController extends Controller
     }
 
     /**
+     * Converter valor para float de forma segura, tratando vírgula e ponto
+     */
+    private function toFloat($value)
+    {
+        if (is_null($value) || $value === '') {
+            return 0.0;
+        }
+
+        // Se já é numérico, retorna como float
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        // Se é string, remove espaços e trata vírgula/ponto
+        $value = trim((string) $value);
+
+        // Remove separadores de milhar (ponto no formato brasileiro, vírgula no americano)
+        // e mantém apenas o separador decimal
+        if (strpos($value, ',') !== false && strpos($value, '.') !== false) {
+            // Tem ambos: determinar qual é o separador decimal (último a aparecer)
+            $posVirgula = strrpos($value, ',');
+            $posPonto = strrpos($value, '.');
+
+            if ($posVirgula > $posPonto) {
+                // Vírgula é o decimal (formato BR: 1.234,56)
+                $value = str_replace('.', '', $value); // Remove pontos de milhar
+                $value = str_replace(',', '.', $value); // Troca vírgula por ponto
+            } else {
+                // Ponto é o decimal (formato US: 1,234.56)
+                $value = str_replace(',', '', $value); // Remove vírgulas de milhar
+            }
+        } else if (strpos($value, ',') !== false) {
+            // Só tem vírgula, assumir que é decimal (formato BR: 1234,56)
+            $value = str_replace(',', '.', $value);
+        }
+
+        return (float) $value;
+    }
+
+    /**
      * Calcular valor total baseado nos valores do consultor
      */
     private function calcularValorConsultor($ordemServicos, $consultor)
@@ -389,23 +429,23 @@ class RelatorioFechamentoController extends Controller
 
         foreach ($ordemServicos as $os) {
             // Valor Serviço = horas × valor_hora_consultor
-            $horas = floatval($os->horas_trabalhadas ?? 0);
-            $valorHoraConsultor = floatval($consultor->valor_hora ?? 0);
+            $horas = $this->toFloat($os->horas_trabalhadas ?? 0);
+            $valorHoraConsultor = $this->toFloat($consultor->valor_hora ?? 0);
             $valorServico = $horas * $valorHoraConsultor;
 
             // Despesas
-            $despesas = floatval($os->valor_despesa ?? 0);
+            $despesas = $this->toFloat($os->valor_despesa ?? 0);
 
             // KM e Deslocamento (apenas se presencial)
             $valorKM = 0;
             $valorDeslocamento = 0;
 
             if ($os->is_presencial) {
-                $km = floatval($os->km ?? 0);
-                $valorKmConsultor = floatval($consultor->valor_km ?? 0);
+                $km = $this->toFloat($os->km ?? 0);
+                $valorKmConsultor = $this->toFloat($consultor->valor_km ?? 0);
                 $valorKM = $km * $valorKmConsultor;
 
-                $horasDeslocamento = floatval($os->deslocamento ?? 0);
+                $horasDeslocamento = $this->toFloat($os->deslocamento ?? 0);
                 $valorDeslocamento = $horasDeslocamento * $valorHoraConsultor;
             }
 
@@ -424,24 +464,24 @@ class RelatorioFechamentoController extends Controller
 
         foreach ($ordemServicos as $os) {
             // Valor Serviço = horas × preco_produto (tabela de preços do cliente)
-            $horas = floatval($os->horas_trabalhadas ?? 0);
-            $precoProduto = floatval($os->preco_produto ?? 0);
+            $horas = $this->toFloat($os->horas_trabalhadas ?? 0);
+            $precoProduto = $this->toFloat($os->preco_produto ?? 0);
             $valorServico = $horas * $precoProduto;
 
             // Despesas
-            $despesas = floatval($os->valor_despesa ?? 0);
+            $despesas = $this->toFloat($os->valor_despesa ?? 0);
 
             // KM e Deslocamento (usa valores do consultor mesmo no admin)
             $valorKM = 0;
             $valorDeslocamento = 0;
 
             if ($os->is_presencial) {
-                $km = floatval($os->km ?? 0);
-                $valorKmConsultor = floatval($consultor->valor_km ?? 0);
+                $km = $this->toFloat($os->km ?? 0);
+                $valorKmConsultor = $this->toFloat($consultor->valor_km ?? 0);
                 $valorKM = $km * $valorKmConsultor;
 
-                $horasDeslocamento = floatval($os->deslocamento ?? 0);
-                $valorHoraConsultor = floatval($consultor->valor_hora ?? 0);
+                $horasDeslocamento = $this->toFloat($os->deslocamento ?? 0);
+                $valorHoraConsultor = $this->toFloat($consultor->valor_hora ?? 0);
                 $valorDeslocamento = $horasDeslocamento * $valorHoraConsultor;
             }
 
