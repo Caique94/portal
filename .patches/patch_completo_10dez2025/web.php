@@ -292,14 +292,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/api/notifications/{id}', [NotificationController::class, 'destroy']);
     Route::get('/api/notifications/count', [NotificationController::class, 'getCount']);
     Route::get('/api/notifications/type/{type}', [NotificationController::class, 'getByType']);
-
-    // FECHAMENTO JOBS API
-    Route::prefix('api/fechamentos')->name('api.fechamentos.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Api\FechamentoJobController::class, 'index'])->name('index');
-        Route::post('/', [App\Http\Controllers\Api\FechamentoJobController::class, 'store'])->name('store');
-        Route::get('/{id}', [App\Http\Controllers\Api\FechamentoJobController::class, 'show'])->name('show');
-        Route::post('/{id}/reprocess', [App\Http\Controllers\Api\FechamentoJobController::class, 'reprocess'])->name('reprocess');
-        Route::get('/{id}/download', [App\Http\Controllers\Api\FechamentoJobController::class, 'download'])->name('download');
-        Route::delete('/{id}', [App\Http\Controllers\Api\FechamentoJobController::class, 'destroy'])->name('destroy');
-    });
 });
