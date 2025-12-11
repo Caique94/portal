@@ -601,33 +601,9 @@ class RelatorioFechamentoController extends Controller
 
         foreach ($ordemServicos as $os) {
             // Totalizador Administrativo:
-            // Valor Serviço = horas × preco_produto (tabela de preços do cliente)
-            $horas = $this->toFloat($os->horas_trabalhadas ?? 0);
-            $precoProduto = $this->toFloat($os->preco_produto ?? 0);
-            $valorServico = $horas * $precoProduto;
-
-            // Despesas
-            $despesas = $this->toFloat($os->valor_despesa ?? 0);
-
-            // KM e Deslocamento (apenas se presencial)
-            $valorKM = 0;
-            $valorDeslocamento = 0;
-
-            if ($os->is_presencial) {
-                // Buscar consultor da OS se não foi passado
-                $consultorOS = $consultor ?? $os->consultor;
-
-                if ($consultorOS) {
-                    $km = $this->toFloat($os->km ?? 0);
-                    $valorKmConsultor = $this->toFloat($consultorOS->valor_km ?? 0);
-                    $valorKM = $km * $valorKmConsultor;
-
-                    $valorDesloc = $this->toFloat($consultorOS->valor_desloc ?? 0);
-                    $valorDeslocamento = $valorDesloc;
-                }
-            }
-
-            $total += $valorServico + $despesas + $valorKM + $valorDeslocamento;
+            // Usa o valor_total já calculado e salvo na OS
+            $valorOS = $this->toFloat($os->valor_total ?? 0);
+            $total += $valorOS;
         }
 
         return $total;
