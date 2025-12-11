@@ -47,8 +47,8 @@ class SecurityHeaders
 
         // Add Vite dev server in development/local environments
         if ($isDev) {
-            $scriptSrc .= " http://localhost:5173 http://127.0.0.1:5173 http://[::1]:5173";
-            $connectSrc .= " ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173 http://localhost:5173 http://127.0.0.1:5173 http://[::1]:5173";
+            $scriptSrc .= " http://localhost:5173 http://127.0.0.1:5173";
+            $connectSrc .= " ws://localhost:5173 ws://127.0.0.1:5173 http://localhost:5173 http://127.0.0.1:5173";
         }
 
         $csp = implode('; ', [
