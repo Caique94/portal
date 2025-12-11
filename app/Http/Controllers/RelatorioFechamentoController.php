@@ -601,8 +601,10 @@ class RelatorioFechamentoController extends Controller
 
         foreach ($ordemServicos as $os) {
             // Totalizador Administrativo:
-            // Valor Serviço = preco_produto (já é o valor total pela tabela do cliente)
-            $valorServico = $this->toFloat($os->preco_produto ?? 0);
+            // Valor Serviço = horas × preco_produto (tabela de preços do cliente)
+            $horas = $this->toFloat($os->horas_trabalhadas ?? 0);
+            $precoProduto = $this->toFloat($os->preco_produto ?? 0);
+            $valorServico = $horas * $precoProduto;
 
             // Despesas
             $despesas = $this->toFloat($os->valor_despesa ?? 0);
