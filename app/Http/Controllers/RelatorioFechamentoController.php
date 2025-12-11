@@ -78,6 +78,87 @@ class RelatorioFechamentoController extends Controller
     }
 
     /**
+     * Dashboard de fechamento CLIENTE com métricas e indicadores
+     */
+    public function dashboardCliente(Request $request)
+    {
+        $this->authorize('viewAny', RelatorioFechamento::class);
+
+        // Métricas gerais
+        $totalFechamentos = RelatorioFechamento::where('tipo', 'cliente')->count();
+        $totalAprovados = RelatorioFechamento::where('tipo', 'cliente')->where('status', 'aprovado')->count();
+        $totalPendentes = RelatorioFechamento::where('tipo', 'cliente')->where('status', 'enviado')->count();
+        $valorTotalMes = RelatorioFechamento::where('tipo', 'cliente')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('valor_total');
+
+        // Últimos fechamentos
+        $ultimosFechamentos = RelatorioFechamento::where('tipo', 'cliente')
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        // Fechamentos por status
+        $porStatus = RelatorioFechamento::where('tipo', 'cliente')
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->get()
+            ->pluck('total', 'status');
+
+        return view('relatorio-fechamento.dashboard-cliente', compact(
+            'totalFechamentos',
+            'totalAprovados',
+            'totalPendentes',
+            'valorTotalMes',
+            'ultimosFechamentos',
+            'porStatus'
+        ));
+    }
+
+    /**
+     * Dashboard de fechamento CONSULTOR com métricas e indicadores
+     */
+    public function dashboardConsultor(Request $request)
+    {
+        $this->authorize('viewAny', RelatorioFechamento::class);
+
+        // Métricas gerais
+        $totalFechamentos = RelatorioFechamento::where('tipo', 'consultor')->count();
+        $totalAprovados = RelatorioFechamento::where('tipo', 'consultor')->where('status', 'aprovado')->count();
+        $totalPendentes = RelatorioFechamento::where('tipo', 'consultor')->where('status', 'enviado')->count();
+        $valorTotalMes = RelatorioFechamento::where('tipo', 'consultor')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('valor_total');
+
+        // Últimos fechamentos
+        $ultimosFechamentos = RelatorioFechamento::where('tipo', 'consultor')
+            ->with('consultor')
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        // Fechamentos por consultor (top 5)
+        $porConsultor = RelatorioFechamento::where('tipo', 'consultor')
+            ->selectRaw('consultor_id, count(*) as total, sum(valor_total) as valor')
+            ->groupBy('consultor_id')
+            ->orderByDesc('valor')
+            ->limit(5)
+            ->with('consultor')
+            ->get();
+
+        return view('relatorio-fechamento.dashboard-consultor', compact(
+            'totalFechamentos',
+            'totalAprovados',
+            'totalPendentes',
+            'valorTotalMes',
+            'ultimosFechamentos',
+            'porConsultor'
+        ));
+    }
+
+    /**
      * Formulário para criar novo relatório CLIENTE
      */
     public function createCliente(Request $request)
@@ -562,16 +643,23 @@ class RelatorioFechamentoController extends Controller
         $ordemServicos = $relatorioFechamento->ordemServicos();
         $consultor = $relatorioFechamento->consultor;
 
-        return Pdf::loadView('relatorio-fechamento.pdf', compact('relatorioFechamento', 'ordemServicos', 'consultor'))
-            ->download('relatorio_fechamento_' . $relatorioFechamento->id . '.pdf');
+        // Usar template específico baseado no tipo
+        $viewTemplate = $relatorioFechamento->tipo === 'cliente'
+            ? 'relatorio-fechamento.pdf-cliente'
+            : 'relatorio-fechamento.pdf-consultor';
+
+        return Pdf::loadView($viewTemplate, compact('relatorioFechamento', 'ordemServicos', 'consultor'))
+            ->setPaper('a4', 'portrait')
+            ->download('relatorio_fechamento_' . $relatorioFechamento->tipo . '_' . $relatorioFechamento->id . '.pdf');
     }
 
     /**
      * Aprovar relatório
+     * Apenas ADMIN pode aprovar fechamentos para envio
      */
     public function aprovar(RelatorioFechamento $relatorioFechamento)
     {
-        $this->authorize('update', $relatorioFechamento);
+        $this->authorize('aprovar', $relatorioFechamento);
 
         $relatorioFechamento->update([
             'status' => 'aprovado',
@@ -584,10 +672,11 @@ class RelatorioFechamentoController extends Controller
 
     /**
      * Rejeitar relatório
+     * Apenas ADMIN pode rejeitar fechamentos
      */
     public function rejeitar(RelatorioFechamento $relatorioFechamento, Request $request)
     {
-        $this->authorize('update', $relatorioFechamento);
+        $this->authorize('rejeitar', $relatorioFechamento);
 
         $validated = $request->validate([
             'observacoes' => 'required|string|min:10',

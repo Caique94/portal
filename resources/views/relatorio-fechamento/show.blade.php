@@ -213,20 +213,22 @@
                     @endif
 
                     @if($relatorioFechamento->status === 'enviado')
-                        @can('update', $relatorioFechamento)
-                            <div class="d-grid gap-2">
+                        <div class="d-grid gap-2">
+                            @can('aprovar', $relatorioFechamento)
                                 <button type="button" class="btn btn-success"
                                         data-bs-toggle="modal"
                                         data-bs-target="#aprovarModal">
                                     <i class="fas fa-check"></i> Aprovar
                                 </button>
+                            @endcan
+                            @can('rejeitar', $relatorioFechamento)
                                 <button type="button" class="btn btn-warning"
                                         data-bs-toggle="modal"
                                         data-bs-target="#rejeitarModal">
                                     <i class="fas fa-times"></i> Rejeitar
                                 </button>
-                            </div>
-                        @endcan
+                            @endcan
+                        </div>
                     @endif
 
                     @if($relatorioFechamento->status === 'aprovado')

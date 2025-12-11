@@ -118,6 +118,10 @@ Route::middleware(['auth', RoleMiddleware::class.':admin,financeiro'])->group(fu
     Route::get('/faturamento', [FaturamentoController::class, 'view'])->name('faturamento');
     Route::get('/recibo-provisorio', [ReciboProvisorioController::class, 'view'])->name('recibo-provisorio');
 
+    // Dashboards de Fechamento
+    Route::get('/relatorio-fechamento-cliente/dashboard', [RelatorioFechamentoController::class, 'dashboardCliente'])->name('relatorio-fechamento-cliente.dashboard');
+    Route::get('/relatorio-fechamento-consultor/dashboard', [RelatorioFechamentoController::class, 'dashboardConsultor'])->name('relatorio-fechamento-consultor.dashboard');
+
     // Relatórios de Fechamento - Cliente (usa totalizador administrativo)
     Route::get('/relatorio-fechamento-cliente', [RelatorioFechamentoController::class, 'indexCliente'])->name('relatorio-fechamento-cliente.index');
     Route::get('/relatorio-fechamento-cliente/criar', [RelatorioFechamentoController::class, 'createCliente'])->name('relatorio-fechamento-cliente.create');

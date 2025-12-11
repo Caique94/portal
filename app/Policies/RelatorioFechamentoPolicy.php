@@ -63,4 +63,22 @@ class RelatorioFechamentoPolicy
     {
         return $user->papel === 'admin';
     }
+
+    /**
+     * Determine whether the user can approve the model.
+     * Only ADMIN can approve fechamentos for sending.
+     */
+    public function aprovar(User $user, RelatorioFechamento $relatorioFechamento): bool
+    {
+        return $user->papel === 'admin';
+    }
+
+    /**
+     * Determine whether the user can reject the model.
+     * Only ADMIN can reject fechamentos.
+     */
+    public function rejeitar(User $user, RelatorioFechamento $relatorioFechamento): bool
+    {
+        return $user->papel === 'admin';
+    }
 }

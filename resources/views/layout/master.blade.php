@@ -59,11 +59,25 @@
                         <i class="bi bi-chevron-down"></i>
                     </a>
                     <ul class="sidebar-dropdown list-unstyled collapse {{ (Request::is('relatorio-fechamento*') ? 'show' : '') }}" id="menuFechamento">
-                        <li class="sidebar-item {{ (Request::is('relatorio-fechamento-cliente*') ? 'active' : '') }}">
-                            <a class="sidebar-link" href="{{ url('/relatorio-fechamento-cliente') }}">Fechamento Cliente</a>
+                        <li class="sidebar-item {{ (Request::is('relatorio-fechamento-cliente/dashboard') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ route('relatorio-fechamento-cliente.dashboard') }}">
+                                <i class="fas fa-chart-line text-success"></i> Dashboard Cliente
+                            </a>
                         </li>
-                        <li class="sidebar-item {{ (Request::is('relatorio-fechamento-consultor*') ? 'active' : '') }}">
-                            <a class="sidebar-link" href="{{ url('/relatorio-fechamento-consultor') }}">Fechamento Consultor</a>
+                        <li class="sidebar-item {{ (Request::is('relatorio-fechamento-cliente') && !Request::is('relatorio-fechamento-cliente/dashboard') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ route('relatorio-fechamento-cliente.index') }}">
+                                <i class="fas fa-list"></i> Listar Fechamentos Cliente
+                            </a>
+                        </li>
+                        <li class="sidebar-item {{ (Request::is('relatorio-fechamento-consultor/dashboard') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ route('relatorio-fechamento-consultor.dashboard') }}">
+                                <i class="fas fa-chart-line text-primary"></i> Dashboard Consultor
+                            </a>
+                        </li>
+                        <li class="sidebar-item {{ (Request::is('relatorio-fechamento-consultor') && !Request::is('relatorio-fechamento-consultor/dashboard') ? 'active' : '') }}">
+                            <a class="sidebar-link" href="{{ route('relatorio-fechamento-consultor.index') }}">
+                                <i class="fas fa-list"></i> Listar Fechamentos Consultor
+                            </a>
                         </li>
                     </ul>
                 </li>

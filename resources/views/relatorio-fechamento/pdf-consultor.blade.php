@@ -25,6 +25,11 @@
             color: #2196F3;
             font-size: 20pt;
         }
+        .header .subtitle {
+            font-size: 12pt;
+            color: #666;
+            margin-top: 5px;
+        }
         .metadata {
             background-color: #f5f5f5;
             padding: 15px;
@@ -32,60 +37,88 @@
             border-radius: 5px;
             font-size: 9pt;
         }
-        .metadata-grid {
-            display: table;
-            width: 100%;
-        }
         .metadata-row {
-            display: table-row;
-        }
-        .metadata-cell {
-            display: table-cell;
-            padding: 5px;
+            margin: 5px 0;
         }
         .metadata-label {
             font-weight: bold;
-            width: 30%;
+            display: inline-block;
+            width: 150px;
+        }
+        .summary-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-left: 4px solid #2196F3;
+        }
+        .summary-item {
+            display: inline-block;
+            margin-right: 30px;
+            font-size: 11pt;
+        }
+        .summary-label {
+            font-weight: bold;
+            color: #1565c0;
+        }
+        .cliente-section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        .cliente-header {
+            background-color: #e8f5e9;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #4CAF50;
+            font-weight: bold;
+            font-size: 11pt;
+            color: #2e7d32;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            font-size: 9pt;
         }
         th {
             background-color: #2196F3;
             color: white;
-            padding: 10px;
+            padding: 8px 5px;
             text-align: left;
             font-weight: bold;
         }
         td {
-            padding: 8px;
+            padding: 6px 5px;
             border-bottom: 1px solid #ddd;
         }
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        .consultor-section {
-            margin-bottom: 40px;
-            page-break-inside: avoid;
+        .text-right {
+            text-align: right;
         }
-        .consultor-header {
-            background-color: #e3f2fd;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-left: 4px solid #2196F3;
-        }
-        .consultor-nome {
-            font-size: 14pt;
-            font-weight: bold;
-            color: #1565c0;
-        }
-        .totals {
+        .subtotals {
             background-color: #fff3e0;
             padding: 10px;
-            margin-top: 5px;
-            font-weight: bold;
+            margin: 10px 0;
+            font-size: 10pt;
+        }
+        .subtotal-row {
+            margin: 3px 0;
+        }
+        .totalizadores {
+            background-color: #e1f5fe;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .totalizadores h3 {
+            margin: 0 0 10px 0;
+            color: #0277bd;
+            font-size: 12pt;
+        }
+        .totalizador-item {
+            margin: 8px 0;
+            font-size: 11pt;
         }
         .grand-total {
             background-color: #2196F3;
@@ -115,87 +148,167 @@
 <body>
     <div class="header">
         <h1>Relatório de Fechamento - Consultor</h1>
+        @if($consultor)
+            <div class="subtitle">{{ $consultor->nome }}</div>
+        @endif
     </div>
 
     <div class="metadata">
-        <div class="metadata-grid">
-            <div class="metadata-row">
-                <div class="metadata-cell metadata-label">Período:</div>
-                <div class="metadata-cell">{{ $metadata['periodo'] }}</div>
-                <div class="metadata-cell metadata-label">Tipo:</div>
-                <div class="metadata-cell">{{ $metadata['tipo'] }}</div>
-            </div>
-            <div class="metadata-row">
-                <div class="metadata-cell metadata-label">Gerado por:</div>
-                <div class="metadata-cell">{{ $metadata['gerado_por'] }}</div>
-                <div class="metadata-cell metadata-label">Data de Geração:</div>
-                <div class="metadata-cell">{{ $metadata['gerado_em'] }}</div>
-            </div>
-            <div class="metadata-row">
-                <div class="metadata-cell metadata-label">Versão:</div>
-                <div class="metadata-cell">{{ $metadata['versao'] }}</div>
-                <div class="metadata-cell metadata-label">Hash SHA-256:</div>
-                <div class="metadata-cell" style="font-size: 7pt;">{{ $job->pdf_checksum ?? 'Gerando...' }}</div>
-            </div>
+        <div class="metadata-row">
+            <span class="metadata-label">Período:</span>
+            {{ \Carbon\Carbon::parse($relatorioFechamento->data_inicio)->format('d/m/Y') }} a
+            {{ \Carbon\Carbon::parse($relatorioFechamento->data_fim)->format('d/m/Y') }}
+        </div>
+        @if($consultor)
+        <div class="metadata-row">
+            <span class="metadata-label">Consultor:</span>
+            {{ $consultor->nome }} ({{ $consultor->email }})
+        </div>
+        @endif
+        <div class="metadata-row">
+            <span class="metadata-label">Status:</span>
+            {{ ucfirst($relatorioFechamento->status) }}
+        </div>
+        <div class="metadata-row">
+            <span class="metadata-label">Gerado em:</span>
+            {{ now()->format('d/m/Y H:i:s') }}
         </div>
     </div>
 
     @php
-        $grandTotalHoras = 0;
-        $grandTotalValor = 0;
+        $totalOS = $ordemServicos->count();
+        $valorTotalGeral = 0;
+        $subtotalServicos = 0;
+        $subtotalDespesas = 0;
+        $subtotalKM = 0;
+        $subtotalDeslocamento = 0;
+        $totalHoras = 0;
+
+        // Agrupar OSs por cliente
+        $porCliente = $ordemServicos->groupBy('cliente.razao_social')->sortKeys();
     @endphp
 
-    @foreach($data as $consultorData)
-        <div class="consultor-section">
-            <div class="consultor-header">
-                <div class="consultor-nome">{{ $consultorData['consultor_nome'] }}</div>
+    <div class="summary-box">
+        <div class="summary-item">
+            <span class="summary-label">Total de OSs:</span> {{ $totalOS }}
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Valor Total:</span> R$ {{ number_format($relatorioFechamento->valor_total, 2, ',', '.') }}
+        </div>
+        @if($totalOS > 0)
+        <div class="summary-item">
+            <span class="summary-label">Média por OS:</span> R$ {{ number_format($relatorioFechamento->valor_total / $totalOS, 2, ',', '.') }}
+        </div>
+        @endif
+    </div>
+
+    <h2 style="color: #2196F3; margin-bottom: 20px;">Ordens de Serviço Detalhadas</h2>
+
+    @foreach($porCliente as $clienteNome => $ordensCliente)
+        <div class="cliente-section">
+            <div class="cliente-header">
+                Cliente: {{ $clienteNome ?: 'Não informado' }}
             </div>
 
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 8%;">ID</th>
-                        <th style="width: 30%;">Cliente</th>
-                        <th style="width: 25%;">Produto</th>
-                        <th style="width: 12%; text-align: right;">Horas</th>
-                        <th style="width: 12%; text-align: right;">Valor/Hora</th>
+                        <th style="width: 6%;">OS</th>
+                        <th style="width: 10%;">Data</th>
+                        <th style="width: 20%;">Produto</th>
+                        <th style="width: 8%; text-align: right;">Horas</th>
+                        <th style="width: 12%; text-align: right;">Serviço</th>
+                        <th style="width: 11%; text-align: right;">Despesas</th>
+                        <th style="width: 9%; text-align: right;">KM</th>
+                        <th style="width: 11%; text-align: right;">Desloc.</th>
                         <th style="width: 13%; text-align: right;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($consultorData['ordens'] as $ordem)
+                    @foreach($ordensCliente as $os)
+                        @php
+                            $horas = $os->horas ?? 0;
+                            $valorHora = $consultor ? ($consultor->valor_hora ?? 0) : 0;
+                            $valorServico = $horas * $valorHora;
+
+                            $despesas = $os->valor_despesa ?? 0;
+
+                            $km = $os->km ?? 0;
+                            $valorKM = $os->is_presencial && $consultor ? ($km * ($consultor->valor_km ?? 0)) : 0;
+
+                            $valorDeslocamento = $os->is_presencial && $consultor ? ($consultor->valor_deslocamento ?? 0) : 0;
+
+                            $totalOS = $valorServico + $despesas + $valorKM + $valorDeslocamento;
+
+                            $subtotalServicos += $valorServico;
+                            $subtotalDespesas += $despesas;
+                            $subtotalKM += $valorKM;
+                            $subtotalDeslocamento += $valorDeslocamento;
+                            $valorTotalGeral += $totalOS;
+                            $totalHoras += $horas;
+                        @endphp
                         <tr>
-                            <td>{{ $ordem['id'] }}</td>
-                            <td>{{ $ordem['cliente'] }}</td>
-                            <td>{{ $ordem['produto'] }}</td>
-                            <td style="text-align: right;">{{ number_format($ordem['horas'], 2, ',', '.') }}</td>
-                            <td style="text-align: right;">R$ {{ number_format($ordem['valor_hora'], 2, ',', '.') }}</td>
-                            <td style="text-align: right;">R$ {{ number_format($ordem['total'], 2, ',', '.') }}</td>
+                            <td>{{ $os->id }}</td>
+                            <td>{{ \Carbon\Carbon::parse($os->created_at)->format('d/m/Y') }}</td>
+                            <td>{{ $os->produtoTabela->produto->nome ?? 'N/A' }}</td>
+                            <td class="text-right">{{ number_format($horas, 2, ',', '.') }}</td>
+                            <td class="text-right">R$ {{ number_format($valorServico, 2, ',', '.') }}</td>
+                            <td class="text-right">R$ {{ number_format($despesas, 2, ',', '.') }}</td>
+                            <td class="text-right">{{ $km > 0 ? number_format($km, 0, ',', '.') . ' km' : '-' }}</td>
+                            <td class="text-right">{{ $valorDeslocamento > 0 ? 'R$ ' . number_format($valorDeslocamento, 2, ',', '.') : '-' }}</td>
+                            <td class="text-right"><strong>R$ {{ number_format($totalOS, 2, ',', '.') }}</strong></td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
 
-            <div class="totals">
-                Total de Ordens: {{ $consultorData['total_ordens'] }} |
-                Total de Horas: {{ number_format($consultorData['total_horas'], 2, ',', '.') }} |
-                Valor Total: R$ {{ number_format($consultorData['valor_total'], 2, ',', '.') }}
+            <div class="subtotals">
+                <div class="subtotal-row">
+                    <strong>Subtotal Cliente:</strong> {{ $ordensCliente->count() }} OSs |
+                    R$ {{ number_format($ordensCliente->sum(function($os) use ($consultor) {
+                        $horas = $os->horas ?? 0;
+                        $valorHora = $consultor ? ($consultor->valor_hora ?? 0) : 0;
+                        $valorServico = $horas * $valorHora;
+                        $despesas = $os->valor_despesa ?? 0;
+                        $km = $os->km ?? 0;
+                        $valorKM = $os->is_presencial && $consultor ? ($km * ($consultor->valor_km ?? 0)) : 0;
+                        $valorDeslocamento = $os->is_presencial && $consultor ? ($consultor->valor_deslocamento ?? 0) : 0;
+                        return $valorServico + $despesas + $valorKM + $valorDeslocamento;
+                    }), 2, ',', '.') }}
+                </div>
             </div>
-
-            @php
-                $grandTotalHoras += $consultorData['total_horas'];
-                $grandTotalValor += $consultorData['valor_total'];
-            @endphp
         </div>
     @endforeach
 
+    <div class="totalizadores">
+        <h3>Totalizadores por Componente</h3>
+        <div class="totalizador-item">
+            <strong>Total de Horas Trabalhadas:</strong> {{ number_format($totalHoras, 2, ',', '.') }} horas
+        </div>
+        <div class="totalizador-item">
+            <strong>Subtotal Serviços (Horas):</strong> R$ {{ number_format($subtotalServicos, 2, ',', '.') }}
+        </div>
+        <div class="totalizador-item">
+            <strong>Subtotal Despesas:</strong> R$ {{ number_format($subtotalDespesas, 2, ',', '.') }}
+        </div>
+        <div class="totalizador-item">
+            <strong>Subtotal KM:</strong> R$ {{ number_format($subtotalKM, 2, ',', '.') }}
+        </div>
+        <div class="totalizador-item">
+            <strong>Subtotal Deslocamento:</strong> R$ {{ number_format($subtotalDeslocamento, 2, ',', '.') }}
+        </div>
+    </div>
+
     <div class="grand-total">
-        TOTAL GERAL: {{ count($data) }} Consultores | {{ number_format($grandTotalHoras, 2, ',', '.') }} Horas | R$ {{ number_format($grandTotalValor, 2, ',', '.') }}
+        TOTAL GERAL: {{ $totalOS }} Ordens de Serviço | R$ {{ number_format($valorTotalGeral, 2, ',', '.') }}
     </div>
 
     <div class="footer">
         <div class="page-number"></div>
-        <div>Documento gerado automaticamente pelo sistema em {{ $metadata['gerado_em'] }}</div>
+        <div>Documento gerado automaticamente pelo sistema em {{ now()->format('d/m/Y H:i:s') }}</div>
+        @if($consultor)
+            <div>Assinatura: _________________________________</div>
+        @endif
     </div>
 </body>
 </html>
