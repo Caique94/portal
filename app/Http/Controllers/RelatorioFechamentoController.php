@@ -241,12 +241,33 @@ class RelatorioFechamentoController extends Controller
     {
         $this->authorize('create', RelatorioFechamento::class);
 
+        // Log temporário para debug
+        \Log::info('RelatorioFechamento::store - Request data:', [
+            'all' => $request->all(),
+            'consultor_id_raw' => $request->input('consultor_id'),
+            'tipo' => $request->input('tipo'),
+        ]);
+
         $validated = $request->validate([
             'consultor_id' => $request->tipo === 'cliente' ? 'nullable' : 'required',
             'cliente_id' => 'nullable',
             'tipo' => 'required|in:consultor,cliente',
             'data_inicio' => 'required|date',
             'data_fim' => 'required|date|after_or_equal:data_inicio',
+        ]);
+
+        // Garantir que strings vazias sejam convertidas para null
+        if (isset($validated['consultor_id']) && $validated['consultor_id'] === '') {
+            $validated['consultor_id'] = null;
+        }
+        if (isset($validated['cliente_id']) && $validated['cliente_id'] === '') {
+            $validated['cliente_id'] = null;
+        }
+
+        // Log após validação
+        \Log::info('RelatorioFechamento::store - After validation:', [
+            'validated' => $validated,
+            'consultor_id_final' => $validated['consultor_id'] ?? 'NOT_SET',
         ]);
 
         // Validar consultor_id (pode ser 'todos' ou um ID válido) - apenas para consultor
