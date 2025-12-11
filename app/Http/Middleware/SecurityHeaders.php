@@ -39,13 +39,25 @@ class SecurityHeaders
 
         // Content Security Policy (CSP)
         // Ajuste conforme necessário para seu app
+        $isDev = config('app.env') !== 'production';
+
+        // Base CSP rules
+        $scriptSrc = "'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com";
+        $connectSrc = "'self' https://viacep.com.br";
+
+        // Add Vite dev server in development/local environments
+        if ($isDev) {
+            $scriptSrc .= " http://localhost:5173 http://127.0.0.1:5173 http://[::1]:5173";
+            $connectSrc .= " ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173 http://localhost:5173 http://127.0.0.1:5173 http://[::1]:5173";
+        }
+
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com",
+            "script-src {$scriptSrc}",
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.bunny.net",
             "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.bunny.net data:",
             "img-src 'self' data: https: blob:",
-            "connect-src 'self' https://viacep.com.br",
+            "connect-src {$connectSrc}",
             "frame-ancestors 'self'",
             "base-uri 'self'",
             "form-action 'self'",
