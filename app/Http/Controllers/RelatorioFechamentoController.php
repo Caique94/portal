@@ -600,26 +600,29 @@ class RelatorioFechamentoController extends Controller
         $total = 0;
 
         foreach ($ordemServicos as $os) {
-            // Valor Serviço = horas × preco_produto (tabela de preços do cliente)
-            $horas = $this->toFloat($os->horas_trabalhadas ?? 0);
-            $precoProduto = $this->toFloat($os->preco_produto ?? 0);
-            $valorServico = $horas * $precoProduto;
+            // Totalizador Administrativo:
+            // Valor Serviço = preco_produto (já é o valor total pela tabela do cliente)
+            $valorServico = $this->toFloat($os->preco_produto ?? 0);
 
             // Despesas
             $despesas = $this->toFloat($os->valor_despesa ?? 0);
 
-            // KM e Deslocamento (usa valores do consultor mesmo no admin)
+            // KM e Deslocamento (apenas se presencial)
             $valorKM = 0;
             $valorDeslocamento = 0;
 
-            if ($os->is_presencial && $consultor) {
-                $km = $this->toFloat($os->km ?? 0);
-                $valorKmConsultor = $this->toFloat($consultor->valor_km ?? 0);
-                $valorKM = $km * $valorKmConsultor;
+            if ($os->is_presencial) {
+                // Buscar consultor da OS se não foi passado
+                $consultorOS = $consultor ?? $os->consultor;
 
-                $horasDeslocamento = $this->toFloat($os->deslocamento ?? 0);
-                $valorHoraConsultor = $this->toFloat($consultor->valor_hora ?? 0);
-                $valorDeslocamento = $horasDeslocamento * $valorHoraConsultor;
+                if ($consultorOS) {
+                    $km = $this->toFloat($os->km ?? 0);
+                    $valorKmConsultor = $this->toFloat($consultorOS->valor_km ?? 0);
+                    $valorKM = $km * $valorKmConsultor;
+
+                    $valorDesloc = $this->toFloat($consultorOS->valor_desloc ?? 0);
+                    $valorDeslocamento = $valorDesloc;
+                }
             }
 
             $total += $valorServico + $despesas + $valorKM + $valorDeslocamento;
