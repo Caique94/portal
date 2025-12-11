@@ -33,10 +33,17 @@
                 <div class="card-body">
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Consultor</label>
-                                <p class="mb-0 h6">{{ $consultor->name }}</p>
-                            </div>
+                            @if($relatorioFechamento->tipo === 'consultor')
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Consultor</label>
+                                    <p class="mb-0 h6">{{ $consultor->name ?? 'N/A' }}</p>
+                                </div>
+                            @else
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Cliente</label>
+                                    <p class="mb-0 h6">{{ $relatorioFechamento->cliente->nome ?? 'N/A' }}</p>
+                                </div>
+                            @endif
                             <div class="mb-3">
                                 <label class="form-label text-muted">Tipo de Fechamento</label>
                                 <p class="mb-0">
