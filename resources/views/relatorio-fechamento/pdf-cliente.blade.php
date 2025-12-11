@@ -297,7 +297,7 @@
         // Processar cada OS para calcular totais
         foreach($ordemServicos as $os) {
             // Horas trabalhadas
-            $totalHorasTrabalhadas += $os->qtde_total ?? 0;
+            $totalHorasTrabalhadas += floatval($os->qtde_total ?? 0);
 
             // Totalizador Administrativo
             $precoServico = floatval($os->preco_produto ?? 0);
