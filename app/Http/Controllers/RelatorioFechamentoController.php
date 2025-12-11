@@ -320,6 +320,7 @@ class RelatorioFechamentoController extends Controller
 
                         $relatorio = RelatorioFechamento::create([
                             'consultor_id' => $consultor->id,
+                            'cliente_id' => $cliente->id,
                             'tipo' => $validated['tipo'],
                             'data_inicio' => $validated['data_inicio'],
                             'data_fim' => $validated['data_fim'],
@@ -359,6 +360,7 @@ class RelatorioFechamentoController extends Controller
 
                     $relatorio = RelatorioFechamento::create([
                         'consultor_id' => $consultor->id,
+                        'cliente_id' => $cliente->id,
                         'tipo' => $validated['tipo'],
                         'data_inicio' => $validated['data_inicio'],
                         'data_fim' => $validated['data_fim'],
@@ -389,6 +391,7 @@ class RelatorioFechamentoController extends Controller
 
                     $relatorio = RelatorioFechamento::create([
                         'consultor_id' => null,
+                        'cliente_id' => $cliente->id,
                         'tipo' => $validated['tipo'],
                         'data_inicio' => $validated['data_inicio'],
                         'data_fim' => $validated['data_fim'],
@@ -445,6 +448,7 @@ class RelatorioFechamentoController extends Controller
                 // Salvar relatório
                 $relatorio = RelatorioFechamento::create([
                     'consultor_id' => $consultor->id,
+                    'cliente_id' => $validated['cliente_id'] ?? null,
                     'tipo' => $validated['tipo'],
                     'data_inicio' => $validated['data_inicio'],
                     'data_fim' => $validated['data_fim'],
@@ -499,6 +503,7 @@ class RelatorioFechamentoController extends Controller
         // Salvar relatório
         $relatorio = RelatorioFechamento::create([
             'consultor_id' => $validated['consultor_id'] ?? null,
+            'cliente_id' => $validated['cliente_id'] ?? null,
             'tipo' => $validated['tipo'],
             'data_inicio' => $validated['data_inicio'],
             'data_fim' => $validated['data_fim'],
