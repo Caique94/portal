@@ -317,11 +317,16 @@
 
         $valorTotalGeral = $totalServicos + $totalDespesas + $totalKMDeslocamento;
 
-        // Determinar o nome do cliente (se houver)
-        $primeiraOS = $ordemServicos->first();
-        $nomeCliente = $primeiraOS && $primeiraOS->cliente
-            ? $primeiraOS->cliente->nome
-            : 'Diversos Clientes';
+        // Determinar o nome do cliente
+        // Prioridade: relacionamento direto > primeira OS > padrão
+        if ($relatorioFechamento->cliente) {
+            $nomeCliente = $relatorioFechamento->cliente->nome;
+        } else {
+            $primeiraOS = $ordemServicos->first();
+            $nomeCliente = $primeiraOS && $primeiraOS->cliente
+                ? $primeiraOS->cliente->nome
+                : 'Diversos Clientes';
+        }
     @endphp
 
     {{-- === CAPA === --}}

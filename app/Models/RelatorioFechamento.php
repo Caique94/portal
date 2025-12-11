@@ -12,6 +12,7 @@ class RelatorioFechamento extends Model
 
     protected $fillable = [
         'consultor_id',
+        'cliente_id',
         'tipo',
         'data_inicio',
         'data_fim',
@@ -41,6 +42,14 @@ class RelatorioFechamento extends Model
     }
 
     /**
+     * Cliente do fechamento (para tipo 'cliente')
+     */
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class, 'cliente_id');
+    }
+
+    /**
      * Usuário que aprovou o relatório
      */
     public function aprovador(): BelongsTo
@@ -57,7 +66,7 @@ class RelatorioFechamento extends Model
             return collect();
         }
 
-        $query = OrdemServico::with('cliente')
+        $query = OrdemServico::with(['cliente', 'produtoTabela.produto', 'consultor'])
             ->where('status', '<=', 5)
             ->whereBetween('created_at', [
                 \Carbon\Carbon::parse($this->data_inicio)->startOfDay(),
@@ -67,6 +76,11 @@ class RelatorioFechamento extends Model
         // Para fechamento de consultor, filtrar por consultor
         if ($this->tipo === 'consultor' && $this->consultor_id) {
             $query->where('consultor_id', $this->consultor_id);
+        }
+
+        // Para fechamento de cliente, filtrar por cliente
+        if ($this->tipo === 'cliente' && $this->cliente_id) {
+            $query->where('cliente_id', $this->cliente_id);
         }
 
         return $query->orderByDesc('id')->get();
