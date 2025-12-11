@@ -68,7 +68,7 @@
                         <thead class="table-light sticky-top">
                             <tr>
                                 <th style="width: 8%;">ID</th>
-                                <th style="width: 15%;">Consultor</th>
+                                <th style="width: 15%;">Cliente</th>
                                 <th style="width: 20%;">Período</th>
                                 <th style="width: 10%;">Total OS</th>
                                 <th style="width: 15%;">Valor Total</th>
@@ -81,7 +81,7 @@
                             @foreach($relatorios as $relatorio)
                                 <tr>
                                     <td><strong>#{{ $relatorio->id }}</strong></td>
-                                    <td>{{ $relatorio->consultor->name }}</td>
+                                    <td>{{ $relatorio->cliente->nome ?? 'N/A' }}</td>
                                     <td>
                                         {{ $relatorio->data_inicio->format('d/m/Y') }} até
                                         {{ $relatorio->data_fim->format('d/m/Y') }}
