@@ -129,6 +129,98 @@ use Illuminate\Support\Facades\Auth;
 <script src="{{ asset('plugins/select2/i18n/pt-BR.js') }}"></script>
 <script src="{{ asset('js/ordem-servico.js') }}"></script>
 <script src="{{ asset('js/projetos.js') }}"></script>
+<script>
+// ========================================
+// FILTROS DE ORDEM DE SERVIÇO
+// ========================================
+
+$(document).ready(function() {
+    // Carregar consultores no filtro (apenas para admin e financeiro)
+    if (papel === 'admin' || papel === 'financeiro') {
+        $.ajax({
+            url: '/listar-consultores-filtro',
+            method: 'GET',
+            success: function(consultores) {
+                consultores.forEach(function(consultor) {
+                    $('#filtroConsultor').append(
+                        $('<option>').val(consultor.id).text(consultor.name)
+                    );
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Erro ao carregar consultores:', error);
+            }
+        });
+    }
+
+    // Carregar clientes no filtro
+    $.ajax({
+        url: '/listar-clientes-filtro',
+        method: 'GET',
+        success: function(clientes) {
+            clientes.forEach(function(cliente) {
+                const texto = `${cliente.codigo}-${cliente.loja} - ${cliente.nome}`;
+                $('#filtroCliente').append(
+                    $('<option>').val(cliente.id).text(texto)
+                );
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Erro ao carregar clientes:', error);
+        }
+    });
+
+    // Aplicar filtros
+    $('#btnAplicarFiltros').on('click', function() {
+        const status = $('#filtroStatus').val();
+        const consultor = $('#filtroConsultor').val();
+        const cliente = $('#filtroCliente').val();
+        const mes = $('#filtroMes').val();
+        const ano = $('#filtroAno').val();
+
+        // Construir query string
+        let params = [];
+        if (status !== '') params.push('status=' + status);
+        if (consultor) params.push('consultor_id=' + consultor);
+        if (cliente) params.push('cliente_id=' + cliente);
+        if (mes) params.push('mes=' + mes);
+        if (ano) params.push('ano=' + ano);
+
+        const queryString = params.length > 0 ? '?' + params.join('&') : '';
+
+        // Recarregar DataTable com filtros
+        const table = $('#tblOrdensServico').DataTable();
+        table.ajax.url('/listar-ordens-servico' + queryString).load();
+
+        console.log('Filtros aplicados:', queryString);
+    });
+
+    // Limpar filtros
+    $('#btnLimparFiltros').on('click', function() {
+        $('#filtroStatus').val('');
+        if ($('#filtroConsultor').length) {
+            $('#filtroConsultor').val('');
+        }
+        $('#filtroCliente').val('');
+        $('#filtroMes').val('');
+        $('#filtroAno').val('{{ date("Y") }}');
+
+        // Recarregar DataTable sem filtros
+        const table = $('#tblOrdensServico').DataTable();
+        table.ajax.url('/listar-ordens-servico').load();
+
+        console.log('Filtros limpos');
+    });
+
+    // Aplicar filtro ao pressionar Enter em qualquer select
+    $('#formFiltrosOS select').on('keypress', function(e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            $('#btnAplicarFiltros').click();
+        }
+    });
+});
+</script>
 @endpush
 
 @section('modal')
