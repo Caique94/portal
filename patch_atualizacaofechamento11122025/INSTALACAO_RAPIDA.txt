@@ -1,0 +1,49 @@
+================================================================================
+INSTALAÇÃO RÁPIDA - PATCH FECHAMENTO 11/12/2025
+================================================================================
+
+PASSO 1: BACKUP
+---------------
+Faça backup do banco de dados e dos arquivos
+
+PASSO 2: SQL (EM PRODUÇÃO)
+---------------------------
+Execute os scripts SQL na ordem:
+
+psql -U seu_usuario -d portal -f sql/01_alter_consultor_id_nullable.sql
+psql -U seu_usuario -d portal -f sql/02_add_cliente_id_column.sql
+
+Ou execute manualmente no pgAdmin/DBeaver:
+
+-- Script 1
+ALTER TABLE relatorio_fechamento ALTER COLUMN consultor_id DROP NOT NULL;
+
+-- Script 2 (se a coluna ainda não existir)
+ALTER TABLE relatorio_fechamento ADD COLUMN cliente_id BIGINT NULL;
+ALTER TABLE relatorio_fechamento ADD CONSTRAINT relatorio_fechamento_cliente_id_foreign FOREIGN KEY (cliente_id) REFERENCES cliente(id) ON DELETE CASCADE;
+
+PASSO 3: COPIAR ARQUIVOS
+-------------------------
+Copie TODOS os arquivos da pasta "arquivos/" para a raiz do projeto,
+mantendo a estrutura de diretórios.
+
+Exemplo no Linux/Mac:
+cp -r arquivos/* /caminho/para/portal/
+
+Exemplo no Windows:
+xcopy /E /Y arquivos\* C:\caminho\para\portal\
+
+PASSO 4: LIMPAR CACHE
+----------------------
+php artisan cache:clear
+php artisan view:clear
+php artisan config:clear
+
+PASSO 5: TESTAR
+---------------
+1. Acesse: /relatorio-fechamento-cliente/dashboard
+2. Crie um novo fechamento de cliente
+3. Verifique se o total está correto
+4. Baixe o PDF
+
+PRONTO! ✓

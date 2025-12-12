@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\OrdemServico;
 use App\Models\ReciboProvisorio;
 use App\Models\RPS;
-use App\Models\User;
-use App\Models\Cliente;
 use App\Enums\OrdemServicoStatus;
 use App\Services\StateMachine;
 use App\Services\OSValidation;
@@ -151,7 +149,7 @@ class OrdemServicoController extends Controller
             'tipo_despesa'          => $validatedData['slcOrdemTipoDespesa'],
             'valor_despesa'         => $this->toFloat($validatedData['txtOrdemDespesas']),
             'detalhamento_despesa'  => isset($validatedData['txtOrdemDespesasDetalhamento']) ? $validatedData['txtOrdemDespesasDetalhamento'] : '',
-            'status'                => 0, // 0 = Em Aberto
+            'status'                => 1, // Legacy: 1 = Em Aberto
             'produto_tabela_id'     => $validatedData['slcProdutoOrdemId'],
             'hora_inicio'           => $validatedData['txtProdutoOrdemHoraInicio'],
             'hora_final'            => $validatedData['txtProdutoOrdemHoraFinal'],
@@ -211,138 +209,44 @@ class OrdemServicoController extends Controller
         $user = Auth::user();
         $papel = $user->papel;
         $consultor_id = $user->id;
+        $data = null;
 
-        // Log de entrada da requisição
-        Log::info('=== INÍCIO list() ===', [
-            'papel' => $papel,
-            'user_id' => $user->id,
-            'query_string' => $request->getQueryString(),
-            'all_input' => $request->all()
-        ]);
-
-        // Capturar filtros
-        $filtroStatus = $request->input('status');
-        $filtroConsultor = $request->input('consultor_id');
-        $filtroCliente = $request->input('cliente_id');
-        $filtroMes = $request->input('mes');
-        $filtroAno = $request->input('ano');
-
-        Log::info('Filtros capturados (antes de converter)', [
-            'filtroStatus' => $filtroStatus,
-            'filtroStatus_tipo' => gettype($filtroStatus),
-            'request_has_status' => $request->has('status')
-        ]);
-
-        // Converter filtros numéricos para integer
-        // IMPORTANTE: Usar $request->has() para verificar se o filtro foi enviado,
-        // pois o valor 0 (zero) é válido para status "Em Aberto"
-        $filtroStatusFornecido = $request->has('status') && $filtroStatus !== null && $filtroStatus !== '';
-        if ($filtroStatusFornecido) {
-            $filtroStatus = (int) $filtroStatus;
-        }
-        if ($filtroConsultor) {
-            $filtroConsultor = (int) $filtroConsultor;
-        }
-        if ($filtroCliente) {
-            $filtroCliente = (int) $filtroCliente;
-        }
-
-        Log::info('Após conversão', [
-            'filtroStatusFornecido' => $filtroStatusFornecido,
-            'filtroStatus' => $filtroStatus,
-            'filtroStatus_tipo' => gettype($filtroStatus)
-        ]);
-
-        $query = OrdemServico::join('cliente', 'ordem_servico.cliente_id', '=', 'cliente.id')
-            ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
-            ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome');
-
-        // Aplicar filtros baseados no papel do usuário
         switch ($papel) {
             case 'consultor':
                 // Consultores veem apenas suas próprias OS
-                $query->where('ordem_servico.consultor_id', $consultor_id);
+                $data = OrdemServico::join('cliente', 'ordem_servico.cliente_id', '=', 'cliente.id')
+                    ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
+                    ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
+                    ->where('ordem_servico.consultor_id', $consultor_id)
+                    ->orderByDesc('ordem_servico.created_at')
+                    ->get();
                 break;
             case 'financeiro':
                 // Financeiro vê todas as OS em status de faturamento em diante
-                // Mas somente se não houver filtro de status específico
-                if (!$filtroStatusFornecido) {
-                    $query->whereIn('ordem_servico.status', [4, 5, 6, 7]);
-                }
+                $data = OrdemServico::join('cliente', 'ordem_servico.cliente_id', '=', 'cliente.id')
+                    ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
+                    ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
+                    ->whereIn('ordem_servico.status', [4, 5, 6, 7]) // Aguardando Faturamento em diante
+                    ->orderByDesc('ordem_servico.created_at')
+                    ->get();
                 break;
             case 'admin':
-                // Admin vê todas as OS (sem filtro padrão)
+                // Admin vê todas as OS
+                $data = OrdemServico::join('cliente','ordem_servico.cliente_id', '=', 'cliente.id')
+                    ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
+                    ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
+                    ->orderByDesc('ordem_servico.created_at')
+                    ->get();
                 break;
         }
-
-        // Aplicar filtros adicionais
-        // Para status, usamos a flag $filtroStatusFornecido pois o valor 0 é válido
-        if ($filtroStatusFornecido) {
-            $query->where('ordem_servico.status', $filtroStatus);
-            Log::info('Filtro de status aplicado', [
-                'status' => $filtroStatus,
-                'tipo' => gettype($filtroStatus),
-                'valor_original' => $request->input('status'),
-                'papel' => $papel
-            ]);
-        } else {
-            Log::info('Filtro de status NÃO aplicado', [
-                'has_status' => $request->has('status'),
-                'input_status' => $request->input('status'),
-                'papel' => $papel
-            ]);
-        }
-
-        if ($filtroConsultor) {
-            $query->where('ordem_servico.consultor_id', $filtroConsultor);
-        }
-
-        if ($filtroCliente) {
-            $query->where('ordem_servico.cliente_id', $filtroCliente);
-        }
-
-        if ($filtroMes && $filtroAno) {
-            $query->whereYear('ordem_servico.created_at', $filtroAno)
-                  ->whereMonth('ordem_servico.created_at', $filtroMes);
-        } elseif ($filtroAno) {
-            $query->whereYear('ordem_servico.created_at', $filtroAno);
-        } elseif ($filtroMes) {
-            $query->whereMonth('ordem_servico.created_at', $filtroMes);
-        }
-
-        // Log para debug
-        Log::info('Query de listagem OS', [
-            'sql' => $query->toSql(),
-            'bindings' => $query->getBindings(),
-            'filtros' => [
-                'status' => $filtroStatus,
-                'consultor' => $filtroConsultor,
-                'cliente' => $filtroCliente,
-                'mes' => $filtroMes,
-                'ano' => $filtroAno
-            ]
-        ]);
-
-        $data = $query->orderByDesc('ordem_servico.created_at')->get();
-
-        Log::info('Resultados encontrados', [
-            'total' => $data->count(),
-            'papel' => $papel
-        ]);
 
         // Apply display status transformation for consultores and calculate consultant values
         if ($papel === 'consultor' && $data) {
-            Log::info('Aplicando transformação de status para consultor', [
-                'total_antes' => $data->count(),
-                'status_originais' => $data->pluck('status')->toArray()
-            ]);
-
             $data = $data->map(function ($item) {
                 // For consultores, if status is 6 or 7 (Aguardando RPS or RPS Emitida),
                 // display it as 5 (Faturada)
                 if (in_array($item->status, [6, 7])) {
                     $item->display_status = 5; // Faturada
-                    Log::info("Alterando exibição de status {$item->status} para 5 (Faturada) - OS #{$item->id}");
                 } else {
                     $item->display_status = $item->status;
                 }
@@ -466,62 +370,26 @@ class OrdemServicoController extends Controller
         $motivo = $request->input('motivo');
         $ordem = OrdemServico::findOrFail($id);
 
-
-        // Check permissions - robusta: permite admin sempre, compara label do status com os nomes esperados
+        // Check permissions
         $permissionService = new PermissionService();
-
-        // Allow admin always
-        if ($permissionService->getUserRole() === 'admin' || auth()->user()->papel === 'admin') {
-            // ok - admin passa direto
-        } else {
-            // Determina o nome do status atual como string (compatível com allowed_statuses)
-            try {
-                // Se sua OS tem getStatus() que retorna um Enum com label(), usa isso
-                $currentStatusName = method_exists($ordem, 'getStatus')
-                    ? $ordem->getStatus()->label()
-                    : null;
-            } catch (\Throwable $e) {
-                $currentStatusName = null;
-            }
-
-            // fallback: tentar mapear via enum OrdemServicoStatus caso exista um from/tryFrom
-            if (empty($currentStatusName)) {
-                try {
-                    // Ajuste conforme a implementação do seu enum (name/value/label)
-                    $enum = \App\Enums\OrdemServicoStatus::tryFrom($ordem->status) ?? \App\Enums\OrdemServicoStatus::from($ordem->status);
-                    // tente obter um identificador string que combine com 'aguardando_aprovacao', etc.
-                    $currentStatusName = property_exists($enum, 'value') ? $enum->value : (method_exists($enum, 'name') ? $enum->name() : (string)$ordem->status);
-                } catch (\Throwable $e) {
-                    $currentStatusName = (string)$ordem->status;
-                }
-            }
-
-            // Lista de status permitidos para contestação (strings)
-            $allowedStatuses = ['aguardando_aprovacao', 'aprovado'];
-
-            \Log::info('Permissão contest(): checando status', [
+        if (!$permissionService->canContestOS($ordem)) {
+            \Log::warning("Contestação negada para usuário", [
                 'user_id' => auth()->id(),
                 'user_role' => $permissionService->getUserRole(),
                 'os_id' => $ordem->id,
-                'os_status_raw' => $ordem->status,
-                'os_status_name' => $currentStatusName,
-                'allowed_statuses' => $allowedStatuses
+                'os_status' => $ordem->status
             ]);
 
-            if (! in_array($currentStatusName, $allowedStatuses)) {
-                return response()->json([
-                    'message' => 'Você não tem permissão para contestar ordens de serviço.',
-                ], 403);
-            }
+            $debugInfo = config('app.debug') ? [
+                'user_role' => $permissionService->getUserRole(),
+                'os_status' => $ordem->status,
+                'allowed_statuses' => ['aguardando_aprovacao', 'aprovado']
+            ] : [];
 
-            // Por fim, checar regra adicional no PermissionService (ex: permissões por usuário)
-            if (! $permissionService->canContestOS($ordem)) {
-                return response()->json([
-                    'message' => 'Você não tem permissão para contestar ordens de serviço.'
-                ], 403);
-            }
+            return response()->json(array_merge([
+                'message' => 'Você não tem permissão para contestar ordens de serviço.'
+            ], $debugInfo), 403);
         }
-
 
         // Validate transition
         $stateMachine = new StateMachine($ordem);
@@ -645,29 +513,6 @@ class OrdemServicoController extends Controller
             ->get();
 
         return response()->json(['data' => $data]);
-    }
-
-    /**
-     * Listar consultores para filtro
-     */
-    public function listConsultores()
-    {
-        $consultores = User::where('papel', 'consultor')
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
-        return response()->json($consultores);
-    }
-
-    /**
-     * Listar clientes para filtro
-     */
-    public function listClientes()
-    {
-        $clientes = Cliente::orderBy('nome')
-            ->get(['id', 'nome', 'codigo', 'loja']);
-
-        return response()->json($clientes);
     }
 
     /**

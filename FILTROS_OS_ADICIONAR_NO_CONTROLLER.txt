@@ -1,0 +1,24 @@
+// ADICIONAR ESTES MÉTODOS NO OrdemServicoController.php
+
+/**
+ * Listar consultores para filtro
+ */
+public function listConsultores()
+{
+    $consultores = \App\Models\User::where('papel', 'consultor')
+        ->orderBy('name')
+        ->get(['id', 'name']);
+
+    return response()->json($consultores);
+}
+
+/**
+ * Listar clientes para filtro
+ */
+public function listClientes()
+{
+    $clientes = \App\Models\Cliente::orderBy('nome')
+        ->get(['id', 'nome', 'codigo', 'loja']);
+
+    return response()->json($clientes);
+}

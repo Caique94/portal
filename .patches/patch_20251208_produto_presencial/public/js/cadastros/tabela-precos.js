@@ -1,70 +1,4 @@
 $(document).ready(function() {
-    // ----------------- Helpers de data -----------------
-        function normalizeDateToYMD(value) {
-            if (value === null || value === undefined || value === '') return "";
-
-            if (value instanceof Date && !isNaN(value)) {
-                return toYMDUTC(value);
-            }
-
-            let s = String(value).trim();
-
-            // já no formato YYYY-MM-DD
-            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-
-            // casos como "2026-10-30 00:00:00-03" ou "2026-10-30T00:00:00-03"
-            if (/^\d{4}-\d{2}-\d{2}[\sT]/.test(s)) {
-                return s.slice(0,10);
-            }
-
-            // ISO com timezone: pega prefixo YYYY-MM-DD
-            let isoMatch = s.match(/^(\d{4}-\d{2}-\d{2})/);
-            if (isoMatch) return isoMatch[1];
-
-            // DD/MM/YYYY -> converte
-            let dm = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-            if (dm) {
-                let d = dm[1].padStart(2,'0');
-                let m = dm[2].padStart(2,'0');
-                return `${dm[3]}-${m}-${d}`;
-            }
-
-            // /Date(167...)/ ou timestamp numérico
-            let msMatch = s.match(/\/Date\((\d+)\)\//);
-            if (msMatch) return timestampToYMD(parseInt(msMatch[1],10));
-            if (/^\d{10,13}$/.test(s)) {
-                let n = s.length === 10 ? parseInt(s,10) * 1000 : parseInt(s,10);
-                return timestampToYMD(n);
-            }
-
-            // fallback: cria Date e usa UTC
-            try {
-                let d = new Date(s);
-                if (!isNaN(d)) return toYMDUTC(d);
-            } catch(e){}
-
-            return "";
-        }
-
-        function timestampToYMD(ms) {
-            return toYMDUTC(new Date(ms));
-        }
-
-        function toYMDUTC(d) {
-            let yyyy = d.getUTCFullYear();
-            let mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-            let dd = String(d.getUTCDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;
-        }
-
-        function formatForDisplayDDMMYYYY(value) {
-            let ymd = normalizeDateToYMD(value);
-            if (!ymd) return '-';
-            const parts = ymd.split('-');
-            return parts[2] + '/' + parts[1] + '/' + parts[0];
-        }
-        // ----------------- fim helpers -----------------
-
 
     let tblTabelasPrecos = $('#tblTabelasPrecos').DataTable({
         ajax: {
@@ -79,31 +13,34 @@ $(document).ready(function() {
             data: 'data_inicio',
             className: 'dt-center',
             width: '120px',
-        render: function(data, type, row) {
-            if (!data) return '-';
-            return formatForDisplayDDMMYYYY(data);
-        }
-
+            render: function(data, type, row) {
+                if (!data) return '-';
+                var data_inicio = new Date(data);
+                var html = ('0' + data_inicio.getDate()).slice(-2) + '/' + ('0' + (data_inicio.getMonth() + 1)).slice(-2) + '/' + data_inicio.getFullYear();
+                return html;
+            }
         },{
             title: 'Data de Vencimento',
             data: 'data_vencimento',
             className: 'dt-center',
             width: '120px',
             render: function(data, type, row) {
-            if (!data) return '-';
-            return formatForDisplayDDMMYYYY(data);
-        }
-
+                if (!data) return '-';
+                var data_vencimento = new Date(data);
+                var html = ('0' + data_vencimento.getDate()).slice(-2) + '/' + ('0' + (data_vencimento.getMonth() + 1)).slice(-2) + '/' + data_vencimento.getFullYear();
+                return html;
+            }
         },{
             title: 'Criado Em',
             data: 'created_at',
             className: 'dt-center',
             width: '120px',
             render: function(data, type, row) {
-                if (!data) return '-';
-                return formatForDisplayDDMMYYYY(data);
-        }
+                var criado_em = new Date(data);
+                var html = ('0' + criado_em.getDate()).slice(-2) + '/' + ('0' + (criado_em.getMonth() + 1)).slice(-2) + '/' + criado_em.getFullYear();
 
+                return html;
+            }
         },{
             title: 'Ativo',
             className: 'dt-center',
@@ -238,39 +175,40 @@ $(document).ready(function() {
     });
 
     // Fill form fields AFTER modal is completely shown
-    // Fill form fields AFTER modal is completely shown
-    $('#modalTabelaPrecos').off('shown.bs.modal').on('shown.bs.modal', function() {
+    $('#modalTabelaPrecos').on('shown.bs.modal', function() {
         var rowData = window.currentEditingRowData;
 
         if (rowData) {
             console.log('Populating form with rowData:', rowData);
 
-            $('#txtTabelaPrecoDescricao').val(rowData.descricao || '');
+            $('#txtTabelaPrecoDescricao').val(rowData.descricao);
 
-            // DATA INICIO
+            // Ensure dates are in YYYY-MM-DD format for input[type="date"]
             if (rowData.data_inicio) {
-                var dataInicio = normalizeDateToYMD(rowData.data_inicio);
+                var dataInicio = rowData.data_inicio;
+                // Handle both ISO format (2025-11-20) and ISO datetime format (2025-11-20T00:00:00)
+                if (dataInicio.includes('T')) {
+                    dataInicio = dataInicio.split('T')[0];
+                }
                 console.log('Setting data_inicio to:', dataInicio);
                 $('#txtTabelaPrecoDataInicio').val(dataInicio);
-            } else {
-                $('#txtTabelaPrecoDataInicio').val('');
-                console.log('data_inicio vazio');
             }
 
-            // DATA VENCIMENTO
             if (rowData.data_vencimento) {
-                var dataVencimento = normalizeDateToYMD(rowData.data_vencimento);
+                var dataVencimento = rowData.data_vencimento;
+                // Handle both ISO format (2025-11-20) and ISO datetime format (2025-11-20T00:00:00)
+                if (dataVencimento.includes('T')) {
+                    dataVencimento = dataVencimento.split('T')[0];
+                }
                 console.log('Setting data_vencimento to:', dataVencimento);
                 $('#txtTabelaPrecoDataVencimento').val(dataVencimento);
             } else {
-                $('#txtTabelaPrecoDataVencimento').val('');
-                console.log('data_vencimento vazio');
+                console.log('data_vencimento is empty or null:', rowData.data_vencimento);
             }
 
-            $('#txtTabelaPrecoId').val(rowData.id || '');
+            $('#txtTabelaPrecoId').val(rowData.id);
         }
     });
-
 
     $('#modalTabelaPrecos').on('hidden.bs.modal', function() {
         $('#modalTabelaPrecos input[type="text"]').val('');

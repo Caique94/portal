@@ -1,0 +1,100 @@
+================================================================================
+EXEMPLO: ANTES E DEPOIS DA CORREÇÃO
+================================================================================
+
+ANTES (PROBLEMA):
+-----------------
+
+1. Usuário cria OS com valor R$ 730,00 no formulário
+2. Controller recebe: $validatedData['txtOrdemValorTotal'] = "730,00"
+3. Laravel salva no banco: valor_total = 70030.00  ❌ ERRADO!
+4. Listagem mostra: R$ 70.030,00  ❌ VALOR INCORRETO!
+
+5. Usuário edita a OS
+6. Formulário carrega valor: 70030.00
+7. Usuário não altera nada e salva
+8. Laravel salva novamente: valor_total = 70030.00  ❌ AINDA ERRADO!
+
+
+DEPOIS (CORRIGIDO):
+-------------------
+
+1. Usuário cria OS com valor R$ 730,00 no formulário
+2. Controller recebe: $validatedData['txtOrdemValorTotal'] = "730,00"
+3. toFloat() converte: "730,00" → 730.00
+4. Laravel salva no banco: valor_total = 730.00  ✓ CORRETO!
+5. Listagem mostra: R$ 730,00  ✓ VALOR CORRETO!
+
+6. Usuário edita a OS
+7. Formulário carrega valor: 730.00
+8. Usuário altera para R$ 855,25
+9. toFloat() converte: "855,25" → 855.25
+10. Laravel salva: valor_total = 855.25  ✓ CORRETO!
+
+
+MIGRATION (CORRIGE DADOS ANTIGOS):
+-----------------------------------
+
+1. Busca no banco registros com valor_total >= 10000
+2. Encontra: OS #29 com valor_total = 70030.00
+3. Divide por 100: 70030.00 / 100 = 730.00
+4. Atualiza: UPDATE ordem_servico SET valor_total = 730.00 WHERE id = 29
+5. Resultado: OS #29 agora tem valor_total = 730.00  ✓ CORRIGIDO!
+
+
+CASOS DE TESTE:
+---------------
+
+CASO 1: Valor simples
+Input: "730,00"
+Output: 730.00 ✓
+
+CASO 2: Valor com milhar (formato BR)
+Input: "1.234,56"
+Output: 1234.56 ✓
+
+CASO 3: Valor com milhar (formato US)
+Input: "1,234.56"
+Output: 1234.56 ✓
+
+CASO 4: Valor inteiro
+Input: "730"
+Output: 730.00 ✓
+
+CASO 5: Já é float
+Input: 730.00
+Output: 730.00 ✓
+
+CASO 6: Null/vazio
+Input: null
+Output: null ✓
+
+
+QUERY PARA VERIFICAR DADOS:
+----------------------------
+
+-- Ver OSs com valores suspeitos (antes da migration)
+SELECT
+    id,
+    valor_total,
+    preco_produto,
+    valor_despesa,
+    km,
+    created_at
+FROM ordem_servico
+WHERE valor_total >= 10000
+   OR preco_produto >= 10000
+   OR valor_despesa >= 10000
+   OR km >= 10000
+ORDER BY created_at DESC;
+
+-- Ver OSs recentes para confirmar correção
+SELECT
+    id,
+    valor_total,
+    preco_produto,
+    valor_despesa,
+    created_at
+FROM ordem_servico
+ORDER BY created_at DESC
+LIMIT 10;

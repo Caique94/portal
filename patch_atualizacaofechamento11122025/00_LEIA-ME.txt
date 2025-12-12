@@ -1,0 +1,126 @@
+================================================================================
+PATCH: ATUALIZAÇÃO SISTEMA DE FECHAMENTO - 11/12/2025
+================================================================================
+
+DESCRIÇÃO:
+Este patch implementa melhorias completas no sistema de fechamento de relatórios,
+separando corretamente os fluxos de Fechamento de Cliente e Fechamento de Consultor.
+
+ALTERAÇÕES PRINCIPAIS:
+- Separação completa de dashboards (Cliente vs Consultor)
+- PDFs com layouts específicos para cada tipo
+- Adição do campo cliente_id na tabela relatorio_fechamento
+- Correção de totalizadores e cálculos
+- Permissões de aprovação restritas a Admin
+- Correções de CSP (Content Security Policy)
+
+================================================================================
+INSTRUÇÕES DE INSTALAÇÃO
+================================================================================
+
+1. BACKUP
+   - Faça backup completo do banco de dados
+   - Faça backup dos arquivos da aplicação
+
+2. EXECUTE OS SCRIPTS SQL (pasta sql/)
+   Execute na ordem:
+
+   a) 01_alter_consultor_id_nullable.sql
+      Torna a coluna consultor_id NULLABLE
+
+   b) 02_add_cliente_id_column.sql
+      Adiciona a coluna cliente_id (se ainda não existir)
+
+3. COPIE OS ARQUIVOS
+   Copie todos os arquivos da pasta 'arquivos/' para a raiz do projeto,
+   mantendo a estrutura de diretórios.
+
+4. LIMPE O CACHE
+   php artisan cache:clear
+   php artisan view:clear
+   php artisan config:clear
+
+5. TESTE
+   - Acesse o dashboard de fechamento de cliente
+   - Crie um novo fechamento de cliente
+   - Verifique se o totalizador está correto
+   - Gere o PDF e verifique o layout
+   - Teste as permissões de aprovação
+
+================================================================================
+COMMITS INCLUÍDOS (14 total)
+================================================================================
+
+1. feat: Complete refactoring of fechamento system with separate dashboards and PDFs
+2. fix: Add explicit null conversion for consultor_id in fechamento cliente
+3. feat: Refactor PDF template for Cliente closure reports
+4. feat: Add cliente_id to relatorio_fechamento for better client tracking
+5. fix: Add cliente_id to all RelatorioFechamento creation points
+6. fix: Add fonts.bunny.net to Content Security Policy
+7. fix: Add Vite dev server support to CSP in development
+8. fix: Remove IPv6 localhost from CSP (unsupported format)
+9. fix: Show cliente name instead of consultor for cliente fechamentos
+10. fix: Correct totalizador calculation for fechamento cliente
+11. fix: Revert - Keep horas × preco_produto calculation
+12. fix: Use ordem_servico.valor_total for fechamento cliente calculation
+13. fix: Show cliente name instead of consultor in index-cliente table
+14. fix: Convert qtde_total to float in PDF template
+
+================================================================================
+ARQUIVOS MODIFICADOS
+================================================================================
+
+Controllers:
+- app/Http/Controllers/RelatorioFechamentoController.php
+
+Models:
+- app/Models/RelatorioFechamento.php
+
+Policies:
+- app/Policies/RelatorioFechamentoPolicy.php
+
+Middleware:
+- app/Http/Middleware/SecurityHeaders.php
+
+Migrations:
+- database/migrations/2025_12_11_174123_add_cliente_id_to_relatorio_fechamento_table.php
+
+Views:
+- resources/views/layout/master.blade.php
+- resources/views/relatorio-fechamento/dashboard-cliente.blade.php (NOVO)
+- resources/views/relatorio-fechamento/dashboard-consultor.blade.php (NOVO)
+- resources/views/relatorio-fechamento/index-cliente.blade.php
+- resources/views/relatorio-fechamento/pdf-cliente.blade.php
+- resources/views/relatorio-fechamento/pdf-consultor.blade.php
+- resources/views/relatorio-fechamento/show.blade.php
+
+Routes:
+- routes/web.php
+
+================================================================================
+VERIFICAÇÕES PÓS-INSTALAÇÃO
+================================================================================
+
+[ ] Scripts SQL executados com sucesso
+[ ] Arquivos copiados corretamente
+[ ] Cache limpo
+[ ] Dashboard de cliente acessível
+[ ] Dashboard de consultor acessível
+[ ] Fechamento de cliente cria corretamente
+[ ] Totalizador calculando corretamente
+[ ] PDF de cliente gera com layout correto
+[ ] PDF de consultor gera com layout correto
+[ ] Permissões funcionando (apenas Admin pode aprovar)
+
+================================================================================
+SUPORTE
+================================================================================
+
+Em caso de problemas, verifique:
+1. Logs do Laravel (storage/logs/laravel.log)
+2. Se os scripts SQL foram executados
+3. Se o cache foi limpo
+4. Se as permissões dos arquivos estão corretas
+
+Data de criação: 11/12/2025
+Versão: 1.0.0

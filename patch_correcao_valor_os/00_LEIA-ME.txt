@@ -1,0 +1,126 @@
+================================================================================
+PATCH: CORREÇÃO DE VALORES MONETÁRIOS EM ORDEM DE SERVIÇO
+================================================================================
+
+PROBLEMA:
+Quando uma OS é criada com valores no formato brasileiro (730,00), o sistema
+salva incorretamente como 70.030,00 ao invés de 730,00.
+
+Ao editar e salvar novamente, o valor é corrigido para 730,00.
+
+CAUSA:
+O Laravel/PHP está interpretando "730,00" como string e não convertendo
+corretamente para float. A vírgula está sendo tratada incorretamente.
+
+SOLUÇÃO:
+1. Adicionar método toFloat() no OrdemServicoController
+2. Aplicar toFloat() em todos os campos monetários no store/update
+3. Migration para corrigir valores já salvos incorretamente
+
+================================================================================
+INSTRUÇÕES DE INSTALAÇÃO
+================================================================================
+
+1. BACKUP
+   - Faça backup completo do banco de dados
+   - Faça backup do arquivo OrdemServicoController.php
+
+2. COPIE O ARQUIVO
+   Copie o arquivo:
+   arquivos/app/Http/Controllers/OrdemServicoController.php
+
+   Para:
+   app/Http/Controllers/OrdemServicoController.php
+
+3. COPIE A MIGRATION
+   Copie o arquivo:
+   arquivos/database/migrations/2025_12_10_174702_fix_incorrect_monetary_values_in_ordem_servico.php
+
+   Para:
+   database/migrations/2025_12_10_174702_fix_incorrect_monetary_values_in_ordem_servico.php
+
+4. EXECUTE A MIGRATION (em produção)
+   php artisan migrate
+
+   IMPORTANTE: A migration vai mostrar na tela quais valores estão sendo
+   corrigidos. Exemplo:
+
+   OS #29: 70030.00 → 730.00
+   OS #28: 85525.00 → 855.25
+
+5. TESTE
+   - Crie uma nova OS com valor R$ 730,00
+   - Verifique se salva corretamente como 730.00 no banco
+   - Verifique se exibe R$ 730,00 na listagem
+
+================================================================================
+CAMPOS AFETADOS
+================================================================================
+
+✓ valor_despesa    (Despesas)
+✓ preco_produto    (Preço do Produto)
+✓ valor_total      (Valor Total da OS)
+✓ km               (Quilometragem)
+
+================================================================================
+MÉTODO toFloat()
+================================================================================
+
+O método toFloat() trata os seguintes formatos:
+
+✓ "730,00"         → 730.00   (formato BR com vírgula)
+✓ "730.00"         → 730.00   (formato US com ponto)
+✓ "1.234,56"       → 1234.56  (formato BR com milhar)
+✓ "1,234.56"       → 1234.56  (formato US com milhar)
+✓ "730"            → 730.00   (inteiro)
+✓ 730              → 730.00   (já é número)
+✓ null             → null     (mantém nulo)
+
+================================================================================
+MIGRATION - O QUE FAZ
+================================================================================
+
+A migration procura por valores >= 10000 (provavelmente incorretos) e
+divide por 100:
+
+- 70030.00 → 730.00
+- 85525.00 → 855.25
+- 66000.00 → 660.00
+
+Critério: Valores muito altos (>= 10000) são suspeitos porque é raro
+uma OS ter valor acima de R$ 10.000,00.
+
+IMPORTANTE: Revise os valores antes de executar a migration!
+
+Execute este SQL para ver quais registros serão afetados:
+
+SELECT id, valor_despesa, preco_produto, valor_total, km, created_at
+FROM ordem_servico
+WHERE (valor_despesa >= 10000 OR preco_produto >= 10000
+       OR valor_total >= 10000 OR km >= 10000)
+ORDER BY created_at DESC;
+
+================================================================================
+VERIFICAÇÕES PÓS-INSTALAÇÃO
+================================================================================
+
+[ ] Arquivo OrdemServicoController.php copiado
+[ ] Migration copiada
+[ ] Migration executada com sucesso
+[ ] Valores antigos corrigidos
+[ ] Nova OS cria com valor correto
+[ ] Listagem mostra valores corretos
+
+================================================================================
+SUPORTE
+================================================================================
+
+Se após a instalação ainda aparecerem valores incorretos:
+
+1. Verifique se o método toFloat() está sendo chamado
+2. Verifique se a migration rodou com sucesso
+3. Verifique os logs: storage/logs/laravel.log
+4. Execute novamente a query SQL para ver se ainda há valores >= 10000
+
+Data de criação: 11/12/2025
+Versão: 1.0.0

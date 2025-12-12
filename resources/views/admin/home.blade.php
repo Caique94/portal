@@ -517,24 +517,33 @@
 
 @push('scripts')
 <script>
-  function aprovarOS(osId) {
-    if (confirm('Tem certeza que deseja aprovar esta Ordem de Serviço?')) {
-      $.ajax({
-        url: '/toggle-ordem-servico/' + osId + '/4',
-        method: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-          alert('Ordem de Serviço aprovada com sucesso!');
-          location.reload();
-        },
-        error: function(error) {
-          console.error(error);
-          alert('Erro ao aprovar a Ordem de Serviço.');
+   function aprovarOS(osId) {
+    if (!confirm('Tem certeza que deseja aprovar esta Ordem de Serviço?')) return;
+
+    $.ajax({
+      url: '/toggle-ordem-servico/' + osId + '/4',
+      method: 'POST',
+      contentType: 'application/json',            // << garante o header Content-Type
+      data: JSON.stringify({}),                   // << corpo vazio válido para o backend
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+        'Accept': 'application/json'              // força resposta JSON (útil pra erros)
+      },
+      success: function(response) {
+        alert('Ordem de Serviço aprovada com sucesso!');
+        location.reload();
+      },
+      error: function(xhr) {
+        console.error('Erro aprovarOS', xhr.status, xhr.responseText);
+        // tenta mostrar mensagem amigável do backend
+        try {
+          const json = xhr.responseJSON || JSON.parse(xhr.responseText);
+          alert(json.message || JSON.stringify(json));
+        } catch (e) {
+          alert('Erro ao aprovar a Ordem de Serviço. Veja console.');
         }
-      });
-    }
+      }
+    });
   }
 
   function contestarOS(osId) {

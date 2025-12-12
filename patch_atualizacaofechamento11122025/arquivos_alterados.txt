@@ -1,0 +1,13 @@
+app/Http/Controllers/RelatorioFechamentoController.php
+app/Http/Middleware/SecurityHeaders.php
+app/Models/RelatorioFechamento.php
+app/Policies/RelatorioFechamentoPolicy.php
+database/migrations/2025_12_11_174123_add_cliente_id_to_relatorio_fechamento_table.php
+resources/views/layout/master.blade.php
+resources/views/relatorio-fechamento/dashboard-cliente.blade.php
+resources/views/relatorio-fechamento/dashboard-consultor.blade.php
+resources/views/relatorio-fechamento/index-cliente.blade.php
+resources/views/relatorio-fechamento/pdf-cliente.blade.php
+resources/views/relatorio-fechamento/pdf-consultor.blade.php
+resources/views/relatorio-fechamento/show.blade.php
+routes/web.php

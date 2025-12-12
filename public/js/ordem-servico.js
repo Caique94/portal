@@ -91,16 +91,18 @@ $(document).ready(function() {
             render: function(data, type, row) {
                 var html = '';
                 var statusMap = {
-                    'em_aberto': { text: 'Em Aberto', class: 'status-1-text' },
-                    'aguardando_aprovacao': { text: 'Aguardando Aprovação', class: 'status-2-text' },
+                    'em_aberto': { text: 'Em Aberto', class: 'status-0-text' },
+                    'aguardando_aprovacao': { text: 'Aguardando Aprovação', class: 'status-1-text' },
+                    'aprovado': { text: 'Aprovado', class: 'status-2-text' },
                     'contestar': { text: 'Contestada', class: 'status-3-text' },
-                    'aprovado': { text: 'Aguardando Faturamento', class: 'status-4-text' },
+                    'aguardando_faturamento': { text: 'Aguardando Faturamento', class: 'status-4-text' },
                     'faturado': { text: 'Faturada', class: 'status-5-text' },
                     'aguardando_rps': { text: 'Aguardando RPS', class: 'status-6-text' },
                     'rps_emitida': { text: 'RPS Emitida', class: 'status-7-text' },
                     // Legacy numeric status support
-                    '1': { text: 'Em Aberto', class: 'status-1-text' },
-                    '2': { text: 'Aguardando Aprovação', class: 'status-2-text' },
+                    '0': { text: 'Em Aberto', class: 'status-0-text' },
+                    '1': { text: 'Aguardando Aprovação', class: 'status-1-text' },
+                    '2': { text: 'Aprovado', class: 'status-2-text' },
                     '3': { text: 'Contestada', class: 'status-3-text' },
                     '4': { text: 'Aguardando Faturamento', class: 'status-4-text' },
                     '5': { text: 'Faturada', class: 'status-5-text' },
@@ -137,8 +139,8 @@ $(document).ready(function() {
                 // Visualizar - visible to all roles
                 html += '<li><a class="dropdown-item exibir-modal-visualizacao" href="javascript:void(0);"><i class="bi bi-eye"></i> Visualizar</a></li>';
 
-                // Editar - only for consultor and admin on status 1 or 3
-                if ((papel == 'consultor' || papel == 'admin') && (row.status == 1 || row.status == 3)) {
+                // Editar - only for consultor and admin on status 0 (Em Aberto) or 3 (Contestada)
+                if ((papel == 'consultor' || papel == 'admin') && (row.status == 0 || row.status == 3)) {
                     html += '<li><a class="dropdown-item exibir-modal-edicao" href="javascript:void(0);"><i class="bi bi-pencil"></i> Editar</a></li>';
 
                     // Motivo Contestação - only on status 3
@@ -147,16 +149,16 @@ $(document).ready(function() {
                     }
 
                     html += '<li><hr class="dropdown-divider"></li>';
-                    html += '<li><a class="dropdown-item toggle-status-ordem-servico" status-destino="2" href="javascript:void(0);"><i class="bi bi-send"></i> Enviar p/ Aprova&ccedil;&atilde;o</a></li>';
+                    html += '<li><a class="dropdown-item toggle-status-ordem-servico" status-destino="1" href="javascript:void(0);"><i class="bi bi-send"></i> Enviar p/ Aprova&ccedil;&atilde;o</a></li>';
 
-                    // Deletar - only on status 1
-                    if (row.status == 1) {
+                    // Deletar - only on status 0 (Em Aberto)
+                    if (row.status == 0) {
                         html += '<li><a class="dropdown-item deletar-ordem-servico text-danger" href="javascript:void(0);"><i class="bi bi-trash"></i> Deletar</a></li>';
                     }
                 }
 
-                // Admin approval actions - only on status 2
-                if (papel == 'admin' && (row.status == 2)) {
+                // Admin approval actions - only on status 1 (Aguardando Aprovação)
+                if (papel == 'admin' && (row.status == 1)) {
                     html += '<li><hr class="dropdown-divider"></li>';
                     html += '<li><a class="dropdown-item toggle-status-ordem-servico" status-destino="4" href="javascript:void(0);"><i class="bi bi-check-circle"></i> Aprovar</a></li>';
                     html += '<li><a class="dropdown-item contestar-ordem-servico" href="javascript:void(0);"><i class="bi bi-x-circle"></i> Contestar</a></li>';
@@ -299,6 +301,9 @@ $(document).ready(function() {
                                 url: '/contestar-ordem-servico',
                                 type: 'POST',
                                 data: data,
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                },
                                 success: function(response) {
                                     tblOrdensServico.ajax.reload();
 
@@ -541,6 +546,9 @@ $(document).ready(function() {
                 url: '/salvar-ordem-servico',
                 type: 'POST',
                 data: formData,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
                 success: function(response) {
                     tblOrdensServico.ajax.reload();
                     $('#modalOrdemServico').modal('hide');

@@ -29,8 +29,7 @@ use Illuminate\Support\Facades\Auth;
                             <select id="filtroStatus" class="form-select">
                                 <option value="">Todos os Status</option>
                                 <option value="0">Em Aberto</option>
-                                <option value="1">Enviada para Aprovação</option>
-                                <option value="2">Finalizada</option>
+                                <option value="1">Aguardando Aprovação</option>
                                 <option value="3">Contestada</option>
                                 <option value="4">Aguardando Faturamento</option>
                                 <option value="5">Faturada</option>
@@ -135,38 +134,85 @@ use Illuminate\Support\Facades\Auth;
 // ========================================
 
 $(document).ready(function() {
+    console.log('Iniciando carregamento de filtros...');
+    console.log('Papel do usuário:', papel);
+
     // Carregar consultores no filtro (apenas para admin e financeiro)
     if (papel === 'admin' || papel === 'financeiro') {
+        console.log('Carregando consultores...');
+        $('#filtroConsultor').prop('disabled', true);
+        $('#filtroConsultor').append($('<option>').text('Carregando...'));
+
         $.ajax({
             url: '/listar-consultores-filtro',
             method: 'GET',
             success: function(consultores) {
-                consultores.forEach(function(consultor) {
-                    $('#filtroConsultor').append(
-                        $('<option>').val(consultor.id).text(consultor.name)
-                    );
-                });
+                console.log('Consultores carregados:', consultores);
+                $('#filtroConsultor').empty();
+                $('#filtroConsultor').append($('<option>').val('').text('Todos os Consultores'));
+
+                if (consultores.length === 0) {
+                    $('#filtroConsultor').append($('<option>').text('Nenhum consultor cadastrado'));
+                } else {
+                    consultores.forEach(function(consultor) {
+                        $('#filtroConsultor').append(
+                            $('<option>').val(consultor.id).text(consultor.name)
+                        );
+                    });
+                }
+                $('#filtroConsultor').prop('disabled', false);
+                console.log('Total de consultores:', consultores.length);
             },
             error: function(xhr, status, error) {
-                console.error('Erro ao carregar consultores:', error);
+                console.error('Erro ao carregar consultores:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    error: error,
+                    response: xhr.responseText
+                });
+                $('#filtroConsultor').empty();
+                $('#filtroConsultor').append($('<option>').val('').text('Erro ao carregar consultores'));
+                $('#filtroConsultor').prop('disabled', false);
             }
         });
     }
 
     // Carregar clientes no filtro
+    console.log('Carregando clientes...');
+    $('#filtroCliente').prop('disabled', true);
+    $('#filtroCliente').append($('<option>').text('Carregando...'));
+
     $.ajax({
         url: '/listar-clientes-filtro',
         method: 'GET',
         success: function(clientes) {
-            clientes.forEach(function(cliente) {
-                const texto = `${cliente.codigo}-${cliente.loja} - ${cliente.nome}`;
-                $('#filtroCliente').append(
-                    $('<option>').val(cliente.id).text(texto)
-                );
-            });
+            console.log('Clientes carregados:', clientes);
+            $('#filtroCliente').empty();
+            $('#filtroCliente').append($('<option>').val('').text('Todos os Clientes'));
+
+            if (clientes.length === 0) {
+                $('#filtroCliente').append($('<option>').text('Nenhum cliente cadastrado'));
+            } else {
+                clientes.forEach(function(cliente) {
+                    const texto = `${cliente.codigo}-${cliente.loja} - ${cliente.nome}`;
+                    $('#filtroCliente').append(
+                        $('<option>').val(cliente.id).text(texto)
+                    );
+                });
+            }
+            $('#filtroCliente').prop('disabled', false);
+            console.log('Total de clientes:', clientes.length);
         },
         error: function(xhr, status, error) {
-            console.error('Erro ao carregar clientes:', error);
+            console.error('Erro ao carregar clientes:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                error: error,
+                response: xhr.responseText
+            });
+            $('#filtroCliente').empty();
+            $('#filtroCliente').append($('<option>').val('').text('Erro ao carregar clientes'));
+            $('#filtroCliente').prop('disabled', false);
         }
     });
 
@@ -367,10 +413,6 @@ $(document).ready(function() {
                                             <div class="col-md-6">
                                                 <table class="table table-sm">
                                                     <tbody>
-                                                        <tr>
-                                                            <td><strong>Valor Hora Cliente:</strong></td>
-                                                            <td class="text-end" id="valorHoraConsultor">R$ 0,00</td>
-                                                        </tr>
                                                         <tr id="linhaValorKMCliente" style="display: none;">
                                                             <td><strong>Valor KM Cliente:</strong></td>
                                                             <td class="text-end" id="valorKMConsultor">R$ 0,00</td>

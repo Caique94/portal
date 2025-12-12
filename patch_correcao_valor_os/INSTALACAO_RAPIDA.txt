@@ -1,0 +1,64 @@
+================================================================================
+INSTALAÇÃO RÁPIDA - PATCH CORREÇÃO VALORES OS
+================================================================================
+
+PASSO 1: BACKUP
+---------------
+Faça backup do banco de dados!
+
+PASSO 2: COPIAR ARQUIVOS
+-------------------------
+Copie TODOS os arquivos da pasta "arquivos/" para a raiz do projeto:
+
+Windows:
+xcopy /E /Y arquivos\* C:\caminho\para\seu-projeto\
+
+Linux/Mac:
+cp -r arquivos/* /caminho/para/seu-projeto/
+
+PASSO 3: EXECUTAR MIGRATION
+----------------------------
+php artisan migrate
+
+A migration vai mostrar na tela quais valores foram corrigidos:
+
+Exemplo de output:
+=== Corrigindo valores monetários incorretos ===
+
+Valor Total: Encontrados 15 registros com valores >= 10000
+  OS #29: 70030.00 → 730.00
+  OS #28: 85525.00 → 855.25
+  OS #27: 66000.00 → 660.00
+  ...
+
+✓ Total de valores corrigidos: 45
+===========================================
+
+PASSO 4: TESTAR
+---------------
+1. Crie uma nova OS com valor R$ 730,00
+2. Salve
+3. Verifique se na listagem aparece R$ 730,00 (e não R$ 70.030,00)
+4. Edite a OS e salve novamente
+5. Valor deve continuar R$ 730,00
+
+PASSO 5 (OPCIONAL): VERIFICAR BANCO
+------------------------------------
+Execute esta query para conferir se ainda há valores suspeitos:
+
+SELECT id, valor_total, preco_produto, valor_despesa, created_at
+FROM ordem_servico
+WHERE valor_total >= 10000
+   OR preco_produto >= 10000
+   OR valor_despesa >= 10000
+ORDER BY created_at DESC;
+
+Resultado esperado: 0 registros (nenhum valor >= 10000)
+
+PRONTO! ✓
+
+ARQUIVOS MODIFICADOS:
+- app/Http/Controllers/OrdemServicoController.php (método toFloat() adicionado)
+
+ARQUIVOS NOVOS:
+- database/migrations/2025_12_10_174702_fix_incorrect_monetary_values_in_ordem_servico.php

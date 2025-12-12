@@ -1,0 +1,14 @@
+167928b fix: Convert qtde_total to float in PDF template
+b4f75dd fix: Show cliente name instead of consultor in index-cliente table
+ac0b7ae fix: Use ordem_servico.valor_total for fechamento cliente calculation
+4c90475 fix: Revert - Keep horas × preco_produto calculation
+6937670 fix: Correct totalizador calculation for fechamento cliente
+b7b6245 fix: Show cliente name instead of consultor for cliente fechamentos
+80e8f26 fix: Remove IPv6 localhost from CSP (unsupported format)
+545567e fix: Add Vite dev server support to CSP in development
+0cbc620 fix: Add fonts.bunny.net to Content Security Policy
+9f530e0 fix: Add cliente_id to all RelatorioFechamento creation points
+95e3f92 feat: Add cliente_id to relatorio_fechamento for better client tracking
+59216b3 feat: Refactor PDF template for Cliente closure reports
+2ff10bf fix: Add explicit null conversion for consultor_id in fechamento cliente
+4135e7f feat: Complete refactoring of fechamento system with separate dashboards and PDFs
