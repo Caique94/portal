@@ -223,6 +223,8 @@ Route::middleware('auth')->group(function () {
 
     // ORDEM SERVIÇO
     Route::get('/listar-ordens-servico', [OrdemServicoController::class, 'list']);
+    Route::get('/listar-consultores-filtro', [OrdemServicoController::class, 'listConsultores']);
+    Route::get('/listar-clientes-filtro', [OrdemServicoController::class, 'listClientes']);
     Route::post('/salvar-ordem-servico', [OrdemServicoController::class, 'store']);
     Route::get('/toggle-status-ordem-servico/{id}/{status}', [OrdemServicoController::class, 'toggle_status']);
     Route::post('/toggle-ordem-servico/{id}/{status}', [OrdemServicoController::class, 'toggle_status']);

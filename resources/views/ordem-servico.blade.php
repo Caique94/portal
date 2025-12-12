@@ -16,7 +16,98 @@ use Illuminate\Support\Facades\Auth;
 
     <h4>ORDEM DE SERVI&Ccedil;O</h4>
 
-    <!-- incluir cards com graficos -->
+    <!-- Filtros -->
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white">
+            <h6 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h6>
+        </div>
+        <div class="card-body">
+            <form id="formFiltrosOS">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-floating mb-3">
+                            <select id="filtroStatus" class="form-select">
+                                <option value="">Todos os Status</option>
+                                <option value="0">Em Aberto</option>
+                                <option value="1">Enviada para Aprovação</option>
+                                <option value="2">Finalizada</option>
+                                <option value="3">Contestada</option>
+                                <option value="4">Aguardando Faturamento</option>
+                                <option value="5">Faturada</option>
+                                <option value="6">Aguardando RPS</option>
+                                <option value="7">RPS Emitida</option>
+                            </select>
+                            <label for="filtroStatus">Status</label>
+                        </div>
+                    </div>
+
+                    @if(auth()->user()->papel === 'admin' || auth()->user()->papel === 'financeiro')
+                    <div class="col-md-3">
+                        <div class="form-floating mb-3">
+                            <select id="filtroConsultor" class="form-select">
+                                <option value="">Todos os Consultores</option>
+                            </select>
+                            <label for="filtroConsultor">Consultor</label>
+                        </div>
+                    </div>
+                    @endif
+
+                    <div class="col-md-3">
+                        <div class="form-floating mb-3">
+                            <select id="filtroCliente" class="form-select">
+                                <option value="">Todos os Clientes</option>
+                            </select>
+                            <label for="filtroCliente">Cliente</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="form-floating mb-3">
+                            <select id="filtroMes" class="form-select">
+                                <option value="">Todos os Meses</option>
+                                <option value="01">Janeiro</option>
+                                <option value="02">Fevereiro</option>
+                                <option value="03">Março</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Maio</option>
+                                <option value="06">Junho</option>
+                                <option value="07">Julho</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                            <label for="filtroMes">Mês</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-1">
+                        <div class="form-floating mb-3">
+                            <select id="filtroAno" class="form-select">
+                                <option value="">Ano</option>
+                                @for($year = date('Y'); $year >= 2020; $year--)
+                                    <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
+                                @endfor
+                            </select>
+                            <label for="filtroAno">Ano</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <button type="button" id="btnAplicarFiltros" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Aplicar Filtros
+                        </button>
+                        <button type="button" id="btnLimparFiltros" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Limpar Filtros
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="mt-3">
         <div class="table-responsive">

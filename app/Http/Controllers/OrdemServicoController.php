@@ -209,36 +209,58 @@ class OrdemServicoController extends Controller
         $user = Auth::user();
         $papel = $user->papel;
         $consultor_id = $user->id;
-        $data = null;
 
+        // Capturar filtros
+        $filtroStatus = $request->input('status');
+        $filtroConsultor = $request->input('consultor_id');
+        $filtroCliente = $request->input('cliente_id');
+        $filtroMes = $request->input('mes');
+        $filtroAno = $request->input('ano');
+
+        $query = OrdemServico::join('cliente', 'ordem_servico.cliente_id', '=', 'cliente.id')
+            ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
+            ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome');
+
+        // Aplicar filtros baseados no papel do usuário
         switch ($papel) {
             case 'consultor':
                 // Consultores veem apenas suas próprias OS
-                $data = OrdemServico::join('cliente', 'ordem_servico.cliente_id', '=', 'cliente.id')
-                    ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
-                    ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
-                    ->where('ordem_servico.consultor_id', $consultor_id)
-                    ->orderByDesc('ordem_servico.created_at')
-                    ->get();
+                $query->where('ordem_servico.consultor_id', $consultor_id);
                 break;
             case 'financeiro':
                 // Financeiro vê todas as OS em status de faturamento em diante
-                $data = OrdemServico::join('cliente', 'ordem_servico.cliente_id', '=', 'cliente.id')
-                    ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
-                    ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
-                    ->whereIn('ordem_servico.status', [4, 5, 6, 7]) // Aguardando Faturamento em diante
-                    ->orderByDesc('ordem_servico.created_at')
-                    ->get();
+                if (!$filtroStatus) {
+                    $query->whereIn('ordem_servico.status', [4, 5, 6, 7]);
+                }
                 break;
             case 'admin':
-                // Admin vê todas as OS
-                $data = OrdemServico::join('cliente','ordem_servico.cliente_id', '=', 'cliente.id')
-                    ->join('users', 'ordem_servico.consultor_id', '=', 'users.id')
-                    ->select('ordem_servico.*', 'cliente.codigo as cliente_codigo', 'cliente.nome as cliente_nome', 'users.name as consultor_nome')
-                    ->orderByDesc('ordem_servico.created_at')
-                    ->get();
+                // Admin vê todas as OS (sem filtro padrão)
                 break;
         }
+
+        // Aplicar filtros adicionais
+        if ($filtroStatus !== null && $filtroStatus !== '') {
+            $query->where('ordem_servico.status', $filtroStatus);
+        }
+
+        if ($filtroConsultor) {
+            $query->where('ordem_servico.consultor_id', $filtroConsultor);
+        }
+
+        if ($filtroCliente) {
+            $query->where('ordem_servico.cliente_id', $filtroCliente);
+        }
+
+        if ($filtroMes && $filtroAno) {
+            $query->whereYear('ordem_servico.created_at', $filtroAno)
+                  ->whereMonth('ordem_servico.created_at', $filtroMes);
+        } elseif ($filtroAno) {
+            $query->whereYear('ordem_servico.created_at', $filtroAno);
+        } elseif ($filtroMes) {
+            $query->whereMonth('ordem_servico.created_at', $filtroMes);
+        }
+
+        $data = $query->orderByDesc('ordem_servico.created_at')->get();
 
         // Apply display status transformation for consultores and calculate consultant values
         if ($papel === 'consultor' && $data) {
@@ -513,6 +535,29 @@ class OrdemServicoController extends Controller
             ->get();
 
         return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Listar consultores para filtro
+     */
+    public function listConsultores()
+    {
+        $consultores = User::where('papel', 'consultor')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return response()->json($consultores);
+    }
+
+    /**
+     * Listar clientes para filtro
+     */
+    public function listClientes()
+    {
+        $clientes = Cliente::orderBy('nome')
+            ->get(['id', 'nome', 'codigo', 'loja']);
+
+        return response()->json($clientes);
     }
 
     /**
