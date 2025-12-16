@@ -3,165 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ordem de Serviço - Cliente</title>
+    <title>Relatório de Atendimentos</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
-        .header img { max-width: 200px; height: auto; margin-bottom: 10px; }
-        .header h1 { color: #667eea; margin: 0; font-size: 24px; }
-        .header p { margin: 5px 0; color: #666; }
-        .section { margin-bottom: 20px; }
-        .section-title { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px; font-weight: bold; margin-bottom: 10px; }
-        .info-row { display: table; width: 100%; margin-bottom: 5px; }
-        .info-label { display: table-cell; width: 30%; font-weight: bold; color: #333; }
-        .info-value { display: table-cell; width: 70%; color: #555; }
-        .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 10px; }
-        .highlight-box { background: #f0f4ff; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        p {
+            margin: 5px 0;
+            text-align: center;
+        }
+        .order-block {
+            margin-top: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .total-label {
+            font-weight: bold;
+            background-color: #f9f9f9;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .total-value {
+            font-weight: bold;
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+        .descricao {
+            text-align: left;
+            padding-left: 10px;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>ORDEM DE SERVIÇO</h1>
-        <p><strong>Personalitec Soluções</strong></p>
-        <p>OS Nº {{ $numero_os }}</p>
-    </div>
+    @php
+        $start = $data_inicio ?? ($relatorioFechamento->data_inicio ?? null);
+        $end = $data_fim ?? ($relatorioFechamento->data_fim ?? null);
+        $clienteNome = $cliente->nome ?? ($nomeCliente ?? 'N/A');
+        $collection = collect($registros ?? []);
+        $groups = $collection->groupBy('NUMORC');
+        $totalGeral = $total_geral ?? $collection->sum(function($i){ return (float)($i['TOTAL_ORCAMENTO'] ?? 0); });
+    @endphp
 
-    <div class="section">
-        <div class="section-title">Informações da Ordem de Serviço</div>
-        <div class="info-row">
-            <div class="info-label">Número da OS:</div>
-            <div class="info-value">{{ $numero_os }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Data de Emissão:</div>
-            <div class="info-value">{{ $data_emissao }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Data de Aprovação:</div>
-            <div class="info-value">{{ $data_aprovacao ?? 'Pendente' }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Assunto:</div>
-            <div class="info-value">{{ $assunto ?? '-' }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Projeto:</div>
-            <div class="info-value">{{ $projeto ?? '-' }}</div>
-        </div>
-    </div>
+    <h2>Relatório de Atendimentos</h2>
+    <p>Data de Início: {{ $start ? \Carbon\Carbon::parse($start)->format('d/m/Y') : '' }}</p>
+    <p>Data de Fim: {{ $end ? \Carbon\Carbon::parse($end)->format('d/m/Y') : '' }}</p>
+    <p>Cliente: {{ $clienteNome }}</p>
 
-    <div class="section">
-        <div class="section-title">Cliente</div>
-        <div class="info-row">
-            <div class="info-label">Código:</div>
-            <div class="info-value">{{ $cliente->codigo ?? '-' }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Nome:</div>
-            <div class="info-value">{{ $cliente->nome ?? '-' }}</div>
-        </div>
-    </div>
+    @foreach($groups as $atendimento => $itens)
+        @php
+            $itens = collect($itens);
+            $total_orcamento = (float)($itens->first()['TOTAL_ORCAMENTO'] ?? 0);
+        @endphp
+        <div class="order-block">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nº Atendimento</th>
+                        <th>Consultor</th>
+                        <th>Data de Emissão</th>
+                        <th>Produto</th>
+                        <th>Início</th>
+                        <th>Fim</th>
+                        <th>Quantidade</th>
+                        <th>Desconto</th>
+                        <th>Valor Unitário</th>
+                        <th>Valor Final</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($itens as $item)
+                        @php
+                            $vlunit = (float)($item['VLUNIT'] ?? 0);
+                            $qtd = 0.0;
+                            $hrInicio = $item['HRINICIO'] ?? null;
+                            $hrFim = $item['HRFIM'] ?? null;
+                            $hrDescontoRaw = $item['HRDESCONTO'] ?? 0;
+                            $hrDesconto = 0.0;
+                            if (is_numeric($hrDescontoRaw)) {
+                                $hrDesconto = (float)$hrDescontoRaw;
+                            } else {
+                                try { $d = \Carbon\Carbon::parse($hrDescontoRaw); $hrDesconto = $d->hour + ($d->minute/60) + ($d->second/3600); } catch (\Exception $e) { $hrDesconto = 0.0; }
+                            }
 
-    <div class="section">
-        <div class="section-title">Serviço Prestado</div>
-        <div class="info-row">
-            <div class="info-label">Descrição:</div>
-            <div class="info-value">{{ $produto->descricao ?? '-' }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Quantidade (horas):</div>
-            <div class="info-value">{{ $qtde_total ?? '-' }}</div>
-        </div>
-        @if($cliente->km)
-        <div class="info-row">
-            <div class="info-label">Quilometragem:</div>
-            <div class="info-value">{{ $cliente->km }} km</div>
-        </div>
-        @endif
-        @if($cliente->deslocamento)
-        <div class="info-row">
-            <div class="info-label">Deslocamento:</div>
-            <div class="info-value">R$ {{ number_format((float)$cliente->deslocamento, 2, ',', '.') }}</div>
-        </div>
-        @endif
-    </div>
+                            if ($hrInicio && $hrInicio !== '--:--' && $hrFim && $hrFim !== '--:--') {
+                                try {
+                                    $startT = \Carbon\Carbon::parse($hrInicio);
+                                    $endT = \Carbon\Carbon::parse($hrFim);
+                                    if ($endT->lessThanOrEqualTo($startT)) { $endT->addDay(); }
+                                    $minutes = $endT->diffInMinutes($startT);
+                                    $hours = $minutes / 60.0;
+                                    $qtd = round($hours - $hrDesconto, 2);
+                                    if ($qtd < 0) { $qtd = 0; }
+                                } catch (\Exception $e) {
+                                    $qtd = (float)($item['QTD'] ?? 0);
+                                }
+                            } else {
+                                $qtd = (float)($item['QTD'] ?? 0);
+                            }
 
-    @if($detalhamento)
-    <div class="section">
-        <div class="section-title">Descrição dos Serviços</div>
-        <p style="padding: 10px; background: #f9f9f9;">{{ $detalhamento }}</p>
-    </div>
-    @endif
-
-    @if($totalizador)
-    <div class="section">
-        <div class="section-title">Totalizador</div>
-        <table>
-            <tbody>
-                <tr>
-                    <td style="width: 50%;">{{ $totalizador['valor_hora_label'] }}:</td>
-                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_hora'], 2, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td>Horas:</td>
-                    <td style="text-align: right;">{{ number_format($totalizador['horas'], 2, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td>Valor Horas:</td>
-                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_horas'], 2, ',', '.') }}</td>
-                </tr>
-                @if($totalizador['km'] > 0 && $totalizador['is_presencial'])
-                <tr>
-                    <td>{{ $totalizador['valor_km_label'] }}:</td>
-                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_km'], 2, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td>KM:</td>
-                    <td style="text-align: right;">{{ number_format($totalizador['km'], 2, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td>Valor KM:</td>
-                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_km_total'], 2, ',', '.') }}</td>
-                </tr>
-                @endif
-                @if($totalizador['deslocamento'] > 0 && $totalizador['is_presencial'])
-                <tr>
-                    <td>Deslocamento (horas):</td>
-                    <td style="text-align: right;">{{ number_format($totalizador['deslocamento'], 2, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td>Valor Deslocamento:</td>
-                    <td style="text-align: right;">R$ {{ number_format($totalizador['valor_deslocamento'], 2, ',', '.') }}</td>
-                </tr>
-                @endif
-                @if($totalizador['despesas'] > 0)
-                <tr>
-                    <td>Despesas:</td>
-                    <td style="text-align: right;">R$ {{ number_format($totalizador['despesas'], 2, ',', '.') }}</td>
-                </tr>
-                @endif
-                <tr style="background-color: #e8eef7; font-weight: bold;">
-                    <td>TOTAL GERAL:</td>
-                    <td style="text-align: right;">R$ {{ number_format($totalizador['total_geral'], 2, ',', '.') }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    @endif
-
-    <div class="highlight-box">
-        <div class="info-row">
-            <div class="info-label" style="font-size: 16px;">VALOR TOTAL:</div>
-            <div class="info-value" style="font-size: 18px; font-weight: bold; color: #667eea;">
-                R$ {{ number_format($totalizador['total_geral'] ?? $valor_total, 2, ',', '.') }}
-            </div>
+                            $valor_final = $qtd * $vlunit;
+                        @endphp
+                        <tr>
+                            @if($loop->first)
+                                <td rowspan="{{ $itens->count() }}">{{ $atendimento }}</td>
+                                <td rowspan="{{ $itens->count() }}">{{ $item['CONSULTOR'] ?? '-' }}</td>
+                                <td rowspan="{{ $itens->count() }}">{{ $item['DTEMISSAO'] ?? '-' }}</td>
+                            @endif
+                            <td>{{ $item['PRODUTO'] ?? '-' }}</td>
+                            <td>{{ $item['HRINICIO'] ?? '-' }}</td>
+                            <td>{{ $item['HRFIM'] ?? '-' }}</td>
+                            <td>{{ number_format($qtd, 2, ',', '.') }}</td>
+                            <td>{{ $item['HRDESCONTO'] ?? '-' }}</td>
+                            <td>R$ {{ number_format($vlunit, 2, ',', '.') }}</td>
+                            <td>R$ {{ number_format($valor_final, 2, ',', '.') }}</td>
+                            @if($loop->first)
+                                <td rowspan="{{ $itens->count() }}" class="total-value">R$ {{ number_format($total_orcamento, 2, ',', '.') }}</td>
+                            @endif
+                        </tr>
+                    @endforeach
+                    <tr>
+                        <td colspan="11" class="descricao">{{ $itens->pluck('TEXTO')->filter()->join(', ') }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-    </div>
+    @endforeach
 
-    <div class="footer">
-        <p>Documento gerado automaticamente em {{ now()->format('d/m/Y H:i') }}</p>
-        <p>© {{ date('Y') }} Personalitec Soluções</p>
-        <p>Qualquer dúvida, entre em contato conosco.</p>
+    <div style="text-align: center; margin-top: 20px;">
+        <p><strong>Total Geral:</strong> R$ {{ number_format($totalGeral, 2, ',', '.') }}</p>
     </div>
+    
 </body>
 </html>

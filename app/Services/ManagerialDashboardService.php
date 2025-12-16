@@ -63,7 +63,7 @@ class ManagerialDashboardService
 
         // If no date filter, default to 30 days
         if (!$this->dataInicio && !$this->dataFim) {
-            $query->where('created_at', '>=', now()->subDays(30));
+            $query->where('created_at', '>=', now('America/Sao_Paulo')->subDays(30));
         } else {
             $query = $this->applyDateFilters($query);
         }
@@ -125,7 +125,7 @@ class ManagerialDashboardService
     {
         $data = OrdemServico::select('created_at', 'valor_total')
             ->whereIn('status', [5, 6, 7])
-            ->where('created_at', '>=', now()->subDays(30))
+            ->where('created_at', '>=', now('America/Sao_Paulo')->subDays(30))
             ->get()
             ->groupBy(fn($item) => $item->created_at->format('Y-m-d'));
 
@@ -189,7 +189,7 @@ class ManagerialDashboardService
     {
         $data = OrdemServico::select('consultor_id', 'valor_total')
             ->whereIn('status', [5, 6, 7])
-            ->where('created_at', '>=', now()->subDays(30))
+            ->where('created_at', '>=', now('America/Sao_Paulo')->subDays(30))
             ->with('consultor')
             ->get()
             ->groupBy('consultor_id')

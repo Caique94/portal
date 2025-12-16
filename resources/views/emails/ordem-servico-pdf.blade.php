@@ -331,7 +331,7 @@
                               }
                             @endphp
                         </td>
-                        <td>{{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, '.', '') : '--' }}</td>
+                        <td>{{ $ordemServico->horas_trabalhadas ? number_format(floatval($ordemServico->horas_trabalhadas), 2, '.', '') : '--' }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -374,7 +374,7 @@
             <td colspan="2" class="value total">
                 @if($tipoDestinatario === 'consultor')
                     @php
-                        $valor_horas = floatval($ordemServico->qtde_total ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
+                        $valor_horas = floatval($ordemServico->horas_trabalhadas ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
                         $valor_km = floatval($ordemServico->km ?? 0) * floatval($ordemServico->consultor->valor_km ?? 0);
                         $valor_despesa = floatval($ordemServico->valor_despesa ?? 0);
                         $total_ganho = $valor_horas + $valor_km + $valor_despesa;

@@ -193,4 +193,48 @@ class OrdemServico extends Model
         return $this->getStatus()->canBeBilled();
     }
 
+    /**
+     * Calcular horas corretamente (qtde_total ou baseado em hora_inicio/hora_final/hora_desconto)
+     */
+    public function getHoras(): float
+    {
+        // Se qtde_total está preenchido, usar ele
+        if (!empty($this->qtde_total)) {
+            return (float) $this->qtde_total;
+        }
+
+        // Se tem hora_inicio e hora_final, calcular a diferença
+        if ($this->hora_inicio && $this->hora_final) {
+            try {
+                $inicio = \Carbon\Carbon::createFromFormat('H:i:s', $this->hora_inicio);
+                $final = \Carbon\Carbon::createFromFormat('H:i:s', $this->hora_final);
+
+                if ($final->greaterThanOrEqualTo($inicio)) {
+                    $minutos = $final->diffInMinutes($inicio);
+                    $horas = $minutos / 60;
+
+                    // Subtrair desconto se houver
+                    if (!empty($this->hora_desconto)) {
+                        $horas -= (float) $this->hora_desconto;
+                    }
+
+                    return max(0, $horas);
+                }
+            } catch (\Exception $e) {
+                // Se falhar, retornar qtde_total ou 0
+                return (float) ($this->qtde_total ?? 0);
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Accessor para horas (compatível com views que usam $os->horas)
+     */
+    public function getHorasAttribute()
+    {
+        return $this->getHoras();
+    }
+
 }

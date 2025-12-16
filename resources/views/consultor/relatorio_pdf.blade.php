@@ -161,7 +161,7 @@
         <div class="header">
             <h1>Relatório de Ordens de Serviço</h1>
             <p>Consultor: <strong>{{ $consultor }}</strong></p>
-            <p>Data do Relatório: <strong>{{ \Carbon\Carbon::now()->format('d/m/Y H:i:s') }}</strong></p>
+            <p>Data do Relatório: <strong>{{ \Carbon\Carbon::now('America/Sao_Paulo')->format('d/m/Y H:i:s') }}</strong></p>
             @if($data_inicio || $data_fim)
                 <p>Período:
                     <strong>
@@ -196,7 +196,7 @@
                 <strong>Valor Total:</strong> R$ {{ number_format($totalValor, 2, ',', '.') }}
             </div>
             <div class="summary-item">
-                <strong>Data Geração:</strong> {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }}
+                <strong>Data Geração:</strong> {{ \Carbon\Carbon::now('America/Sao_Paulo')->format('d/m/Y H:i') }}
             </div>
         </div>
 
@@ -239,7 +239,7 @@
         <!-- Footer -->
         <div class="footer">
             <p>Este documento foi gerado automaticamente pelo sistema Personalitec.</p>
-            <p>{{ now()->format('d/m/Y H:i:s') }}</p>
+            <p>{{ now('America/Sao_Paulo')->format('d/m/Y H:i:s') }}</p>
         </div>
     </div>
 </body>

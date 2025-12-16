@@ -8,6 +8,107 @@ use Illuminate\Support\Facades\Auth;
 
 @push('styles')
 <link href="{{ asset('plugins/datatables/datatables.min.css')}}" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+<style>
+    /* Estilo moderno para botões da DataTable */
+    .dt-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .dt-button {
+        background: linear-gradient(135deg, #0056b3 0%, #007bff 100%) !important;
+        color: white !important;
+        border: none !important;
+        padding: 10px 20px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        box-shadow: 0 4px 6px rgba(0, 86, 179, 0.3) !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+    
+    div.dt-buttons > button.dt-button,
+    div.dt-buttons > a.dt-button,
+    button.dt-button,
+    a.dt-button {
+        background: linear-gradient(135deg, #0056b3 0%, #007bff 100%) !important;
+        color: white !important;
+    }
+    
+    .dt-button:hover {
+        background: linear-gradient(135deg, #003d82 0%, #0056b3 100%) !important;
+        box-shadow: 0 6px 12px rgba(0, 86, 179, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    .dt-button:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 2px 4px rgba(0, 86, 179, 0.3) !important;
+    }
+    
+    /* Botão de colunas com estilo diferenciado */
+    .dt-button.buttons-colvis {
+        background: linear-gradient(135deg, #0069d9 0%, #0088ff 100%) !important;
+        box-shadow: 0 4px 6px rgba(0, 105, 217, 0.3) !important;
+    }
+    
+    .dt-button.buttons-colvis:hover {
+        background: linear-gradient(135deg, #0056b3 0%, #0069d9 100%) !important;
+        box-shadow: 0 6px 12px rgba(0, 105, 217, 0.4) !important;
+    }
+    
+    /* Ícones para os botões */
+    .dt-button::before {
+        font-family: 'bootstrap-icons';
+        font-size: 16px;
+    }
+    
+    .dt-button:first-child::before {
+        content: '\f4da'; /* bi-receipt */
+    }
+    
+    .dt-button:nth-child(2)::before {
+        content: '\f4a9'; /* bi-file-earmark-text */
+    }
+    
+    .dt-button.buttons-colvis::before {
+        content: '\f479'; /* bi-eye */
+    }
+    
+    /* Dropdown de colunas */
+    .dt-button-collection {
+        background: white !important;
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+        padding: 8px !important;
+    }
+    
+    .dt-button-collection .dt-button {
+        background: white !important;
+        color: #333 !important;
+        padding: 8px 16px !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .dt-button-collection .dt-button:hover {
+        background: #f0f0f0 !important;
+        transform: none !important;
+    }
+    
+    .dt-button-collection .dt-button.active {
+        background: linear-gradient(135deg, #0056b3 0%, #007bff 100%) !important;
+        color: white !important;
+    }
+</style>
 @endpush
 
 <script>
@@ -28,6 +129,9 @@ use Illuminate\Support\Facades\Auth;
 
 @push('scripts')
 <script src="{{ asset('plugins/datatables/datatables.min.js') }}"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
 <script src="{{ asset('js/faturamento.js') }}"></script>
 @endpush
 

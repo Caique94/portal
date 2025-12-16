@@ -14,7 +14,7 @@ class DashboardService
      */
     public function getTotalOrdersThisMonth(): int
     {
-        return OrdemServico::where('created_at', '>=', now()->subDays(30))->count();
+        return OrdemServico::where('created_at', '>=', now('America/Sao_Paulo')->subDays(30))->count();
     }
 
     /**
@@ -56,7 +56,7 @@ class DashboardService
     {
         $data = OrdemServico::select('created_at', 'valor_total')
             ->whereIn('status', [5, 6, 7])
-            ->where('created_at', '>=', now()->subDays(30))
+            ->where('created_at', '>=', now('America/Sao_Paulo')->subDays(30))
             ->get()
             ->groupBy(fn($item) => $item->created_at->format('Y-m-d'));
 

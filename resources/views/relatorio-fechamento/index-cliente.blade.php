@@ -81,7 +81,7 @@
                             @foreach($relatorios as $relatorio)
                                 <tr>
                                     <td><strong>#{{ $relatorio->id }}</strong></td>
-                                    <td>{{ $relatorio->cliente->nome ?? 'N/A' }}</td>
+                                    <td>{{ optional($relatorio->cliente)->nome ?? 'N/A' }}</td>
                                     <td>
                                         {{ $relatorio->data_inicio->format('d/m/Y') }} até
                                         {{ $relatorio->data_fim->format('d/m/Y') }}

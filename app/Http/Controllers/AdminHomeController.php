@@ -25,8 +25,13 @@ class AdminHomeController extends Controller
         $totalOS = OrdemServico::count();
         $totalConsultores = User::where('papel', 'consultor')->where('ativo', true)->count();
         $totalClientes = Cliente::count();
-        $totalFaturamento = RelatorioFechamento::where('status', 'aprovado')
-            ->sum('valor_total');
+        // Faturamento aprovado: OS com status >= 2 (aprovado em diante) dos últimos 30 dias
+        // Cast para numeric pois valor_total é varchar no DB
+        $totalFaturamento = OrdemServico::where('status', '>=', 2)
+            ->whereDate('created_at', '>=', Carbon::now('America/Sao_Paulo')->subDays(30))
+            ->selectRaw('COALESCE(SUM(CAST(valor_total AS NUMERIC)), 0) as total')
+            ->first()
+            ->total ?? 0;
 
         // OS por status
         $osStatus = [
@@ -56,7 +61,7 @@ class AdminHomeController extends Controller
             ->where('ativo', true)
             ->withCount([
                 'ordemServicos' => function ($query) {
-                    $query->whereDate('created_at', '>=', Carbon::now()->subDays(30));
+                    $query->whereDate('created_at', '>=', Carbon::now('America/Sao_Paulo')->subDays(30));
                 }
             ])
             ->orderByDesc('ordem_servicos_count')
@@ -72,7 +77,7 @@ class AdminHomeController extends Controller
 
         // Clientes sem pedidos nos últimos 30 dias
         $clientesInativos = Cliente::whereDoesntHave('ordemServicos', function ($query) {
-            $query->whereDate('created_at', '>=', Carbon::now()->subDays(30));
+            $query->whereDate('created_at', '>=', Carbon::now('America/Sao_Paulo')->subDays(30));
         })
         ->limit(5)
         ->get();

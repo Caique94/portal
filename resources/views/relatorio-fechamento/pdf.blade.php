@@ -251,7 +251,7 @@
             <div class="header-title">RELATÓRIO DE FECHAMENTO</div>
             <div class="header-info">
                 <span>#{{ $relatorioFechamento->id }}</span>
-                <span>{{ now()->format('d/m/Y H:i') }}</span>
+                <span>{{ now('America/Sao_Paulo')->format('d/m/Y H:i') }}</span>
             </div>
         </div>
 
@@ -313,7 +313,7 @@
                         $dataEmissao = $os->data_emissao ? \Carbon\Carbon::parse($os->data_emissao)->format('d/m/Y') : \Carbon\Carbon::parse($os->created_at)->format('d/m/Y');
                         $assunto = $os->assunto ?? 'Serviço Prestado';
                         $descricao = $os->detalhamento ?? 'Atendimento prestado';
-                        $horas = $os->qtde_total ?? '1.0';
+                        $horas = $os->horas_trabalhadas ?? '1.0';
                         $valorServico = (float)($os->valor_total ?? 0);
                         $despesas = (float)($os->valor_despesa ?? 0);
                         $valorKm = $os->km ? (float)$os->km : 0;

@@ -50,7 +50,7 @@ class ReportGeneratorService
             'detalhamento' => $os->detalhamento,
             'hora_inicio' => $os->hora_inicio,
             'hora_final' => $os->hora_final,
-            'qtde_total' => $os->qtde_total,
+            'qtde_total' => $os->horas_trabalhadas,
             'totalizador' => $totalizadorData,
         ];
 
@@ -67,7 +67,7 @@ class ReportGeneratorService
         $consultor = $os->consultor;
         $cliente = $os->cliente;
 
-        $horas = floatval($os->qtde_total ?? 0);
+        $horas = floatval($os->horas_trabalhadas ?? 0);
         $km = floatval($os->km ?? 0);
         $deslocamento = floatval($os->deslocamento ?? 0);
         $despesas = floatval($os->valor_despesa ?? 0);
@@ -140,7 +140,7 @@ class ReportGeneratorService
 
     protected function generateFilename(OrdemServico $os, string $type): string
     {
-        $timestamp = now()->format('Ymd_His');
+        $timestamp = now('America/Sao_Paulo')->format('Ymd_His');
         $osNumber = str_pad($os->id, 8, '0', STR_PAD_LEFT);
 
         return match ($type) {

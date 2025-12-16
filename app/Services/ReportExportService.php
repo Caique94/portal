@@ -108,7 +108,7 @@ class ReportExportService
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
 
-        $sheet->setCellValue('A2', 'Data do Relatório: ' . now()->format('d/m/Y H:i:s'));
+        $sheet->setCellValue('A2', 'Data do Relatório: ' . now('America/Sao_Paulo')->format('d/m/Y H:i:s'));
         $sheet->mergeCells('A2:H2');
 
         // Filtros aplicados
@@ -215,7 +215,7 @@ class ReportExportService
         }
 
         // Save
-        $filename = 'relatorio_' . now()->format('Y-m-d_His') . '.xlsx';
+        $filename = 'relatorio_' . now('America/Sao_Paulo')->format('Y-m-d_His') . '.xlsx';
         $filepath = storage_path('app/exports/' . $filename);
 
         if (!is_dir(storage_path('app/exports'))) {
@@ -242,7 +242,7 @@ class ReportExportService
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
 
-        $sheet->setCellValue('A2', 'Data do Relatório: ' . now()->format('d/m/Y H:i:s'));
+        $sheet->setCellValue('A2', 'Data do Relatório: ' . now('America/Sao_Paulo')->format('d/m/Y H:i:s'));
         $sheet->mergeCells('A2:H2');
 
         $row = 4;
@@ -451,7 +451,7 @@ class ReportExportService
         }
 
         // Save
-        $filename = 'relatorio_analitico_' . now()->format('Y-m-d_His') . '.xlsx';
+        $filename = 'relatorio_analitico_' . now('America/Sao_Paulo')->format('Y-m-d_His') . '.xlsx';
         $filepath = storage_path('app/exports/' . $filename);
 
         if (!is_dir(storage_path('app/exports'))) {
@@ -576,7 +576,7 @@ class ReportExportService
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
-        $filename = 'relatorio_' . now()->format('Y-m-d_His') . '.pdf';
+        $filename = 'relatorio_' . now('America/Sao_Paulo')->format('Y-m-d_His') . '.pdf';
         $filepath = storage_path('app/exports/' . $filename);
 
         if (!is_dir(storage_path('app/exports'))) {
@@ -606,7 +606,7 @@ class ReportExportService
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
-        $filename = 'relatorio_analitico_' . now()->format('Y-m-d_His') . '.pdf';
+        $filename = 'relatorio_analitico_' . now('America/Sao_Paulo')->format('Y-m-d_His') . '.pdf';
         $filepath = storage_path('app/exports/' . $filename);
 
         if (!is_dir(storage_path('app/exports'))) {
@@ -646,7 +646,7 @@ class ReportExportService
         <body>
             <div class="header">
                 <h1>PORTAL - RELATÓRIO DE ORDENS DE SERVIÇO</h1>
-                <p>Data do Relatório: ' . now()->format('d/m/Y H:i:s') . '</p>
+                <p>Data do Relatório: ' . now('America/Sao_Paulo')->format('d/m/Y H:i:s') . '</p>
             </div>';
 
         if (!empty($filters)) {
@@ -759,7 +759,7 @@ class ReportExportService
         <body>
             <div class="header">
                 <h1>PORTAL - RELATÓRIO ANALÍTICO</h1>
-                <p>Data do Relatório: ' . now()->format('d/m/Y H:i:s') . '</p>
+                <p>Data do Relatório: ' . now('America/Sao_Paulo')->format('d/m/Y H:i:s') . '</p>
             </div>';
 
         if (!empty($filters)) {

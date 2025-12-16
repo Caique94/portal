@@ -171,7 +171,7 @@
         </div>
         <div class="metadata-row">
             <span class="metadata-label">Gerado em:</span>
-            {{ now()->format('d/m/Y H:i:s') }}
+            {{ now('America/Sao_Paulo')->format('d/m/Y H:i:s') }}
         </div>
     </div>
 
@@ -227,7 +227,28 @@
                 <tbody>
                     @foreach($ordensCliente as $os)
                         @php
-                            $horas = $os->horas ?? 0;
+                            // Calcular horas preferindo hora_inicio/hora_final quando disponíveis
+                            $horas = 0.0;
+                            try {
+                                if (!empty($os->hora_inicio) && !empty($os->hora_final)) {
+                                    $startT = \Carbon\Carbon::parse($os->hora_inicio);
+                                    $endT = \Carbon\Carbon::parse($os->hora_final);
+                                    if ($endT->lessThanOrEqualTo($startT)) { $endT->addDay(); }
+                                    $minutes = $endT->diffInMinutes($startT);
+                                    $horas = round($minutes / 60.0, 2);
+                                    // aplicar desconto de horas se o campo existir
+                                    if (property_exists($os, 'hora_desconto') && $os->hora_desconto) {
+                                        $des = $os->hora_desconto;
+                                        if (is_numeric($des)) { $horas = max(0, $horas - (float)$des); }
+                                        else { try { $d = \Carbon\Carbon::parse($des); $desHours = $d->hour + ($d->minute/60); $horas = max(0, $horas - $desHours); } catch (\Exception $e) {}}
+                                    }
+                                } else {
+                                    $horas = (float)($os->horas_trabalhadas ?? 0);
+                                }
+                            } catch (\Exception $e) {
+                                $horas = (float)($os->horas_trabalhadas ?? 0);
+                            }
+
                             $valorHora = $consultor ? ($consultor->valor_hora ?? 0) : 0;
                             $valorServico = $horas * $valorHora;
 
@@ -266,7 +287,7 @@
                 <div class="subtotal-row">
                     <strong>Subtotal Cliente:</strong> {{ $ordensCliente->count() }} OSs |
                     R$ {{ number_format($ordensCliente->sum(function($os) use ($consultor) {
-                        $horas = $os->horas ?? 0;
+                        $horas = $os->horas_trabalhadas ?? 0;
                         $valorHora = $consultor ? ($consultor->valor_hora ?? 0) : 0;
                         $valorServico = $horas * $valorHora;
                         $despesas = $os->valor_despesa ?? 0;
@@ -305,7 +326,7 @@
 
     <div class="footer">
         <div class="page-number"></div>
-        <div>Documento gerado automaticamente pelo sistema em {{ now()->format('d/m/Y H:i:s') }}</div>
+        <div>Documento gerado automaticamente pelo sistema em {{ now('America/Sao_Paulo')->format('d/m/Y H:i:s') }}</div>
         @if($consultor)
             <div>Assinatura: _________________________________</div>
         @endif

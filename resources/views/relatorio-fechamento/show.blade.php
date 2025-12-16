@@ -41,7 +41,7 @@
                             @else
                                 <div class="mb-3">
                                     <label class="form-label text-muted">Cliente</label>
-                                    <p class="mb-0 h6">{{ $relatorioFechamento->cliente->nome ?? 'N/A' }}</p>
+                                    <p class="mb-0 h6">{{ optional($relatorioFechamento->cliente)->nome ?? 'N/A' }}</p>
                                 </div>
                             @endif
                             <div class="mb-3">

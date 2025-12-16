@@ -21,7 +21,7 @@ class RelatorioFechamentoController extends Controller
     {
         $this->authorize('viewAny', RelatorioFechamento::class);
 
-        $query = RelatorioFechamento::with('consultor', 'aprovador')
+        $query = RelatorioFechamento::with(['cliente', 'consultor', 'aprovador'])
             ->where('tipo', 'cliente')
             ->orderByDesc('id');
 
@@ -95,6 +95,7 @@ class RelatorioFechamentoController extends Controller
 
         // Últimos fechamentos
         $ultimosFechamentos = RelatorioFechamento::where('tipo', 'cliente')
+            ->with(['cliente', 'consultor'])
             ->orderByDesc('created_at')
             ->limit(10)
             ->get();
@@ -615,6 +616,14 @@ class RelatorioFechamentoController extends Controller
     public function show(RelatorioFechamento $relatorioFechamento)
     {
         $this->authorize('view', $relatorioFechamento);
+
+        // Carregar relacionamentos se ainda não estiverem loaded
+        if (!$relatorioFechamento->relationLoaded('cliente')) {
+            $relatorioFechamento->load('cliente');
+        }
+        if (!$relatorioFechamento->relationLoaded('consultor')) {
+            $relatorioFechamento->load('consultor');
+        }
 
         $ordemServicos = $relatorioFechamento->ordemServicos();
         $consultor = $relatorioFechamento->consultor;

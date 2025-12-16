@@ -111,7 +111,7 @@
                             }
                           @endphp
                         </td>
-                        <td style="padding:10px;text-align:center;">{{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, '.', '') : '--' }}</td>
+                        <td style="padding:10px;text-align:center;">{{ $ordemServico->horas_trabalhadas ? number_format(floatval($ordemServico->horas_trabalhadas), 2, '.', '') : '--' }}</td>
                       </tr>
                     </table>
                   </td>
@@ -178,7 +178,7 @@
                               <td style="padding:12px 8px;border-top:1px solid #E2E6EA;border-right:1px solid #E2E6EA;font-weight:700;color:#0A5FA6;">SEU GANHO</td>
                               <td style="padding:12px 8px;border-top:1px solid #E2E6EA;font-weight:800;color:#0A5FA6;font-size:14px;">
                                 @php
-                                  $valor_horas = floatval($ordemServico->qtde_total ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
+                                  $valor_horas = floatval($ordemServico->horas_trabalhadas ?? 0) * floatval($ordemServico->consultor->valor_hora ?? 0);
                                   $valor_km = floatval($ordemServico->km ?? 0) * floatval($ordemServico->consultor->valor_km ?? 0);
                                   $valor_despesa = floatval($ordemServico->valor_despesa ?? 0);
                                   $total_ganho = $valor_horas + $valor_km + $valor_despesa;

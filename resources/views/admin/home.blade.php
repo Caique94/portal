@@ -278,7 +278,7 @@
           <div class="d-flex justify-content-between align-items-start mb-2">
             <div>
               <h6 class="mb-1">
-                <strong>{{ $relatorio->consultor->name }}</strong>
+                <strong>{{ optional($relatorio->consultor)->name ?? '-' }}</strong>
               </h6>
               <small class="text-muted">
                 {{ $relatorio->created_at->format('d/m/Y H:i') }}
@@ -425,7 +425,7 @@
                 @foreach($ultimosRelatorios as $relatorio)
                   <tr>
                     <td>#{{ $relatorio->id }}</td>
-                    <td>{{ $relatorio->consultor->name }}</td>
+                    <td>{{ optional($relatorio->consultor)->name ?? '-' }}</td>
                     <td>
                       {{ \Carbon\Carbon::parse($relatorio->data_inicio)->format('d/m/Y') }} -
                       {{ \Carbon\Carbon::parse($relatorio->data_fim)->format('d/m/Y') }}

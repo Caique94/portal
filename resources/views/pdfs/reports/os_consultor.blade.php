@@ -92,7 +92,7 @@
         </div>
         <div class="info-row">
             <div class="info-label">Quantidade Total (horas):</div>
-            <div class="info-value">{{ $qtde_total ?? '-' }}</div>
+            <div class="info-value">{{ number_format(floatval($os->horas_trabalhadas ?? 0), 2, ',', '.') }}</div>
         </div>
     </div>
 
@@ -160,7 +160,7 @@
     @endif
 
     <div class="footer">
-        <p>Documento gerado automaticamente em {{ now()->format('d/m/Y H:i') }}</p>
+        <p>Documento gerado automaticamente em {{ now('America/Sao_Paulo')->format('d/m/Y H:i') }}</p>
         <p>© {{ date('Y') }} Personalitec Soluções</p>
     </div>
 </body>

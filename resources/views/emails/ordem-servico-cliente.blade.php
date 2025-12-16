@@ -114,7 +114,7 @@
                             }
                           @endphp
                         </td>
-                        <td style="padding:10px;text-align:center;">{{ $ordemServico->qtde_total ? number_format(floatval($ordemServico->qtde_total), 2, '.', '') : '--' }}</td>
+                        <td style="padding:10px;text-align:center;">{{ $ordemServico->horas_trabalhadas ? number_format(floatval($ordemServico->horas_trabalhadas), 2, '.', '') : '--' }}</td>
                       </tr>
                     </table>
                   </td>

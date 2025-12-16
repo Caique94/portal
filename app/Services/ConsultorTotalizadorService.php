@@ -15,7 +15,7 @@ class ConsultorTotalizadorService
         $consultor = $os->consultor;
         $cliente = $os->cliente;
 
-        $horas = floatval($os->qtde_total ?? 0);
+        $horas = floatval($os->horas_trabalhadas ?? 0);
         $km = floatval($os->km ?? 0);
         $deslocamento = floatval($os->deslocamento ?? 0);
         $despesas = floatval($os->valor_despesa ?? 0);
@@ -44,7 +44,7 @@ class ConsultorTotalizadorService
     {
         $consultor = $os->consultor;
 
-        $horas = floatval($os->qtde_total ?? 0);
+        $horas = floatval($os->horas_trabalhadas ?? 0);
         $km = floatval($os->km ?? 0);
         $deslocamento = floatval($os->deslocamento ?? 0);
         $despesas = floatval($os->valor_despesa ?? 0);
